@@ -5,12 +5,12 @@ export default function RootLayout() {
   return (
     <>
       <StatusBar style="auto" />
-      <Stack>
+      <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="auth" options={{ headerShown: false }} />
         <Stack.Screen name="shop" options={{ headerShown: false }} />
         <Stack.Screen name="admin" options={{ headerShown: false }} />  
-        <Stack.Screen name="products" options={{ headerShown: false }} />
+        <Stack.Screen name="products/[id].jsx" options={{ headerShown: false }} />
       </Stack>
     </>
   );

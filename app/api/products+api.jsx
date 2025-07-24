@@ -1,18 +1,10 @@
-import Config from "react-native-config";
-
-
 // app/api/users+api.ts
+const ACCESS_TOKEN = process.env.ACCESS_TOKEN;
 export async function GET(request) {
   try {
     const myHeaders = new Headers();
     myHeaders.append("Content-Type", "application/json");
-    myHeaders.append(
-      "X-Shopify-Access-Token",
-      Config.ACCESS_TOKEN
-    );
-
-
-    
+    myHeaders.append("X-Shopify-Access-Token", ACCESS_TOKEN);
 
     const graphql = JSON.stringify({
       query:
