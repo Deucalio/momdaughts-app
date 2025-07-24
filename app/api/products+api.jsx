@@ -11,6 +11,9 @@ export async function GET(request) {
       Config.ACCESS_TOKEN
     );
 
+
+    
+
     const graphql = JSON.stringify({
       query:
         "{\r\n      products(first: 5) {\r\n        edges {\r\n          node {\r\n            id\r\n            title\r\n            handle\r\n            description\r\n            images(first: 5) {\r\n              edges {\r\n                node {\r\n                  id\r\n                  altText\r\n                  originalSrc\r\n                }\r\n              }\r\n            }\r\n            variants(first: 3) {\r\n              edges {\r\n                node {\r\n                  id\r\n                  title\r\n                  price\r\n                }\r\n              }\r\n            }\r\n          }\r\n        }\r\n      }\r\n    }\r\n  ",
