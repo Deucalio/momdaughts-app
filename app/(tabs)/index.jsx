@@ -2,12 +2,12 @@
 
 import { useState } from "react";
 import {
-  View,
-  Text,
+  Dimensions,
   ScrollView,
   StyleSheet,
+  Text,
   TouchableOpacity,
-  Dimensions,
+  View,
 } from "react-native";
 /*************  ✨ Windsurf Command ⭐  *************/
 /**
@@ -17,10 +17,11 @@ import {
  * and view details about their current cycle and wellness tips.
  */
 
-/*******  fb45f32e-bf05-446d-9d28-7247b9612e0e  *******/import { LinearGradient } from "expo-linear-gradient";
-import { Ionicons } from "@expo/vector-icons";
-import { SafeAreaView } from "react-native-safe-area-context";
+/*******  fb45f32e-bf05-446d-9d28-7247b9612e0e  *******/import { Ionicons } from "@expo/vector-icons";
+import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { useAuthStore } from "../utils/authStore";
 
 const { width } = Dimensions.get("window");
 
@@ -109,6 +110,8 @@ export default function HomePage() {
     },
   ];
 
+  const {logOut, resetOnboarding} = useAuthStore();
+
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView showsVerticalScrollIndicator={false}>
@@ -122,7 +125,10 @@ export default function HomePage() {
               >
                 <Text style={styles.logoText}>MD</Text>
               </LinearGradient>
-              <Text style={styles.logoTitle}>MomDaughts</Text>
+              <Text onPress={() => {
+                resetOnboarding();
+                logOut();
+              }} style={styles.logoTitle}>MomDaughts Log Out</Text>
             </View>
             <View style={styles.headerActions}>
               <TouchableOpacity style={styles.headerButton}>

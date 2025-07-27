@@ -1,34 +1,43 @@
-"use client"
+"use client";
 
-import { useState } from "react"
+import { Ionicons } from "@expo/vector-icons";
+import { LinearGradient } from "expo-linear-gradient";
+import { router } from "expo-router";
+import { useState } from "react";
 import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  TextInput,
   KeyboardAvoidingView,
   Platform,
+  Button,
   ScrollView,
-} from "react-native"
-import { LinearGradient } from "expo-linear-gradient"
-import { Ionicons } from "@expo/vector-icons"
-import { SafeAreaView } from "react-native-safe-area-context"
-import { router } from "expo-router"
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { useAuthStore } from "../utils/authStore";
 
 export default function LoginPage() {
-  const [showPassword, setShowPassword] = useState(false)
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
-  const [rememberMe, setRememberMe] = useState(false)
+  const [showPassword, setShowPassword] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [rememberMe, setRememberMe] = useState(false);
+  const { logIn } = useAuthStore();
 
   return (
     <SafeAreaView style={styles.container}>
-      <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={styles.keyboardView}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        style={styles.keyboardView}
+      >
         <ScrollView contentContainerStyle={styles.scrollContent}>
           {/* Header */}
           <View style={styles.header}>
-            <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+            <TouchableOpacity
+              style={styles.backButton}
+              onPress={() => router.back()}
+            >
               <Ionicons name="arrow-back" size={24} color="#6b7280" />
             </TouchableOpacity>
             <Text style={styles.headerTitle}>Welcome Back</Text>
@@ -38,7 +47,9 @@ export default function LoginPage() {
           <View style={styles.formContainer}>
             <View style={styles.formHeader}>
               <Text style={styles.formTitle}>Sign In</Text>
-              <Text style={styles.formSubtitle}>Enter your credentials to access your account</Text>
+              <Text style={styles.formSubtitle}>
+                Enter your credentials to access your account
+              </Text>
             </View>
 
             <View style={styles.form}>
@@ -64,16 +75,33 @@ export default function LoginPage() {
                     onChangeText={setPassword}
                     secureTextEntry={!showPassword}
                   />
-                  <TouchableOpacity style={styles.passwordToggle} onPress={() => setShowPassword(!showPassword)}>
-                    <Ionicons name={showPassword ? "eye-off" : "eye"} size={20} color="#9ca3af" />
+                  <TouchableOpacity
+                    style={styles.passwordToggle}
+                    onPress={() => setShowPassword(!showPassword)}
+                  >
+                    <Ionicons
+                      name={showPassword ? "eye-off" : "eye"}
+                      size={20}
+                      color="#9ca3af"
+                    />
                   </TouchableOpacity>
                 </View>
               </View>
 
               <View style={styles.formOptions}>
-                <TouchableOpacity style={styles.rememberMe} onPress={() => setRememberMe(!rememberMe)}>
-                  <View style={[styles.checkbox, rememberMe && styles.checkboxChecked]}>
-                    {rememberMe && <Ionicons name="checkmark" size={12} color="white" />}
+                <TouchableOpacity
+                  style={styles.rememberMe}
+                  onPress={() => setRememberMe(!rememberMe)}
+                >
+                  <View
+                    style={[
+                      styles.checkbox,
+                      rememberMe && styles.checkboxChecked,
+                    ]}
+                  >
+                    {rememberMe && (
+                      <Ionicons name="checkmark" size={12} color="white" />
+                    )}
                   </View>
                   <Text style={styles.rememberText}>Remember me</Text>
                 </TouchableOpacity>
@@ -83,8 +111,16 @@ export default function LoginPage() {
               </View>
 
               <TouchableOpacity style={styles.signInButton}>
-                <LinearGradient colors={["#ec4899", "#8b5cf6"]} style={styles.signInGradient}>
-                  <Text style={styles.signInText}>Sign In</Text>
+                <LinearGradient
+                  colors={["#ec4899", "#8b5cf6"]}
+                  style={styles.signInGradient}
+                >
+                  <Text
+                    onPress={logIn}
+                    style={styles.signInText}
+                  >
+                    Sign In
+                  </Text>
                 </LinearGradient>
               </TouchableOpacity>
 
@@ -118,7 +154,7 @@ export default function LoginPage() {
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
-  )
+  );
 }
 
 const styles = StyleSheet.create({
@@ -299,4 +335,4 @@ const styles = StyleSheet.create({
     color: "#ec4899",
     fontWeight: "600",
   },
-})
+});
