@@ -17,7 +17,7 @@ import {
  * and view details about their current cycle and wellness tips.
  */
 
-/*******  fb45f32e-bf05-446d-9d28-7247b9612e0e  *******/import { Ionicons } from "@expo/vector-icons";
+/*******  fb45f32e-bf05-446d-9d28-7247b9612e0e  *******/ import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -110,7 +110,7 @@ export default function HomePage() {
     },
   ];
 
-  const {logOut, resetOnboarding} = useAuthStore();
+  const { logOut, resetOnboarding } = useAuthStore();
 
   return (
     <SafeAreaView style={styles.container}>
@@ -125,10 +125,15 @@ export default function HomePage() {
               >
                 <Text style={styles.logoText}>MD</Text>
               </LinearGradient>
-              <Text onPress={() => {
-                resetOnboarding();
-                logOut();
-              }} style={styles.logoTitle}>MomDaughts Log Out</Text>
+              <Text
+                onPress={() => {
+                  resetOnboarding();
+                  logOut();
+                }}
+                style={styles.logoTitle}
+              >
+                MomDaughts Log Out
+              </Text>
             </View>
             <View style={styles.headerActions}>
               <TouchableOpacity style={styles.headerButton}>
@@ -151,7 +156,21 @@ export default function HomePage() {
         >
           <View style={styles.heroContent}>
             <Text style={styles.heroTitle}>
-              <Text style={styles.heroTitleGradient}>Your Wellness</Text>
+              <Text
+                onPress={async () => {
+                  //
+                  try {
+                    const r = await fetch("http://192.168.18.5:3000/sessions");
+                    const data = await r.json();
+                    console.log("Got Sessions: ", data);
+                  } catch (e) {
+                    console.log("Session Error: ", e);
+                  }
+                }}
+                style={styles.heroTitleGradient}
+              >
+                Your Wellness
+              </Text>
               {"\n"}Journey Starts Here
             </Text>
             <Text style={styles.heroSubtitle}>

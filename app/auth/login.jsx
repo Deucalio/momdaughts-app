@@ -116,7 +116,9 @@ export default function LoginPage() {
                   style={styles.signInGradient}
                 >
                   <Text
-                    onPress={logIn}
+                    onPress={() => {
+                      logIn(email, password);
+                    }}
                     style={styles.signInText}
                   >
                     Sign In

@@ -1,13 +1,14 @@
-const { getDefaultConfig } = require("expo/metro-config");
-const { withNativeWind } = require('nativewind/metro');
+const { getDefaultConfig } = require('expo/metro-config');
 
 const config = getDefaultConfig(__dirname);
 
-// Add asset extensions
-config.resolver.assetExts.push('cjs');
+// Web-specific resolver configuration
+if (process.env.EXPO_PLATFORM === 'web') {
+  config.resolver.platforms = ['web', 'native', 'ios', 'android'];
+  config.resolver.alias = {
+    ...config.resolver.alias,
+    'nanoid/non-secure': 'nanoid',
+  };
+}
 
-module.exports = withNativeWind(config, { 
-  input: './global.css',
-  // Add for NativeWind v4
-  projectRoot: __dirname 
-});
+module.exports = config;

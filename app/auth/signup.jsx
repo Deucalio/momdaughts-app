@@ -1,6 +1,6 @@
-"use client"
+"use client";
 
-import { useState } from "react"
+import { useState } from "react";
 import {
   View,
   Text,
@@ -10,15 +10,17 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
-} from "react-native"
-import { LinearGradient } from "expo-linear-gradient"
-import { Ionicons } from "@expo/vector-icons"
-import { SafeAreaView } from "react-native-safe-area-context"
-import { router } from "expo-router"
+} from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
+import { Ionicons } from "@expo/vector-icons";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { router } from "expo-router";
+import { useAuthStore } from "../utils/authStore";
 
 export default function SignUpPage() {
-  const [showPassword, setShowPassword] = useState(false)
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+  const { signUp } = useAuthStore();
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -27,26 +29,45 @@ export default function SignUpPage() {
     confirmPassword: "",
     agreeToTerms: false,
     subscribeNewsletter: true,
-  })
+  });
 
   const passwordRequirements = [
     { text: "At least 8 characters", met: formData.password.length >= 8 },
     { text: "Contains uppercase letter", met: /[A-Z]/.test(formData.password) },
     { text: "Contains lowercase letter", met: /[a-z]/.test(formData.password) },
     { text: "Contains number", met: /\d/.test(formData.password) },
-  ]
+  ];
 
   const updateFormData = (key, value) => {
-    setFormData((prev) => ({ ...prev, [key]: value }))
-  }
+    setFormData((prev) => ({ ...prev, [key]: value }));
+  };
+
+  const handleCreateAccount = async () => {
+    const newFormData = { ...formData };
+    console.log("Form data:", newFormData);
+    const { email, password, firstName, lastName } = newFormData;
+    try {
+      await signUp(email, password, firstName, lastName);
+    } catch (e) {
+      console.log("Error: ", e);
+    }
+    // Push him to the front page
+    // router.push("/");
+  };
 
   return (
     <SafeAreaView style={styles.container}>
-      <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={styles.keyboardView}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        style={styles.keyboardView}
+      >
         <ScrollView contentContainerStyle={styles.scrollContent}>
           {/* Header */}
           <View style={styles.header}>
-            <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+            <TouchableOpacity
+              style={styles.backButton}
+              onPress={() => router.back()}
+            >
               <Ionicons name="arrow-back" size={24} color="#6b7280" />
             </TouchableOpacity>
             <Text style={styles.headerTitle}>Join MomDaughts</Text>
@@ -56,7 +77,9 @@ export default function SignUpPage() {
           <View style={styles.formContainer}>
             <View style={styles.formHeader}>
               <Text style={styles.formTitle}>Create Account</Text>
-              <Text style={styles.formSubtitle}>Start your wellness journey with us</Text>
+              <Text style={styles.formSubtitle}>
+                Start your wellness journey with us
+              </Text>
             </View>
 
             <View style={styles.form}>
@@ -103,8 +126,15 @@ export default function SignUpPage() {
                     onChangeText={(value) => updateFormData("password", value)}
                     secureTextEntry={!showPassword}
                   />
-                  <TouchableOpacity style={styles.passwordToggle} onPress={() => setShowPassword(!showPassword)}>
-                    <Ionicons name={showPassword ? "eye-off" : "eye"} size={20} color="#9ca3af" />
+                  <TouchableOpacity
+                    style={styles.passwordToggle}
+                    onPress={() => setShowPassword(!showPassword)}
+                  >
+                    <Ionicons
+                      name={showPassword ? "eye-off" : "eye"}
+                      size={20}
+                      color="#9ca3af"
+                    />
                   </TouchableOpacity>
                 </View>
 
@@ -113,8 +143,17 @@ export default function SignUpPage() {
                   <View style={styles.passwordRequirements}>
                     {passwordRequirements.map((req, index) => (
                       <View key={index} style={styles.requirementItem}>
-                        <Ionicons name="checkmark" size={12} color={req.met ? "#10b981" : "#d1d5db"} />
-                        <Text style={[styles.requirementText, { color: req.met ? "#10b981" : "#6b7280" }]}>
+                        <Ionicons
+                          name="checkmark"
+                          size={12}
+                          color={req.met ? "#10b981" : "#d1d5db"}
+                        />
+                        <Text
+                          style={[
+                            styles.requirementText,
+                            { color: req.met ? "#10b981" : "#6b7280" },
+                          ]}
+                        >
                           {req.text}
                         </Text>
                       </View>
@@ -130,56 +169,99 @@ export default function SignUpPage() {
                     style={styles.passwordInput}
                     placeholder="Confirm your password"
                     value={formData.confirmPassword}
-                    onChangeText={(value) => updateFormData("confirmPassword", value)}
+                    onChangeText={(value) =>
+                      updateFormData("confirmPassword", value)
+                    }
                     secureTextEntry={!showConfirmPassword}
                   />
                   <TouchableOpacity
                     style={styles.passwordToggle}
                     onPress={() => setShowConfirmPassword(!showConfirmPassword)}
                   >
-                    <Ionicons name={showConfirmPassword ? "eye-off" : "eye"} size={20} color="#9ca3af" />
+                    <Ionicons
+                      name={showConfirmPassword ? "eye-off" : "eye"}
+                      size={20}
+                      color="#9ca3af"
+                    />
                   </TouchableOpacity>
                 </View>
-                {formData.confirmPassword && formData.password !== formData.confirmPassword && (
-                  <Text style={styles.errorText}>Passwords do not match</Text>
-                )}
+                {formData.confirmPassword &&
+                  formData.password !== formData.confirmPassword && (
+                    <Text style={styles.errorText}>Passwords do not match</Text>
+                  )}
               </View>
 
               <View style={styles.checkboxGroup}>
                 <TouchableOpacity
                   style={styles.checkboxItem}
-                  onPress={() => updateFormData("agreeToTerms", !formData.agreeToTerms)}
+                  onPress={() =>
+                    updateFormData("agreeToTerms", !formData.agreeToTerms)
+                  }
                 >
-                  <View style={[styles.checkbox, formData.agreeToTerms && styles.checkboxChecked]}>
-                    {formData.agreeToTerms && <Ionicons name="checkmark" size={12} color="white" />}
+                  <View
+                    style={[
+                      styles.checkbox,
+                      formData.agreeToTerms && styles.checkboxChecked,
+                    ]}
+                  >
+                    {formData.agreeToTerms && (
+                      <Ionicons name="checkmark" size={12} color="white" />
+                    )}
                   </View>
                   <Text style={styles.checkboxText}>
-                    I agree to the <Text style={styles.linkText}>Terms of Service</Text> and{" "}
+                    I agree to the{" "}
+                    <Text style={styles.linkText}>Terms of Service</Text> and{" "}
                     <Text style={styles.linkText}>Privacy Policy</Text>
                   </Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity
                   style={styles.checkboxItem}
-                  onPress={() => updateFormData("subscribeNewsletter", !formData.subscribeNewsletter)}
+                  onPress={() =>
+                    updateFormData(
+                      "subscribeNewsletter",
+                      !formData.subscribeNewsletter
+                    )
+                  }
                 >
-                  <View style={[styles.checkbox, formData.subscribeNewsletter && styles.checkboxChecked]}>
-                    {formData.subscribeNewsletter && <Ionicons name="checkmark" size={12} color="white" />}
+                  <View
+                    style={[
+                      styles.checkbox,
+                      formData.subscribeNewsletter && styles.checkboxChecked,
+                    ]}
+                  >
+                    {formData.subscribeNewsletter && (
+                      <Ionicons name="checkmark" size={12} color="white" />
+                    )}
                   </View>
-                  <Text style={styles.checkboxText}>Subscribe to wellness tips and product updates</Text>
+                  <Text style={styles.checkboxText}>
+                    Subscribe to wellness tips and product updates
+                  </Text>
                 </TouchableOpacity>
               </View>
 
               <TouchableOpacity
                 style={[
                   styles.createAccountButton,
-                  (!formData.agreeToTerms || formData.password !== formData.confirmPassword) &&
+                  (!formData.agreeToTerms ||
+                    formData.password !== formData.confirmPassword) &&
                     styles.createAccountButtonDisabled,
                 ]}
-                disabled={!formData.agreeToTerms || formData.password !== formData.confirmPassword}
+                disabled={
+                  !formData.agreeToTerms ||
+                  formData.password !== formData.confirmPassword
+                }
               >
-                <LinearGradient colors={["#ec4899", "#8b5cf6"]} style={styles.createAccountGradient}>
-                  <Text style={styles.createAccountText}>Create Account</Text>
+                <LinearGradient
+                  colors={["#ec4899", "#8b5cf6"]}
+                  style={styles.createAccountGradient}
+                >
+                  <Text
+                    onPress={() => handleCreateAccount()}
+                    style={styles.createAccountText}
+                  >
+                    Create Account
+                  </Text>
                 </LinearGradient>
               </TouchableOpacity>
 
@@ -196,7 +278,7 @@ export default function SignUpPage() {
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
-  )
+  );
 }
 
 const styles = StyleSheet.create({
@@ -368,4 +450,4 @@ const styles = StyleSheet.create({
     color: "#ec4899",
     fontWeight: "600",
   },
-})
+});

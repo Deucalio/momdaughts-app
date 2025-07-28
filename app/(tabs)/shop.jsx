@@ -18,6 +18,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
+import { useAuthenticatedFetch } from "../utils/authStore";
 
 const { width } = Dimensions.get("window");
 
@@ -28,46 +29,79 @@ export default function ShopPage() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState(null);
+  const { authenticatedFetch } = useAuthenticatedFetch();
 
   // Helper function to infer category from product title
   const inferCategoryFromTitle = (title) => {
     const titleLower = title.toLowerCase();
-    if (titleLower.includes('pad') || titleLower.includes('menstrual') || titleLower.includes('cup')) return 'menstrual cups';
-    if (titleLower.includes('wellness') || titleLower.includes('tea') || titleLower.includes('relief') || titleLower.includes('pain')) return 'wellness';
-    if (titleLower.includes('supplement') || titleLower.includes('vitamin') || titleLower.includes('iron') || titleLower.includes('calcium')) return 'supplements';
-    if (titleLower.includes('wash') || titleLower.includes('cream') || titleLower.includes('skincare') || titleLower.includes('intimate')) return 'skincare';
-    return 'wellness'; // Default category
+    if (
+      titleLower.includes("pad") ||
+      titleLower.includes("menstrual") ||
+      titleLower.includes("cup")
+    )
+      return "menstrual cups";
+    if (
+      titleLower.includes("wellness") ||
+      titleLower.includes("tea") ||
+      titleLower.includes("relief") ||
+      titleLower.includes("pain")
+    )
+      return "wellness";
+    if (
+      titleLower.includes("supplement") ||
+      titleLower.includes("vitamin") ||
+      titleLower.includes("iron") ||
+      titleLower.includes("calcium")
+    )
+      return "supplements";
+    if (
+      titleLower.includes("wash") ||
+      titleLower.includes("cream") ||
+      titleLower.includes("skincare") ||
+      titleLower.includes("intimate")
+    )
+      return "skincare";
+    return "wellness"; // Default category
   };
 
   // Helper function to determine if product has discount
   const hasDiscount = (variants) => {
-    return variants?.some(variant => variant.compareAtPrice && parseFloat(variant.compareAtPrice) > parseFloat(variant.price));
+    return variants?.some(
+      (variant) =>
+        variant.compareAtPrice &&
+        parseFloat(variant.compareAtPrice) > parseFloat(variant.price)
+    );
   };
 
   // Helper function to get badge for product
   const getProductBadge = (product) => {
-    if (hasDiscount(product.variants)) return 'Sale';
-    if (product.tags?.includes('new')) return 'New';
-    if (product.tags?.includes('bestseller')) return 'Best Seller';
-    if (product.tags?.includes('trending')) return 'Trending';
+    if (hasDiscount(product.variants)) return "Sale";
+    if (product.tags?.includes("new")) return "New";
+    if (product.tags?.includes("bestseller")) return "Best Seller";
+    if (product.tags?.includes("trending")) return "Trending";
     return null;
   };
 
   const fetchProducts = async (isRefresh = false) => {
+    const startTime = performance.now();
     try {
       if (!isRefresh) {
         setLoading(true);
       }
       setError(null);
 
-      const response = await fetch("/api/products");
-      
+      const response = await authenticatedFetch(
+        "http://192.168.18.5:3000/products"
+      );
+
       if (!response.ok) {
-        throw new Error(`Failed to fetch products: ${response.status} ${response.statusText}`);
+        throw new Error(
+          `Failed to fetch products: ${response.status} ${response.statusText}`
+        );
       }
 
       const data = await response.json();
-      
+
       if (!data || !Array.isArray(data.products)) {
         throw new Error("Invalid response format - expected products array");
       }
@@ -81,6 +115,9 @@ export default function ShopPage() {
       if (isRefresh) {
         setRefreshing(false);
       }
+      const endTime = performance.now();
+      const timeInSeconds = (endTime - startTime) / 1000;
+      console.log(`Fetch took ${timeInSeconds} ms`);
     }
   };
 
@@ -99,7 +136,11 @@ export default function ShopPage() {
 
   const categories = [
     { id: "all", label: "All", colors: ["#6b7280", "#4b5563"] },
-    { id: "menstrualcups", label: "Menstrual Cups", colors: ["#ec4899", "#f43f5e"] },
+    {
+      id: "menstrualcups",
+      label: "Menstrual Cups",
+      colors: ["#ec4899", "#f43f5e"],
+    },
     { id: "wellness", label: "Wellness", colors: ["#10b981", "#059669"] },
     { id: "supplements", label: "Supplements", colors: ["#8b5cf6", "#7c3aed"] },
     { id: "skincare", label: "Skincare", colors: ["#3b82f6", "#06b6d4"] },
@@ -115,17 +156,21 @@ export default function ShopPage() {
       id: product.id,
       name: product.title,
       price: price,
-      originalPrice: compareAtPrice && compareAtPrice > price ? compareAtPrice : null,
+      originalPrice:
+        compareAtPrice && compareAtPrice > price ? compareAtPrice : null,
       category: inferCategoryFromTitle(product.title),
       rating: 4.5, // Default rating - replace with actual metafield data if available
       reviews: Math.floor(Math.random() * 200) + 50, // Random reviews - replace with actual data
       badge: getProductBadge(product),
-      inStock: product.variants?.some(variant => variant.availableForSale !== false) ?? true,
+      inStock:
+        product.variants?.some(
+          (variant) => variant.availableForSale !== false
+        ) ?? true,
       image: product.images?.[0]?.originalSrc || null,
       description: product.description,
       handle: product.handle,
       variants: product.variants,
-      tags: product.tags || []
+      tags: product.tags || [],
     };
   });
 
@@ -146,15 +191,17 @@ export default function ShopPage() {
       <View style={styles.productImage}>
         <Image
           source={{
-            uri: item.image || `https://via.placeholder.com/300x200/f3f4f6/9ca3af?text=No+Image`,
+            uri:
+              item.image ||
+              `https://via.placeholder.com/300x200/f3f4f6/9ca3af?text=No+Image`,
           }}
           style={styles.productImage}
-          defaultSource={{ 
-            uri: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==' 
+          defaultSource={{
+            uri: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==",
           }}
           onError={() => {
             // Handle image load error
-            console.log('Failed to load product image for:', item.name);
+            console.log("Failed to load product image for:", item.name);
           }}
         />
         {item.badge && (
@@ -366,9 +413,7 @@ export default function ShopPage() {
       </View>
 
       {/* Products Section */}
-      <View style={styles.productsSection}>
-        {renderContent()}
-      </View>
+      <View style={styles.productsSection}>{renderContent()}</View>
     </SafeAreaView>
   );
 }
