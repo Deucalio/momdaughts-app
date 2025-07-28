@@ -117,7 +117,7 @@ export default function ShopPage() {
       }
       const endTime = performance.now();
       const timeInSeconds = (endTime - startTime) / 1000;
-      console.log(`Fetch took ${timeInSeconds} ms`);
+      console.log(`Fetch took ${timeInSeconds} seconds`);
     }
   };
 
