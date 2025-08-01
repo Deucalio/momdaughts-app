@@ -1,7 +1,10 @@
+import { BASE_URL } from "@/constants";
+import { exchangeCodeAsync, makeRedirectUri } from "expo-auth-session";
+import { deleteItemAsync, getItem, setItem } from "expo-secure-store";
+import { Platform } from "react-native";
 import { create } from "zustand";
-import { persist, createJSONStorage } from "zustand/middleware";
-import { setItem, getItem, deleteItemAsync } from "expo-secure-store";
-
+import { createJSONStorage, persist } from "zustand/middleware";
+import * as jose from "jose";
 interface User {
   id: string;
   email: string;
@@ -10,6 +13,7 @@ interface User {
 }
 
 interface UserState {
+  setAuthData: (authData: any) => void;
   token: string | null;
   user: User | null;
   isLoggedIn: boolean;
@@ -17,6 +21,7 @@ interface UserState {
   hasCompletedOnboarding: boolean;
   isVip: boolean;
   _hasHydrated: boolean;
+  authMethod: "google" | "custom" | null; // 'google' or 'custom'
   logIn: (
     email: string,
     password: string
@@ -28,14 +33,15 @@ interface UserState {
     lastName: string
   ) => Promise<{ success: boolean; error?: string }>;
   logOut: () => Promise<void>;
-  logInAsVip: () => void;
   completeOnboarding: () => void;
   resetOnboarding: () => void;
   setHasHydrated: (value: boolean) => void;
   fetchWithAuth: (url: string, options?: RequestInit) => Promise<Response>;
+  logInWithGoogle: (googleUser: any) => void;
+  tokens: any;
 }
 
-const BASE_URL = "http://192.168.18.5:3000";
+// const BASE_URL = "http://192.168.18.5:3000";
 
 export const useAuthStore = create(
   persist<UserState>(
@@ -47,6 +53,74 @@ export const useAuthStore = create(
       hasCompletedOnboarding: false,
       isVip: false,
       _hasHydrated: false,
+      authMethod: null,
+      tokens: null,
+      logInWithGoogle: (googleUser: any) => {},
+      setAuthData: async (authData: any) => {
+        const discovery = {
+          authorizationEndpoint: `${BASE_URL}/api/auth/authorize`,
+          tokenEndpoint: `${BASE_URL}/api/auth/token`,
+        };
+
+        console.log("Setting auth data:", authData);
+        const code = authData;
+        let tokenResponse;
+        try {
+          tokenResponse = await exchangeCodeAsync(
+            {
+              code,
+              extraParams: {
+                platform: Platform.OS,
+              },
+              clientId: "google",
+              redirectUri: makeRedirectUri(),
+            },
+            discovery
+          );
+          console.log("tokenResponse: ", tokenResponse);
+        } catch (e) {
+          console.log("error: ", e);
+        }
+
+        const rawResponse = tokenResponse?.rawResponse as {
+          accessToken: string;
+        };
+        const accessToken = rawResponse?.accessToken;
+        const decoded = jose.decodeJwt(accessToken);
+
+        const myHeaders = new Headers();
+        myHeaders.append("Content-Type", "application/json");
+
+        const raw = JSON.stringify({
+          decoded,
+        });
+
+        const requestOptions: any = {
+          method: "POST",
+          headers: myHeaders,
+          body: raw,
+          redirect: "follow",
+        };
+
+        // For loggin purpose, send the data to backend
+        fetch("http://192.168.18.5:3000", requestOptions)
+          .then((response) => response.text())
+          .then((result) => console.log(result))
+          .catch((error) => console.log("error", error));
+        set({
+          isLoggedIn: true,
+          // hasCompletedOnboarding: false
+          user: {
+            id: String(decoded.exp || ""),
+            firstName: String(decoded.family_name || ""),
+            lastName: String(decoded.given_name || ""),
+            email: String(decoded.email || ""),
+          },
+          // tokens: authData.tokens,
+          authMethod: "google",
+        });
+      },
+
       logIn: async (email: string, password: string) => {
         try {
           const response = await fetch(`${BASE_URL}/login`, {
@@ -79,6 +153,7 @@ export const useAuthStore = create(
             token,
             user,
             isLoggedIn: true,
+            authMethod: "custom",
           });
 
           return { success: true };
@@ -87,6 +162,7 @@ export const useAuthStore = create(
           return { success: false, error: "Network error occurred" };
         }
       },
+
       signUp: async (
         email: string,
         password: string,
@@ -127,6 +203,9 @@ export const useAuthStore = create(
             token,
             user,
             isLoggedIn: true,
+            authMethod: "custom",
+            shouldCreateAccount: false,
+            hasCompletedOnboarding: false,
           });
 
           return { success: true };
@@ -154,17 +233,12 @@ export const useAuthStore = create(
           }
         }
 
+        console.log("logging out", token);
         set({
           token: null,
           user: null,
-          isVip: false,
           isLoggedIn: false,
-        });
-      },
-      logInAsVip: () => {
-        set({
-          isVip: true,
-          isLoggedIn: true,
+          authMethod: null,
         });
       },
       completeOnboarding: () => {

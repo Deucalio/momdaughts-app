@@ -1,23 +1,22 @@
 "use client";
 
+import { Ionicons } from "@expo/vector-icons";
+import { LinearGradient } from "expo-linear-gradient";
+import { router } from "expo-router";
 import { useEffect, useState } from "react";
 import {
-  View,
-  Text,
+  Dimensions,
+  FlatList,
+  Image,
+  RefreshControl,
   ScrollView,
   StyleSheet,
-  TouchableOpacity,
+  Text,
   TextInput,
-  FlatList,
-  Dimensions,
-  Image,
-  ActivityIndicator,
-  RefreshControl,
+  TouchableOpacity,
+  View,
 } from "react-native";
-import { LinearGradient } from "expo-linear-gradient";
-import { Ionicons } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { router } from "expo-router";
 import { useAuthenticatedFetch } from "../utils/authStore";
 
 const { width } = Dimensions.get("window");

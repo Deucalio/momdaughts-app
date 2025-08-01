@@ -15,10 +15,11 @@ import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
-import { useAuthStore } from "../utils/authStore";
+// import { useAuthStore } from "../utils/authStore";
+import { signUpWithCustom } from "../utils/auth";
 
 export default function SignUpPage() {
-  const { signUp } = useAuthStore();
+  // const { signUp } = useAuthStore();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [formData, setFormData] = useState({
@@ -47,7 +48,7 @@ export default function SignUpPage() {
     console.log("Form data:", newFormData);
     const { email, password, firstName, lastName } = newFormData;
     try {
-      await signUp(email, password, firstName, lastName);
+      await signUpWithCustom(email, password, firstName, lastName);
     } catch (e) {
       console.log("Error: ", e);
     }

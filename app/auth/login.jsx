@@ -16,14 +16,15 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useAuthStore } from "../utils/authStore";
+// import { useAuthStore } from "../utils/authStore";
+import { signInWithCustom } from "../utils/auth";
+import GoogleAuthComponent from "../../components/GoogleAuthComponent";
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
-  const { logIn } = useAuthStore();
 
   return (
     <SafeAreaView style={styles.container}>
@@ -117,7 +118,7 @@ export default function LoginPage() {
                 >
                   <Text
                     onPress={() => {
-                      logIn(email, password);
+                      signInWithCustom(email, password);
                     }}
                     style={styles.signInText}
                   >
@@ -133,10 +134,8 @@ export default function LoginPage() {
               </View>
 
               <View style={styles.socialButtons}>
-                <TouchableOpacity style={styles.socialButton}>
-                  <Ionicons name="logo-google" size={20} color="#4285f4" />
-                  <Text style={styles.socialButtonText}>Google</Text>
-                </TouchableOpacity>
+                <GoogleAuthComponent />
+
                 <TouchableOpacity style={styles.socialButton}>
                   <Ionicons name="logo-facebook" size={20} color="#1877f2" />
                   <Text style={styles.socialButtonText}>Facebook</Text>

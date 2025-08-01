@@ -22,10 +22,14 @@ import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useAuthStore } from "../utils/authStore";
+import { logOut } from "../utils/auth";
 
 const { width } = Dimensions.get("window");
 
 export default function HomePage() {
+  const user = useAuthStore((state) => state.user);
+
+  console.log("User:", user);
   const [currentCycle] = useState({
     dayOfCycle: 12,
     nextPeriod: "March 15, 2024",
@@ -110,8 +114,6 @@ export default function HomePage() {
     },
   ];
 
-  const { logOut, resetOnboarding } = useAuthStore();
-
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView showsVerticalScrollIndicator={false}>
@@ -127,7 +129,7 @@ export default function HomePage() {
               </LinearGradient>
               <Text
                 onPress={() => {
-                  resetOnboarding();
+                  // resetOnboarding();
                   logOut();
                 }}
                 style={styles.logoTitle}
@@ -156,21 +158,7 @@ export default function HomePage() {
         >
           <View style={styles.heroContent}>
             <Text style={styles.heroTitle}>
-              <Text
-                onPress={async () => {
-                  //
-                  try {
-                    const r = await fetch("http://192.168.18.5:3000/sessions");
-                    const data = await r.json();
-                    console.log("Got Sessions: ", data);
-                  } catch (e) {
-                    console.log("Session Error: ", e);
-                  }
-                }}
-                style={styles.heroTitleGradient}
-              >
-                Your Wellness
-              </Text>
+              <Text style={styles.heroTitleGradient}>Your {user.email}</Text>
               {"\n"}Journey Starts Here
             </Text>
             <Text style={styles.heroSubtitle}>

@@ -1,21 +1,22 @@
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
+import { useEffect } from "react";
+import { Linking, Platform } from "react-native";
 import "../web-nanoid-polyfill";
-// const isLoggedIn = false;
-// const shouldCreateAccount = false; // This can be used to conditionally render the signup screen
 import { useAuthStore } from "./utils/authStore";
+import { exchangeCodeAsync, makeRedirectUri } from "expo-auth-session";
+import { BASE_URL } from "../constants";
 
 export default function RootLayout() {
-  const { isLoggedIn, shouldCreateAccount, hasCompletedOnboarding } =
-    useAuthStore();
+  const { isLoggedIn, hasCompletedOnboarding, setAuthData } = useAuthStore(); // Add setAuthData method
 
   console.log({
     isLoggedIn,
     hasCompletedOnboarding,
   });
+
   return (
     <>
-      {/* If the guard is true, that means the user can see the screen */}
       <StatusBar style="auto" />
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Protected guard={isLoggedIn && hasCompletedOnboarding}>
