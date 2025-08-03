@@ -5,20 +5,22 @@ import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
 import {
-  Dimensions,
-  FlatList,
-  Image,
-  RefreshControl,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
+    Dimensions,
+    FlatList,
+    Image,
+    RefreshControl,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import Navigation from "../../components/Navigation";
 import { useAuthenticatedFetch } from "../utils/authStore";
 
+const BACKEND_URL = "http://192.168.18.5:3000";
 const { width } = Dimensions.get("window");
 
 export default function ShopPage() {
@@ -28,9 +30,9 @@ export default function ShopPage() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState(null);
+  const [cartCount, setCartCount] = useState(3); // Mock cart count
   const { authenticatedFetch } = useAuthenticatedFetch();
 
-  // Helper function to infer category from product title
   const inferCategoryFromTitle = (title) => {
     const titleLower = title.toLowerCase();
     if (
@@ -38,32 +40,24 @@ export default function ShopPage() {
       titleLower.includes("menstrual") ||
       titleLower.includes("cup")
     )
-      return "menstrual cups";
+      return "menstrual";
     if (
       titleLower.includes("wellness") ||
       titleLower.includes("tea") ||
-      titleLower.includes("relief") ||
-      titleLower.includes("pain")
+      titleLower.includes("relief")
     )
       return "wellness";
-    if (
-      titleLower.includes("supplement") ||
-      titleLower.includes("vitamin") ||
-      titleLower.includes("iron") ||
-      titleLower.includes("calcium")
-    )
+    if (titleLower.includes("supplement") || titleLower.includes("vitamin"))
       return "supplements";
     if (
       titleLower.includes("wash") ||
       titleLower.includes("cream") ||
-      titleLower.includes("skincare") ||
-      titleLower.includes("intimate")
+      titleLower.includes("skincare")
     )
       return "skincare";
-    return "wellness"; // Default category
+    return "wellness";
   };
 
-  // Helper function to determine if product has discount
   const hasDiscount = (variants) => {
     return variants?.some(
       (variant) =>
@@ -72,37 +66,26 @@ export default function ShopPage() {
     );
   };
 
-  // Helper function to get badge for product
   const getProductBadge = (product) => {
     if (hasDiscount(product.variants)) return "Sale";
     if (product.tags?.includes("new")) return "New";
     if (product.tags?.includes("bestseller")) return "Best Seller";
-    if (product.tags?.includes("trending")) return "Trending";
     return null;
   };
 
   const fetchProducts = async (isRefresh = false) => {
-    const startTime = performance.now();
     try {
-      if (!isRefresh) {
-        setLoading(true);
-      }
+      if (!isRefresh) setLoading(true);
       setError(null);
 
-      const response = await authenticatedFetch(
-        "http://192.168.18.5:3000/products"
-      );
-
+      const response = await authenticatedFetch(`${BACKEND_URL}/products`);
       if (!response.ok) {
-        throw new Error(
-          `Failed to fetch products: ${response.status} ${response.statusText}`
-        );
+        throw new Error(`Failed to fetch products: ${response.status}`);
       }
 
       const data = await response.json();
-
       if (!data || !Array.isArray(data.products)) {
-        throw new Error("Invalid response format - expected products array");
+        throw new Error("Invalid response format");
       }
 
       setProducts(data.products || []);
@@ -111,12 +94,7 @@ export default function ShopPage() {
       setError(error.message || "Failed to load products");
     } finally {
       setLoading(false);
-      if (isRefresh) {
-        setRefreshing(false);
-      }
-      const endTime = performance.now();
-      const timeInSeconds = (endTime - startTime) / 1000;
-      console.log(`Fetch took ${timeInSeconds} seconds`);
+      if (isRefresh) setRefreshing(false);
     }
   };
 
@@ -129,37 +107,34 @@ export default function ShopPage() {
     await fetchProducts(true);
   };
 
-  const handleRetry = () => {
-    fetchProducts();
-  };
-
   const categories = [
-    { id: "all", label: "All", colors: ["#6b7280", "#4b5563"] },
+    { id: "all", label: "All", colors: ["#2b2b6b", "#040707"] },
     {
-      id: "menstrualcups",
-      label: "Menstrual Cups",
-      colors: ["#ec4899", "#f43f5e"],
+      id: "menstrual",
+      label: "Menstrual Care",
+      colors: ["#eb9fc1", "#f5b8d0"],
     },
-    { id: "wellness", label: "Wellness", colors: ["#10b981", "#059669"] },
-    { id: "supplements", label: "Supplements", colors: ["#8b5cf6", "#7c3aed"] },
-    { id: "skincare", label: "Skincare", colors: ["#3b82f6", "#06b6d4"] },
+    { id: "wellness", label: "Wellness", colors: ["#e2c6df", "#f5b8d0"] },
+    { id: "supplements", label: "Supplements", colors: ["#2b2b6b", "#e2c6df"] },
+    { id: "skincare", label: "Skincare", colors: ["#eb9fc1", "#e2c6df"] },
   ];
 
-  // Transform Shopify products to match our UI structure
   const transformedProducts = products.map((product) => {
     const firstVariant = product.variants?.[0];
     const price = firstVariant?.price || "0.00";
     const compareAtPrice = firstVariant?.compareAtPrice || null;
 
     return {
-      id: product.id,
+      id: product.id.split("/").pop(),
       name: product.title,
-      price: price,
+      price: `Rs. ${price}`,
       originalPrice:
-        compareAtPrice && compareAtPrice > price ? compareAtPrice : null,
+        compareAtPrice && compareAtPrice > price
+          ? `Rs. ${compareAtPrice}`
+          : null,
       category: inferCategoryFromTitle(product.title),
-      rating: 4.5, // Default rating - replace with actual metafield data if available
-      reviews: Math.floor(Math.random() * 200) + 50, // Random reviews - replace with actual data
+      rating: 4.5,
+      reviews: Math.floor(Math.random() * 200) + 50,
       badge: getProductBadge(product),
       inStock:
         product.variants?.some(
@@ -185,31 +160,27 @@ export default function ShopPage() {
   const renderProduct = ({ item }) => (
     <TouchableOpacity
       style={styles.productCard}
-      onPress={() => router.push(`/products/${1}`)}
+      onPress={() => router.push(`/products/${item.id}`)}
     >
-      <View style={styles.productImage}>
+      <View style={styles.productImageContainer}>
         <Image
           source={{
             uri:
               item.image ||
-              `https://via.placeholder.com/300x200/f3f4f6/9ca3af?text=No+Image`,
+              `https://via.placeholder.com/300x200/f5b8d0/2b2b6b?text=No+Image`,
           }}
           style={styles.productImage}
-          defaultSource={{
-            uri: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==",
-          }}
-          onError={() => {
-            // Handle image load error
-            console.log("Failed to load product image for:", item.name);
-          }}
         />
         {item.badge && (
-          <View style={styles.productBadge}>
+          <LinearGradient
+            colors={["#eb9fc1", "#f5b8d0"]}
+            style={styles.productBadge}
+          >
             <Text style={styles.productBadgeText}>{item.badge}</Text>
-          </View>
+          </LinearGradient>
         )}
         <TouchableOpacity style={styles.favoriteButton}>
-          <Ionicons name="heart-outline" size={16} color="#6b7280" />
+          <Ionicons name="heart-outline" size={16} color="#2b2b6b" />
         </TouchableOpacity>
       </View>
 
@@ -219,9 +190,9 @@ export default function ShopPage() {
         </Text>
 
         <View style={styles.productRating}>
-          <Ionicons name="star" size={12} color="#fbbf24" />
+          <Ionicons name="star" size={12} color="#eb9fc1" />
           <Text style={styles.ratingText}>
-            {item.rating} ({item.reviews} reviews)
+            {item.rating} ({item.reviews})
           </Text>
         </View>
 
@@ -232,11 +203,6 @@ export default function ShopPage() {
               <Text style={styles.originalPrice}>{item.originalPrice}</Text>
             )}
           </View>
-          {!item.inStock && (
-            <View style={styles.outOfStockBadge}>
-              <Text style={styles.outOfStockText}>Out of Stock</Text>
-            </View>
-          )}
         </View>
 
         <TouchableOpacity
@@ -246,14 +212,21 @@ export default function ShopPage() {
           ]}
           disabled={!item.inStock}
         >
-          <Text
-            style={[
-              styles.addToCartText,
-              !item.inStock && styles.addToCartTextDisabled,
-            ]}
+          <LinearGradient
+            colors={
+              item.inStock ? ["#2b2b6b", "#040707"] : ["#e2c6df", "#f5b8d0"]
+            }
+            style={styles.addToCartGradient}
           >
-            {item.inStock ? "Add to Cart" : "Notify Me"}
-          </Text>
+            <Text
+              style={[
+                styles.addToCartText,
+                !item.inStock && styles.addToCartTextDisabled,
+              ]}
+            >
+              {item.inStock ? "Add to Cart" : "Out of Stock"}
+            </Text>
+          </LinearGradient>
         </TouchableOpacity>
       </View>
     </TouchableOpacity>
@@ -272,42 +245,39 @@ export default function ShopPage() {
     </View>
   );
 
-  const renderErrorState = () => (
-    <View style={styles.errorState}>
-      <View style={styles.errorIcon}>
-        <Ionicons name="alert-circle" size={32} color="#ef4444" />
-      </View>
-      <Text style={styles.errorTitle}>Oops! Something went wrong</Text>
-      <Text style={styles.errorSubtitle}>{error}</Text>
-      <TouchableOpacity style={styles.retryButton} onPress={handleRetry}>
-        <Text style={styles.retryButtonText}>Try Again</Text>
-      </TouchableOpacity>
-    </View>
-  );
-
-  const renderEmptyState = () => (
-    <View style={styles.emptyState}>
-      <View style={styles.emptyIcon}>
-        <Ionicons name="search" size={32} color="#9ca3af" />
-      </View>
-      <Text style={styles.emptyTitle}>No products found</Text>
-      <Text style={styles.emptySubtitle}>
-        Try adjusting your search or filter criteria.
-      </Text>
-    </View>
-  );
-
   const renderContent = () => {
-    if (loading && !refreshing) {
-      return renderLoadingSkeleton();
-    }
-
+    if (loading && !refreshing) return renderLoadingSkeleton();
     if (error && !refreshing) {
-      return renderErrorState();
+      return (
+        <View style={styles.errorState}>
+          <Ionicons name="alert-circle" size={48} color="#eb9fc1" />
+          <Text style={styles.errorTitle}>Something went wrong</Text>
+          <Text style={styles.errorSubtitle}>{error}</Text>
+          <TouchableOpacity
+            style={styles.retryButton}
+            onPress={() => fetchProducts()}
+          >
+            <LinearGradient
+              colors={["#2b2b6b", "#040707"]}
+              style={styles.retryGradient}
+            >
+              <Text style={styles.retryButtonText}>Try Again</Text>
+            </LinearGradient>
+          </TouchableOpacity>
+        </View>
+      );
     }
 
     if (filteredProducts.length === 0 && !loading) {
-      return renderEmptyState();
+      return (
+        <View style={styles.emptyState}>
+          <Ionicons name="search" size={48} color="#e2c6df" />
+          <Text style={styles.emptyTitle}>No products found</Text>
+          <Text style={styles.emptySubtitle}>
+            Try adjusting your search or filter criteria.
+          </Text>
+        </View>
+      );
     }
 
     return (
@@ -323,8 +293,8 @@ export default function ShopPage() {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={handleRefresh}
-            colors={["#ec4899"]}
-            tintColor="#ec4899"
+            colors={["#eb9fc1"]}
+            tintColor="#eb9fc1"
           />
         }
       />
@@ -335,14 +305,13 @@ export default function ShopPage() {
     <SafeAreaView style={styles.container}>
       {/* Header */}
       <LinearGradient
-        colors={["#ecfdf5", "#d1fae5", "#a7f3d0"]}
+        colors={["#f5b8d0", "#e2c6df"]}
         style={styles.heroSection}
       >
         <View style={styles.heroContent}>
           <Text style={styles.heroTitle}>Wellness Shop</Text>
           <Text style={styles.heroSubtitle}>
-            Discover premium products designed for your wellness journey. From
-            organic period care to health supplements.
+            Discover premium products designed for your wellness journey
           </Text>
         </View>
       </LinearGradient>
@@ -354,25 +323,31 @@ export default function ShopPage() {
             <Ionicons
               name="search"
               size={20}
-              color="#6b7280"
+              color="#2b2b6b"
               style={styles.searchIcon}
             />
             <TextInput
               style={styles.searchInput}
               placeholder="Search products..."
+              placeholderTextColor="#e2c6df"
               value={searchQuery}
               onChangeText={setSearchQuery}
               editable={!loading}
             />
           </View>
           <TouchableOpacity style={styles.filterButton} disabled={loading}>
-            <Ionicons name="options" size={20} color="#6b7280" />
+            <Ionicons name="options" size={20} color="#2b2b6b" />
           </TouchableOpacity>
-          <TouchableOpacity style={styles.cartButton}>
-            <Ionicons name="bag" size={20} color="#6b7280" />
-            <View style={styles.cartBadge}>
-              <Text style={styles.cartBadgeText}>3</Text>
-            </View>
+          <TouchableOpacity
+            style={styles.cartButton}
+            onPress={() => router.push("/cart/cart")}
+          >
+            <Ionicons name="bag" size={20} color="#2b2b6b" />
+            {cartCount > 0 && (
+              <View style={styles.cartBadge}>
+                <Text style={styles.cartBadgeText}>{cartCount}</Text>
+              </View>
+            )}
           </TouchableOpacity>
         </View>
 
@@ -413,6 +388,9 @@ export default function ShopPage() {
 
       {/* Products Section */}
       <View style={styles.productsSection}>{renderContent()}</View>
+
+      {/* Navigation */}
+      <Navigation currentRoute="shop" cartCount={cartCount} />
     </SafeAreaView>
   );
 }
@@ -423,8 +401,10 @@ const styles = StyleSheet.create({
     backgroundColor: "#ffffff",
   },
   heroSection: {
-    paddingHorizontal: 16,
-    paddingVertical: 32,
+    paddingHorizontal: 20,
+    paddingVertical: 24,
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
   },
   heroContent: {
     alignItems: "center",
@@ -432,18 +412,19 @@ const styles = StyleSheet.create({
   heroTitle: {
     fontSize: 28,
     fontWeight: "bold",
-    color: "#059669",
+    color: "#2b2b6b",
     marginBottom: 8,
   },
   heroSubtitle: {
     fontSize: 16,
-    color: "#6b7280",
+    color: "#040707",
     textAlign: "center",
     lineHeight: 24,
   },
   searchSection: {
     paddingHorizontal: 16,
     paddingVertical: 16,
+    backgroundColor: "#ffffff",
   },
   searchContainer: {
     flexDirection: "row",
@@ -454,9 +435,10 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#f9fafb",
+    backgroundColor: "#f5b8d0",
     borderRadius: 12,
     paddingHorizontal: 12,
+    opacity: 0.3,
   },
   searchIcon: {
     marginRight: 8,
@@ -465,36 +447,36 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: 12,
     fontSize: 16,
-    color: "#1f2937",
+    color: "#2b2b6b",
   },
   filterButton: {
-    backgroundColor: "#f9fafb",
+    backgroundColor: "#f5b8d0",
     borderRadius: 12,
     padding: 12,
-    borderWidth: 1,
-    borderColor: "#e5e7eb",
+    opacity: 0.3,
   },
   cartButton: {
-    backgroundColor: "#f9fafb",
+    backgroundColor: "#f5b8d0",
     borderRadius: 12,
     padding: 12,
-    borderWidth: 1,
-    borderColor: "#e5e7eb",
     position: "relative",
+    opacity: 0.3,
   },
   cartBadge: {
     position: "absolute",
     top: -4,
     right: -4,
-    backgroundColor: "#ec4899",
+    backgroundColor: "#eb9fc1",
     borderRadius: 10,
-    width: 20,
+    minWidth: 20,
     height: 20,
     justifyContent: "center",
     alignItems: "center",
+    borderWidth: 2,
+    borderColor: "#ffffff",
   },
   cartBadgeText: {
-    color: "white",
+    color: "#ffffff",
     fontSize: 10,
     fontWeight: "bold",
   },
@@ -518,15 +500,15 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     backgroundColor: "transparent",
     borderWidth: 1,
-    borderColor: "#e5e7eb",
+    borderColor: "#e2c6df",
   },
   categoryTextActive: {
-    color: "white",
+    color: "#ffffff",
     fontSize: 14,
     fontWeight: "600",
   },
   categoryTextInactive: {
-    color: "#6b7280",
+    color: "#2b2b6b",
     fontSize: 14,
     fontWeight: "600",
   },
@@ -546,30 +528,36 @@ const styles = StyleSheet.create({
     backgroundColor: "#ffffff",
     borderRadius: 16,
     padding: 12,
-    shadowColor: "#000",
+    shadowColor: "#2b2b6b",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    shadowRadius: 8,
+    elevation: 4,
+    borderWidth: 1,
+    borderColor: "#f5b8d0",
   },
-  productImage: {
+  productImageContainer: {
     height: 120,
     borderRadius: 12,
     marginBottom: 12,
     position: "relative",
     overflow: "hidden",
   },
+  productImage: {
+    width: "100%",
+    height: "100%",
+    borderRadius: 12,
+  },
   productBadge: {
     position: "absolute",
     top: 8,
     left: 8,
-    backgroundColor: "#ec4899",
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 8,
   },
   productBadgeText: {
-    color: "white",
+    color: "#ffffff",
     fontSize: 10,
     fontWeight: "600",
   },
@@ -577,7 +565,7 @@ const styles = StyleSheet.create({
     position: "absolute",
     top: 8,
     right: 8,
-    backgroundColor: "rgba(255, 255, 255, 0.8)",
+    backgroundColor: "rgba(255, 255, 255, 0.9)",
     borderRadius: 16,
     padding: 8,
   },
@@ -587,7 +575,7 @@ const styles = StyleSheet.create({
   productName: {
     fontSize: 14,
     fontWeight: "600",
-    color: "#1f2937",
+    color: "#040707",
     lineHeight: 18,
   },
   productRating: {
@@ -597,7 +585,7 @@ const styles = StyleSheet.create({
   },
   ratingText: {
     fontSize: 12,
-    color: "#6b7280",
+    color: "#2b2b6b",
   },
   productPricing: {
     flexDirection: "row",
@@ -612,41 +600,32 @@ const styles = StyleSheet.create({
   productPrice: {
     fontSize: 16,
     fontWeight: "bold",
-    color: "#000000",
+    color: "#2b2b6b",
   },
   originalPrice: {
     fontSize: 12,
-    color: "#000000",
+    color: "#e2c6df",
     textDecorationLine: "line-through",
   },
-  outOfStockBadge: {
-    backgroundColor: "#f3f4f6",
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 4,
-  },
-  outOfStockText: {
-    fontSize: 10,
-    color: "#6b7280",
-  },
   addToCartButton: {
-    backgroundColor: "#2c2a6b",
-    paddingVertical: 8,
     borderRadius: 8,
+    overflow: "hidden",
+  },
+  addToCartGradient: {
+    paddingVertical: 8,
     alignItems: "center",
   },
   addToCartButtonDisabled: {
-    backgroundColor: "#f3f4f6",
+    opacity: 0.6,
   },
   addToCartText: {
-    color: "white",
+    color: "#ffffff",
     fontSize: 12,
     fontWeight: "600",
   },
   addToCartTextDisabled: {
-    color: "#9ca3af",
+    color: "#2b2b6b",
   },
-  // Loading Skeleton Styles
   skeletonContainer: {
     flexDirection: "row",
     flexWrap: "wrap",
@@ -658,101 +637,86 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 12,
     marginBottom: 16,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    borderWidth: 1,
+    borderColor: "#f5b8d0",
   },
   skeletonImage: {
     height: 120,
-    backgroundColor: "#f3f4f6",
+    backgroundColor: "#f5b8d0",
     borderRadius: 12,
     marginBottom: 12,
+    opacity: 0.3,
   },
   skeletonText: {
     height: 16,
-    backgroundColor: "#f3f4f6",
+    backgroundColor: "#e2c6df",
     borderRadius: 4,
     marginBottom: 8,
+    opacity: 0.3,
   },
   skeletonTextSmall: {
     height: 12,
-    backgroundColor: "#f3f4f6",
+    backgroundColor: "#e2c6df",
     borderRadius: 4,
     marginBottom: 8,
     width: "60%",
+    opacity: 0.3,
   },
   skeletonButton: {
     height: 32,
-    backgroundColor: "#f3f4f6",
+    backgroundColor: "#e2c6df",
     borderRadius: 8,
+    opacity: 0.3,
   },
-  // Error State Styles
   errorState: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
     paddingVertical: 60,
   },
-  errorIcon: {
-    width: 64,
-    height: 64,
-    backgroundColor: "#fef2f2",
-    borderRadius: 32,
-    justifyContent: "center",
-    alignItems: "center",
-    marginBottom: 16,
-  },
   errorTitle: {
     fontSize: 18,
     fontWeight: "600",
-    color: "#1f2937",
+    color: "#040707",
+    marginTop: 16,
     marginBottom: 8,
   },
   errorSubtitle: {
     fontSize: 14,
-    color: "#6b7280",
+    color: "#2b2b6b",
     textAlign: "center",
     marginBottom: 24,
     paddingHorizontal: 32,
   },
   retryButton: {
-    backgroundColor: "#ec4899",
+    borderRadius: 8,
+    overflow: "hidden",
+  },
+  retryGradient: {
     paddingHorizontal: 24,
     paddingVertical: 12,
-    borderRadius: 8,
   },
   retryButtonText: {
-    color: "white",
+    color: "#ffffff",
     fontSize: 14,
     fontWeight: "600",
   },
-  // Empty State Styles
   emptyState: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
     paddingVertical: 60,
   },
-  emptyIcon: {
-    width: 64,
-    height: 64,
-    backgroundColor: "#f3f4f6",
-    borderRadius: 32,
-    justifyContent: "center",
-    alignItems: "center",
-    marginBottom: 16,
-  },
   emptyTitle: {
     fontSize: 18,
     fontWeight: "600",
-    color: "#1f2937",
+    color: "#040707",
+    marginTop: 16,
     marginBottom: 8,
   },
   emptySubtitle: {
     fontSize: 14,
-    color: "#6b7280",
+    color: "#2b2b6b",
     textAlign: "center",
   },
 });

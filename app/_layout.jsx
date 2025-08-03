@@ -21,6 +21,7 @@ export default function RootLayout() {
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Protected guard={isLoggedIn && hasCompletedOnboarding}>
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          <Stack.Screen name="cart" options={{ headerShown: false }} />
           <Stack.Screen
             name="products/[id].jsx"
             options={{ headerShown: false }}

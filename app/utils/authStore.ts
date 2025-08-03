@@ -1,10 +1,10 @@
 import { BASE_URL } from "@/constants";
 import { exchangeCodeAsync, makeRedirectUri } from "expo-auth-session";
 import { deleteItemAsync, getItem, setItem } from "expo-secure-store";
+import * as jose from "jose";
 import { Platform } from "react-native";
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
-import * as jose from "jose";
 interface User {
   id: string;
   email: string;
@@ -41,7 +41,7 @@ interface UserState {
   tokens: any;
 }
 
-// const BASE_URL = "http://192.168.18.5:3000";
+const BACKEND_URL = "http://192.168.18.5:3000";
 
 export const useAuthStore = create(
   persist<UserState>(
@@ -123,7 +123,7 @@ export const useAuthStore = create(
 
       logIn: async (email: string, password: string) => {
         try {
-          const response = await fetch(`${BASE_URL}/login`, {
+          const response = await fetch(`${BACKEND_URL}/login`, {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
