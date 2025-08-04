@@ -1,14 +1,11 @@
+import "../global.css";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import { useEffect } from "react";
-import { Linking, Platform } from "react-native";
 import "../web-nanoid-polyfill";
 import { useAuthStore } from "./utils/authStore";
-import { exchangeCodeAsync, makeRedirectUri } from "expo-auth-session";
-import { BASE_URL } from "../constants";
 
 export default function RootLayout() {
-  const { isLoggedIn, hasCompletedOnboarding, setAuthData } = useAuthStore(); // Add setAuthData method
+  const { isLoggedIn, hasCompletedOnboarding, setAuthData,  } = useAuthStore(); // Add setAuthData method
 
   console.log({
     isLoggedIn,

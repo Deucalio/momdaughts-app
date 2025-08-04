@@ -1,14 +1,6 @@
 const { getDefaultConfig } = require("expo/metro-config");
+const { withNativeWind } = require("nativewind/metro");
 
-const config = getDefaultConfig(__dirname);
-
-// Web-specific resolver configuration
-if (process.env.EXPO_PLATFORM === "web") {
-  config.resolver.platforms = ["web", "native", "ios", "android"];
-  config.resolver.alias = {
-    ...config.resolver.alias,
-    "nanoid/non-secure": "nanoid",
-  };
-}
-
-module.exports = config;
+module.exports = withNativeWind(getDefaultConfig(__dirname), {
+  input: "./global.css",
+});

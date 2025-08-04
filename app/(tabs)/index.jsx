@@ -8,6 +8,8 @@ import {
   Text,
   TouchableOpacity,
   View,
+  Platform,
+  StatusBar,
 } from "react-native";
 /*************  ✨ Windsurf Command ⭐  *************/
 /**
@@ -115,8 +117,12 @@ export default function HomePage() {
   ];
 
   return (
-    <SafeAreaView style={styles.container}>
-      <ScrollView showsVerticalScrollIndicator={false}>
+    <View style={styles.container}>
+      <StatusBar
+        barStyle="dark-content" // 👈 this makes status bar icons dark
+        backgroundColor="white" // 👈 important on Android
+      />
+      <ScrollView showsVerticalScrollIndicator={true}>
         {/* Header */}
         <View style={styles.header}>
           <View style={styles.headerContent}>
@@ -134,7 +140,7 @@ export default function HomePage() {
                 }}
                 style={styles.logoTitle}
               >
-                MomDaughts Log Out
+                MomDaughts
               </Text>
             </View>
             <View style={styles.headerActions}>
@@ -165,6 +171,7 @@ export default function HomePage() {
               Track your cycle, monitor your health, and discover products
               designed for your unique wellness needs.
             </Text>
+            <Text className="text-red-500 text-2xl">Hello There</Text>
 
             {/* Quick Stats */}
             <View style={styles.quickStats}>
@@ -344,7 +351,7 @@ export default function HomePage() {
           </LinearGradient>
         </View>
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -352,6 +359,8 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#ffffff",
+    paddingTop: Platform.OS === "android" ? StatusBar.currentHeight : 0,
+    // backgroundColor: "white",
   },
   header: {
     backgroundColor: "rgba(255, 255, 255, 0.95)",

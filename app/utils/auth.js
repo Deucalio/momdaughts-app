@@ -47,6 +47,7 @@ export const signUpWithCustom = async (
 // Log out
 export const logOut = async () => {
   try {
+    console.log("loging out");
     await useAuthStore.getState().logOut();
   } catch (error) {
     console.error("Error during log out", error);

@@ -1,4 +1,5 @@
 "use client"
+
 import { Ionicons } from "@expo/vector-icons"
 import { useLocalSearchParams, useRouter } from "expo-router"
 import { useEffect, useRef, useState } from "react"
@@ -7,6 +8,7 @@ import {
   Alert,
   Animated,
   Dimensions,
+  Easing,
   FlatList,
   Image,
   PanResponder,
@@ -17,12 +19,12 @@ import {
   Text,
   TouchableOpacity,
   View,
-  Easing,
 } from "react-native"
+import { useSafeAreaInsets } from "react-native-safe-area-context"
 import { useAuthenticatedFetch } from "../utils/authStore"
 
 const { width, height } = Dimensions.get("window")
-const BACKEND_URL = "http://192.168.18.5:3000"
+const BACKEND_URL = "http://192.168.100.3:3000"
 const CONTAINER_WIDTH = width - 32
 
 const ProductDetailPage = () => {
@@ -35,17 +37,27 @@ const ProductDetailPage = () => {
   const [allImages, setAllImages] = useState([])
   const [isWishlisted, setIsWishlisted] = useState(false)
   const [cartCount, setCartCount] = useState(0)
-  const [confettiParticles, setConfettiParticles] = useState([])
+  const [floatingHearts, setFloatingHearts] = useState([])
+
   const { authenticatedFetch } = useAuthenticatedFetch()
   const { id } = useLocalSearchParams()
   const router = useRouter()
+  const insets = useSafeAreaInsets()
 
   // Animation values
   const slideAnim = useRef(new Animated.Value(0)).current
-  const flatListRef = useRef(null)
+
+  // Wishlist animations
   const heartScale = useRef(new Animated.Value(1)).current
+  const heartRotation = useRef(new Animated.Value(0)).current
+  const wishlistButtonScale = useRef(new Animated.Value(1)).current
+
+  // Add to cart animations - minimal
+  const addToCartScale = useRef(new Animated.Value(1)).current
+  const addToCartTranslateY = useRef(new Animated.Value(0)).current
+
+  // Cart badge animation
   const cartBounce = useRef(new Animated.Value(0)).current
-  const addToCartFeedback = useRef(new Animated.Value(0)).current
 
   useEffect(() => {
     loadProduct()
@@ -119,13 +131,14 @@ const ProductDetailPage = () => {
       const { dx, vx } = gestureState
       const threshold = CONTAINER_WIDTH * 0.25
       const velocity = Math.abs(vx) > 0.3
-      
+
       let newIndex = currentImageIndex
       if ((dx > threshold || (velocity && dx > 0)) && currentImageIndex > 0) {
         newIndex = currentImageIndex - 1
       } else if ((dx < -threshold || (velocity && dx < 0)) && currentImageIndex < allImages.length - 1) {
         newIndex = currentImageIndex + 1
       }
+
       setCurrentImageIndex(newIndex)
       animateToIndex(newIndex)
     },
@@ -152,7 +165,7 @@ const ProductDetailPage = () => {
       }
       const productData = await response.json()
       setProduct(productData.product)
-      
+
       if (productData.product.options && productData.product.options.length > 0) {
         const initialOptions = {}
         productData.product.options.forEach((option) => {
@@ -162,7 +175,7 @@ const ProductDetailPage = () => {
         })
         setSelectedOptions(initialOptions)
       }
-      
+
       if (productData.product.variants && productData.product.variants.length > 0) {
         setSelectedVariant(productData.product.variants[0])
       }
@@ -174,67 +187,117 @@ const ProductDetailPage = () => {
     }
   }
 
-  const animateAddToCart = () => {
-    // Create confetti particles
-    const particles = []
-    for (let i = 0; i < 15; i++) {
-      particles.push({
-        id: i,
-        x: new Animated.Value(width / 2 - 50 + Math.random() * 100),
-        y: new Animated.Value(height - 150),
+  // Create floating hearts effect
+  const createFloatingHearts = () => {
+    const hearts = []
+    for (let i = 0; i < 6; i++) {
+      hearts.push({
+        id: Date.now() + i,
+        translateY: new Animated.Value(0),
+        translateX: new Animated.Value(0),
         opacity: new Animated.Value(1),
+        scale: new Animated.Value(0.5 + Math.random() * 0.4),
         rotation: new Animated.Value(0),
-        scale: new Animated.Value(0.5 + Math.random() * 0.5),
-        color: ['#FFD700', '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FECA57'][Math.floor(Math.random() * 6)],
+        startX: -15 + Math.random() * 30,
+        startY: 0,
       })
     }
-    setConfettiParticles(particles)
 
-    // Animate confetti
-    particles.forEach((particle, index) => {
+    setFloatingHearts((prev) => [...prev, ...hearts])
+
+    hearts.forEach((heart, index) => {
+      const delay = index * 120
+      const duration = 1800 + Math.random() * 800
+
       Animated.parallel([
-        Animated.timing(particle.y, {
-          toValue: height - 200 - Math.random() * 100,
-          duration: 800 + Math.random() * 400,
+        Animated.timing(heart.translateY, {
+          toValue: -100 - Math.random() * 60,
+          duration: duration,
+          delay: delay,
+          easing: Easing.out(Easing.quad),
           useNativeDriver: false,
         }),
-        Animated.timing(particle.x, {
-          toValue: particle.x._value + (Math.random() - 0.5) * 100,
-          duration: 800 + Math.random() * 400,
+        Animated.timing(heart.translateX, {
+          toValue: heart.startX + (Math.random() - 0.5) * 40,
+          duration: duration,
+          delay: delay,
+          easing: Easing.out(Easing.quad),
           useNativeDriver: false,
         }),
-        Animated.timing(particle.opacity, {
+        Animated.timing(heart.opacity, {
           toValue: 0,
-          duration: 1000,
-          delay: 200,
+          duration: duration,
+          delay: delay + 400,
+          easing: Easing.out(Easing.quad),
           useNativeDriver: false,
         }),
-        Animated.timing(particle.rotation, {
-          toValue: Math.random() * 360,
-          duration: 1000,
+        Animated.timing(heart.rotation, {
+          toValue: 180 + Math.random() * 180,
+          duration: duration,
+          delay: delay,
+          easing: Easing.linear,
           useNativeDriver: false,
         }),
+        Animated.sequence([
+          Animated.timing(heart.scale, {
+            toValue: heart.scale._value * 1.3,
+            duration: 250,
+            delay: delay,
+            easing: Easing.out(Easing.back(1.5)),
+            useNativeDriver: false,
+          }),
+          Animated.timing(heart.scale, {
+            toValue: 0,
+            duration: duration - 250,
+            easing: Easing.in(Easing.quad),
+            useNativeDriver: false,
+          }),
+        ]),
       ]).start(() => {
-        if (index === particles.length - 1) {
-          setConfettiParticles([])
+        if (index === hearts.length - 1) {
+          setTimeout(() => {
+            setFloatingHearts((prev) => prev.filter((h) => !hearts.find((heart) => heart.id === h.id)))
+          }, 500)
         }
       })
     })
+  }
 
-    // Button press feedback
-    Animated.sequence([
-      Animated.timing(addToCartFeedback, {
-        toValue: 1,
-        duration: 100,
-        useNativeDriver: true,
-        easing: Easing.out(Easing.quad),
-      }),
-      Animated.timing(addToCartFeedback, {
-        toValue: 0,
-        duration: 200,
-        useNativeDriver: true,
-        easing: Easing.out(Easing.quad),
-      }),
+  // Minimal add to cart animation
+  const animateAddToCart = () => {
+    // Very subtle button animation
+    Animated.parallel([
+      // Gentle scale down and up
+      Animated.sequence([
+        Animated.timing(addToCartScale, {
+          toValue: 0.98,
+          duration: 80,
+          useNativeDriver: true,
+          easing: Easing.out(Easing.quad),
+        }),
+        Animated.timing(addToCartScale, {
+          toValue: 1,
+          duration: 120,
+          useNativeDriver: true,
+          easing: Easing.out(Easing.quad),
+        }),
+      ]),
+
+      // Subtle upward movement
+      Animated.sequence([
+        Animated.timing(addToCartTranslateY, {
+          toValue: -2,
+          duration: 80,
+          useNativeDriver: true,
+          easing: Easing.out(Easing.quad),
+        }),
+        Animated.timing(addToCartTranslateY, {
+          toValue: 0,
+          duration: 120,
+          useNativeDriver: true,
+          easing: Easing.out(Easing.quad),
+        }),
+      ]),
     ]).start()
 
     // Cart icon bounce
@@ -243,7 +306,7 @@ const ProductDetailPage = () => {
         toValue: 1,
         duration: 150,
         useNativeDriver: true,
-        easing: Easing.out(Easing.back(2)),
+        easing: Easing.out(Easing.back(1.5)),
       }),
       Animated.timing(cartBounce, {
         toValue: 0,
@@ -255,28 +318,77 @@ const ProductDetailPage = () => {
   }
 
   const handleAddToCart = () => {
-    setCartCount(prev => prev + quantity)
+    setCartCount((prev) => prev + quantity)
     animateAddToCart()
   }
 
-  const handleWishlistToggle = () => {
-    setIsWishlisted(prev => !prev)
-    
-    // Heart animation
-    Animated.sequence([
-      Animated.timing(heartScale, {
-        toValue: 1.3,
-        duration: 150,
-        useNativeDriver: true,
-        easing: Easing.out(Easing.back(2)),
-      }),
-      Animated.timing(heartScale, {
-        toValue: 1,
-        duration: 150,
-        useNativeDriver: true,
-        easing: Easing.out(Easing.quad),
-      }),
+  const animateWishlist = () => {
+    // Create floating hearts effect
+    if (!isWishlisted) {
+      createFloatingHearts()
+    }
+
+    // Wishlist animation
+    Animated.parallel([
+      // Heart scale with bounce
+      Animated.sequence([
+        Animated.timing(heartScale, {
+          toValue: 1.4,
+          duration: 120,
+          useNativeDriver: true,
+          easing: Easing.out(Easing.back(2)),
+        }),
+        Animated.timing(heartScale, {
+          toValue: 0.9,
+          duration: 80,
+          useNativeDriver: true,
+          easing: Easing.out(Easing.quad),
+        }),
+        Animated.timing(heartScale, {
+          toValue: 1,
+          duration: 120,
+          useNativeDriver: true,
+          easing: Easing.out(Easing.back(1)),
+        }),
+      ]),
+
+      // Heart rotation
+      Animated.sequence([
+        Animated.timing(heartRotation, {
+          toValue: 1,
+          duration: 150,
+          useNativeDriver: true,
+          easing: Easing.out(Easing.quad),
+        }),
+        Animated.timing(heartRotation, {
+          toValue: 0,
+          duration: 150,
+          useNativeDriver: true,
+          easing: Easing.out(Easing.quad),
+        }),
+      ]),
+
+      // Button scale
+      Animated.sequence([
+        Animated.timing(wishlistButtonScale, {
+          toValue: 1.2,
+          duration: 120,
+          useNativeDriver: true,
+          easing: Easing.out(Easing.back(2)),
+        }),
+        Animated.timing(wishlistButtonScale, {
+          toValue: 1,
+          duration: 200,
+          useNativeDriver: true,
+          easing: Easing.out(Easing.back(1)),
+        }),
+      ]),
     ]).start()
+  }
+
+  const handleWishlistToggle = () => {
+    setIsWishlisted((prev) => !prev)
+    animateWishlist()
   }
 
   const handleBuyNow = () => {
@@ -312,10 +424,6 @@ const ProductDetailPage = () => {
     }))
   }
 
-  const isVariantAvailable = () => {
-    return selectedVariant ? selectedVariant.availableForSale : true
-  }
-
   const renderImageThumbnail = ({ item, index }) => (
     <TouchableOpacity
       style={[styles.thumbnailContainer, currentImageIndex === index && styles.activeThumbnail]}
@@ -325,25 +433,45 @@ const ProductDetailPage = () => {
     </TouchableOpacity>
   )
 
+  // Custom Quantity Selector Component
+  const QuantitySelector = () => (
+    <View style={styles.quantityContainer}>
+      <Text style={styles.quantityLabel}>Quantity</Text>
+      <View style={styles.quantitySelector}>
+        <TouchableOpacity
+          style={[styles.quantityButton, quantity <= 1 && styles.quantityButtonDisabled]}
+          onPress={() => setQuantity(Math.max(1, quantity - 1))}
+          disabled={quantity <= 1}
+        >
+          <Ionicons name="remove" size={18} color={quantity <= 1 ? "#ccc" : "#2c2a6b"} />
+        </TouchableOpacity>
+        <Text style={styles.quantityText}>{quantity}</Text>
+        <TouchableOpacity style={styles.quantityButton} onPress={() => setQuantity(quantity + 1)}>
+          <Ionicons name="add" size={18} color="#2c2a6b" />
+        </TouchableOpacity>
+      </View>
+    </View>
+  )
+
   if (loading) {
     return (
-      <View style={styles.loadingContainer}>
+      <SafeAreaView style={styles.loadingContainer}>
         <StatusBar barStyle="dark-content" />
         <ActivityIndicator size="large" color="#22C55E" />
         <Text style={styles.loadingText}>Loading product...</Text>
-      </View>
+      </SafeAreaView>
     )
   }
 
   if (!product) {
     return (
-      <View style={styles.errorContainer}>
+      <SafeAreaView style={styles.errorContainer}>
         <Ionicons name="alert-circle-outline" size={48} color="#EF4444" />
         <Text style={styles.errorText}>Product not found</Text>
         <TouchableOpacity style={styles.retryButton} onPress={loadProduct}>
           <Text style={styles.retryButtonText}>Retry</Text>
         </TouchableOpacity>
-      </View>
+      </SafeAreaView>
     )
   }
 
@@ -352,9 +480,9 @@ const ProductDetailPage = () => {
   const price = getPrice()
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#F5F5F5" translucent={false} />
-      
+
       {/* Header */}
       <View style={styles.header}>
         <View style={styles.headerContent}>
@@ -363,14 +491,18 @@ const ProductDetailPage = () => {
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Product Detail</Text>
           <TouchableOpacity style={styles.headerButton}>
-            <Animated.View style={{
-              transform: [{
-                scale: cartBounce.interpolate({
-                  inputRange: [0, 1],
-                  outputRange: [1, 1.2]
-                })
-              }]
-            }}>
+            <Animated.View
+              style={{
+                transform: [
+                  {
+                    scale: cartBounce.interpolate({
+                      inputRange: [0, 1],
+                      outputRange: [1, 1.15],
+                    }),
+                  },
+                ],
+              }}
+            >
               <Ionicons name="bag-outline" size={24} color="#000" />
               {cartCount > 0 && (
                 <View style={styles.cartBadge}>
@@ -382,10 +514,10 @@ const ProductDetailPage = () => {
         </View>
       </View>
 
-      <ScrollView 
-        style={styles.scrollView} 
+      <ScrollView
+        style={styles.scrollView}
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.scrollContent}
+        contentContainerStyle={[styles.scrollContent, { paddingBottom: insets.bottom + 100 }]}
       >
         {/* Image Section */}
         <View style={styles.imageSection}>
@@ -401,11 +533,7 @@ const ProductDetailPage = () => {
               {allImages.map((image, index) => (
                 <View key={image.id} style={styles.imageSlide}>
                   <View style={styles.imageShadow} />
-                  <Image
-                    source={{ uri: image.url }}
-                    style={styles.mainImage}
-                    resizeMode="cover"
-                  />
+                  <Image source={{ uri: image.url }} style={styles.mainImage} resizeMode="cover" />
                 </View>
               ))}
             </Animated.View>
@@ -427,15 +555,68 @@ const ProductDetailPage = () => {
         <View style={styles.productInfo}>
           <View style={styles.productHeader}>
             <Text style={styles.productTitle}>{product.title}</Text>
-            <TouchableOpacity style={styles.favoriteButton} onPress={handleWishlistToggle}>
-              <Animated.View style={{ transform: [{ scale: heartScale }] }}>
-                <Ionicons 
-                  name={isWishlisted ? "heart" : "heart-outline"} 
-                  size={24} 
-                  color={isWishlisted ? "#EF4444" : "#666"} 
-                />
+
+            {/* Animated Wishlist Button */}
+            <View style={styles.wishlistButtonContainer}>
+              <Animated.View
+                style={[
+                  styles.wishlistButtonAnimated,
+                  {
+                    transform: [{ scale: wishlistButtonScale }],
+                  },
+                ]}
+              >
+                <TouchableOpacity style={styles.favoriteButton} onPress={handleWishlistToggle}>
+                  <Animated.View
+                    style={{
+                      transform: [
+                        { scale: heartScale },
+                        {
+                          rotate: heartRotation.interpolate({
+                            inputRange: [0, 1],
+                            outputRange: ["0deg", "12deg"],
+                          }),
+                        },
+                      ],
+                    }}
+                  >
+                    <Ionicons
+                      name={isWishlisted ? "heart" : "heart-outline"}
+                      size={24}
+                      color={isWishlisted ? "#EF4444" : "#666"}
+                    />
+                  </Animated.View>
+                </TouchableOpacity>
               </Animated.View>
-            </TouchableOpacity>
+
+              {/* Floating Hearts */}
+              {floatingHearts.map((heart) => (
+                <Animated.View
+                  key={heart.id}
+                  style={[
+                    styles.floatingHeart,
+                    {
+                      left: heart.startX + 20,
+                      top: 20,
+                      opacity: heart.opacity,
+                      transform: [
+                        { translateY: heart.translateY },
+                        { translateX: heart.translateX },
+                        { scale: heart.scale },
+                        {
+                          rotate: heart.rotation.interpolate({
+                            inputRange: [0, 360],
+                            outputRange: ["0deg", "360deg"],
+                          }),
+                        },
+                      ],
+                    },
+                  ]}
+                >
+                  <Ionicons name="heart" size={14} color="#FF69B4" />
+                </Animated.View>
+              ))}
+            </View>
           </View>
 
           <Text style={styles.price}>{price}</Text>
@@ -446,39 +627,45 @@ const ProductDetailPage = () => {
             <Text style={styles.soldText}>Sold 50</Text>
             <View style={styles.ratingContainer}>
               <Ionicons name="star" size={14} color="#FFD700" />
-              <Text style={styles.ratingText}>{rating} ({reviewCount} Reviews)</Text>
+              <Text style={styles.ratingText}>
+                {rating} ({reviewCount} Reviews)
+              </Text>
             </View>
           </View>
 
           {/* Size Selection */}
-          {product.options && product.options.map((option) => (
-            <View key={option.id} style={styles.optionContainer}>
-              <View style={styles.optionHeader}>
-                <Text style={styles.optionTitle}>Select {option.name}</Text>
-              </View>
-              <View style={styles.optionButtons}>
-                {option.values.map((value) => (
-                  <TouchableOpacity
-                    key={value}
-                    style={[
-                      styles.optionButton,
-                      selectedOptions[option.name] === value && styles.optionButtonSelected,
-                    ]}
-                    onPress={() => handleOptionSelect(option.name, value)}
-                  >
-                    <Text
+          {product.options &&
+            product.options.map((option) => (
+              <View key={option.id} style={styles.optionContainer}>
+                <View style={styles.optionHeader}>
+                  <Text style={styles.optionTitle}>Select {option.name}</Text>
+                </View>
+                <View style={styles.optionButtons}>
+                  {option.values.map((value) => (
+                    <TouchableOpacity
+                      key={value}
                       style={[
-                        styles.optionButtonText,
-                        selectedOptions[option.name] === value && styles.optionButtonTextSelected,
+                        styles.optionButton,
+                        selectedOptions[option.name] === value && styles.optionButtonSelected,
                       ]}
+                      onPress={() => handleOptionSelect(option.name, value)}
                     >
-                      {value}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
+                      <Text
+                        style={[
+                          styles.optionButtonText,
+                          selectedOptions[option.name] === value && styles.optionButtonTextSelected,
+                        ]}
+                      >
+                        {value}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
               </View>
-            </View>
-          ))}
+            ))}
+
+          {/* Quantity Selector */}
+          <QuantitySelector />
 
           {/* Description */}
           {product.description && (
@@ -490,67 +677,34 @@ const ProductDetailPage = () => {
         </View>
       </ScrollView>
 
-      {/* Fixed Action Buttons */}
-      <View style={styles.bottomContainer}>
+      {/* Fixed Action Buttons - Safe Area Aware */}
+      <View style={[styles.bottomContainer, { paddingBottom: Math.max(insets.bottom, 20) }]}>
         <View style={styles.actionButtons}>
           <TouchableOpacity style={styles.chatButton}>
             <Ionicons name="chatbubble-outline" size={20} color="#2c2a6b" />
           </TouchableOpacity>
-          <Animated.View style={[
-            styles.addToCartButtonContainer,
-            {
-              transform: [{
-                scale: addToCartFeedback.interpolate({
-                  inputRange: [0, 1],
-                  outputRange: [1, 0.95]
-                })
-              }]
-            }
-          ]}>
-            <TouchableOpacity
-              style={styles.addToCartButton}
-              onPress={handleAddToCart}
-              activeOpacity={0.8}
-            >
+
+          {/* Minimalist Add to Cart Button */}
+          <Animated.View
+            style={[
+              styles.addToCartButtonContainer,
+              {
+                transform: [{ scale: addToCartScale }, { translateY: addToCartTranslateY }],
+              },
+            ]}
+          >
+            <TouchableOpacity style={styles.addToCartButton} onPress={handleAddToCart} activeOpacity={0.8}>
               <Ionicons name="bag-add-outline" size={18} color="#ffffff" />
-              <Text  style={styles.addToCartButtonText}>Add to Cart</Text>
+              <Text style={styles.addToCartButtonText}>Add to Cart</Text>
             </TouchableOpacity>
           </Animated.View>
-          <TouchableOpacity
-            style={styles.buyButton}
-            onPress={handleBuyNow}
-            activeOpacity={0.8}
-          >
+
+          <TouchableOpacity style={styles.buyButton} onPress={handleBuyNow} activeOpacity={0.8}>
             <Text style={styles.buyButtonText}>Buy Now</Text>
           </TouchableOpacity>
         </View>
       </View>
-
-      {/* Confetti Animation */}
-      {confettiParticles.map((particle) => (
-        <Animated.View
-          key={particle.id}
-          style={[
-            styles.confettiParticle,
-            {
-              left: particle.x,
-              top: particle.y,
-              opacity: particle.opacity,
-              backgroundColor: particle.color,
-              transform: [
-                {
-                  rotate: particle.rotation.interpolate({
-                    inputRange: [0, 360],
-                    outputRange: ['0deg', '360deg'],
-                  }),
-                },
-                { scale: particle.scale },
-              ],
-            },
-          ]}
-        />
-      ))}
-    </View>
+    </SafeAreaView>
   )
 }
 
@@ -599,6 +753,7 @@ const styles = StyleSheet.create({
     elevation: 0,
     shadowOpacity: 0,
     paddingTop: 10,
+    zIndex: 10,
   },
   headerContent: {
     flexDirection: "row",
@@ -721,8 +876,27 @@ const styles = StyleSheet.create({
     color: "#000",
     flex: 1,
   },
+  wishlistButtonContainer: {
+    position: "relative",
+    width: 40,
+    height: 40,
+  },
+  wishlistButtonAnimated: {
+    shadowColor: "#EF4444",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+  },
   favoriteButton: {
-    padding: 4,
+    padding: 8,
+    width: 40,
+    height: 40,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  floatingHeart: {
+    position: "absolute",
   },
   price: {
     fontSize: 20,
@@ -768,11 +942,6 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: "#000",
   },
-  sizeChart: {
-    fontSize: 12,
-    color: "#22C55E",
-    fontWeight: "500",
-  },
   optionButtons: {
     flexDirection: "row",
     gap: 8,
@@ -798,6 +967,43 @@ const styles = StyleSheet.create({
   optionButtonTextSelected: {
     color: "white",
   },
+  quantityContainer: {
+    marginBottom: 20,
+  },
+  quantityLabel: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#000",
+    marginBottom: 12,
+  },
+  quantitySelector: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#F5F5F5",
+    borderRadius: 8,
+    padding: 4,
+    alignSelf: "flex-start",
+  },
+  quantityButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 6,
+    backgroundColor: "white",
+    justifyContent: "center",
+    alignItems: "center",
+    marginHorizontal: 2,
+  },
+  quantityButtonDisabled: {
+    backgroundColor: "#F0F0F0",
+  },
+  quantityText: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#000",
+    marginHorizontal: 16,
+    minWidth: 20,
+    textAlign: "center",
+  },
   descriptionContainer: {
     marginBottom: 20,
     paddingTop: 16,
@@ -816,6 +1022,10 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
   bottomContainer: {
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
     backgroundColor: "white",
     borderTopWidth: 1,
     borderTopColor: "#F0F0F0",
@@ -827,13 +1037,13 @@ const styles = StyleSheet.create({
     },
     shadowOpacity: 0.1,
     shadowRadius: 4,
+    zIndex: 10,
   },
   actionButtons: {
     flexDirection: "row",
     gap: 12,
     paddingHorizontal: 16,
     paddingTop: 16,
-    paddingBottom: 8,
   },
   chatButton: {
     width: 48,

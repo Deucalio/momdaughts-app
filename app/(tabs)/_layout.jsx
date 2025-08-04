@@ -19,6 +19,7 @@ export default function TabLayout() {
           height: 60 + insets.bottom, // Increase height to accommodate safe area
         },
         headerShown: false,
+        
       }}
     >
       <Tabs.Screen
