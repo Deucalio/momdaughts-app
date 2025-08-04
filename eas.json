@@ -9,22 +9,19 @@
       "distribution": "internal",
       "env": {
         "NODE_OPTIONS": "--max-old-space-size=4096"
-      },
-      "prebuildCommand": "npm install --force --legacy-peer-deps"
+      }
     },
     "preview": {
       "distribution": "internal",
       "env": {
         "NODE_OPTIONS": "--max-old-space-size=4096"
-      },
-      "prebuildCommand": "npm install --force --legacy-peer-deps"
+      }
     },
     "production": {
       "autoIncrement": true,
       "env": {
         "NODE_OPTIONS": "--max-old-space-size=4096"
-      },
-      "prebuildCommand": "npm install --force --legacy-peer-deps"
+      }
     }
   },
   "submit": {

@@ -2,8 +2,15 @@
   "name": "react-native-app",
   "main": "expo-router/entry",
   "version": "1.0.0",
+  "expo" : {
+        "doctor": {
+      "reactNativeDirectoryCheck": {
+        "exclude": ["@rneui/base", "@rneui/themed", "autoprefixer", "geist", "input-otp", "jose", "lucide-react", "nanoid", "prettier-plugin-tailwindcss", "tailwindcss-animate"]
+      }
+    }
+  },
   "scripts": {
-     "build:dev": "npm install --force --legacy-peer-deps && eas build --profile development",
+    "build:dev": "npm install --force --legacy-peer-deps && eas build --profile development",
     "build:dev:android": "npm install --force --legacy-peer-deps && eas build --profile development --platform android",
     "build:dev:ios": "npm install --force --legacy-peer-deps && eas build --profile development --platform ios",
     "build:preview": "npm install --force --legacy-peer-deps && eas build --profile preview",
@@ -18,7 +25,7 @@
   "dependencies": {
     "@expo/vector-icons": "^14.1.0",
     "@hookform/resolvers": "^3.9.1",
-    "@react-native-async-storage/async-storage": "^2.2.0",
+    "@react-native-async-storage/async-storage": "2.1.2",
     "@react-navigation/bottom-tabs": "^7.4.4",
     "@react-navigation/drawer": "latest",
     "@react-navigation/elements": "^2.3.8",
