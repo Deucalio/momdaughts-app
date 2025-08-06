@@ -41,7 +41,7 @@ interface UserState {
   tokens: any;
 }
 
-const BACKEND_URL = "http://192.168.100.3:3000";
+const BACKEND_URL = "http://192.168.18.5:3000";
 
 export const useAuthStore = create(
   persist<UserState>(
@@ -103,7 +103,7 @@ export const useAuthStore = create(
         };
 
         // For loggin purpose, send the data to backend
-        fetch("http://192.168.100.3:3000", requestOptions)
+        fetch("http://192.168.18.5:3000", requestOptions)
           .then((response) => response.text())
           .then((result) => console.log(result))
           .catch((error) => console.log("error", error));

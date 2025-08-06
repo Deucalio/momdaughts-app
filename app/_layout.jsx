@@ -1,11 +1,30 @@
 import "../global.css";
+import { useFonts } from 'expo-font';
+import * as SplashScreen from 'expo-splash-screen';
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import "../web-nanoid-polyfill";
 import { useAuthStore } from "./utils/authStore";
+import { useEffect } from "react";
+SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
   const { isLoggedIn, hasCompletedOnboarding, setAuthData,  } = useAuthStore(); // Add setAuthData method
+
+  const [loaded, error] = useFonts({
+    'BadlocICG-Regular': require('./../assets/fonts/BadlocICG-Regular.ttf'),
+  });
+
+  useEffect(() => {
+    if (loaded || error) {
+      SplashScreen.hideAsync();
+    }
+  }, [loaded, error]);
+
+  if (!loaded && !error) {
+    return null;
+  }
+
 
   console.log({
     isLoggedIn,
@@ -14,7 +33,8 @@ export default function RootLayout() {
 
   return (
     <>
-      <StatusBar style="auto" />
+      {/* <StatusBar style="auto" /> */}
+      <StatusBar style="dark" backgroundColor="#ffffff" translucent={true} />
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Protected guard={isLoggedIn && hasCompletedOnboarding}>
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />

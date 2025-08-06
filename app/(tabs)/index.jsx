@@ -25,11 +25,20 @@ import { router } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useAuthStore } from "../utils/authStore";
 import { logOut } from "../utils/auth";
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
+import OldHeader from "../../components/OldHeader";
+import ScreenWrapper from "../../components/ScreenWrapper";
 
 const { width } = Dimensions.get("window");
 
 export default function HomePage() {
   const user = useAuthStore((state) => state.user);
+
+   const insets = useSafeAreaInsets();
+  
+  // Calculate the header height (safe area top + padding + content height)
+  const headerHeight = insets.top + 12 + 52 + 12; // top padding + top spacing + content height + bottom padding
 
   console.log("User:", user);
   const [currentCycle] = useState({
@@ -117,45 +126,12 @@ export default function HomePage() {
   ];
 
   return (
+    <ScreenWrapper>
+     
     <View style={styles.container}>
-      <StatusBar
-        barStyle="dark-content" // 👈 this makes status bar icons dark
-        backgroundColor="white" // 👈 important on Android
-      />
-      <ScrollView showsVerticalScrollIndicator={true}>
+   
+      <ScrollView showsVerticalScrollIndicator={false}>
         {/* Header */}
-        <View style={styles.header}>
-          <View style={styles.headerContent}>
-            <View style={styles.logoContainer}>
-              <LinearGradient
-                colors={["#ec4899", "#8b5cf6"]}
-                style={styles.logo}
-              >
-                <Text style={styles.logoText}>MD</Text>
-              </LinearGradient>
-              <Text
-                onPress={() => {
-                  // resetOnboarding();
-                  logOut();
-                }}
-                style={styles.logoTitle}
-              >
-                MomDaughts
-              </Text>
-            </View>
-            <View style={styles.headerActions}>
-              <TouchableOpacity style={styles.headerButton}>
-                <Ionicons name="notifications" size={24} color="#ec4899" />
-                <View style={styles.notificationBadge}>
-                  <Text style={styles.badgeText}>3</Text>
-                </View>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.headerButton}>
-                <Ionicons name="person-circle" size={28} color="#ec4899" />
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
 
         {/* Hero Section */}
         <LinearGradient
@@ -352,6 +328,8 @@ export default function HomePage() {
         </View>
       </ScrollView>
     </View>
+    </ScreenWrapper>
+
   );
 }
 
@@ -360,6 +338,8 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#ffffff",
     paddingTop: Platform.OS === "android" ? StatusBar.currentHeight : 0,
+  
+   
     // backgroundColor: "white",
   },
   header: {

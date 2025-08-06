@@ -17,10 +17,10 @@ import {
   TouchableOpacity,
   View
 } from "react-native";
-import Header from "../../components/Header";
+import ScreenWrapper from "../../components/ScreenWrapper";
 import { useAuthenticatedFetch, useAuthStore } from "../utils/authStore";
 
-const BACKEND_URL = "http://192.168.100.3:3000";
+const BACKEND_URL = "http://192.168.18.5:3000";
 const { width, height } = Dimensions.get("window");
 
 // New purple gradient theme colors
@@ -193,8 +193,22 @@ export default function ShopPage() {
     }
   };
 
+   const getCartItems = async () => {
+    try {
+      const res = await authenticatedFetch(`${BACKEND_URL}/cart-items-count`);
+      if (res.ok) {
+        const data = await res.json();
+        console.log("Cart Items Count:", data.count);
+        setCartItemCount(data.count);
+      }
+    } catch (e) {
+      console.log(e);
+    }
+  }
+
   useEffect(() => {
     fetchProducts();
+    getCartItems();
   }, []);
 
   const handleRefresh = async () => {
@@ -604,6 +618,7 @@ export default function ShopPage() {
     console.log("cartItem:", cartItem);
 
     try {
+      setCartItemCount(cartItemCount + 1);
       const res = await authenticatedFetch(`${BACKEND_URL}/add-to-cart`, {
         method: "POST",
         headers: {
@@ -611,14 +626,19 @@ export default function ShopPage() {
         },
         body: JSON.stringify({ cartData: cartItem }),
       });
-      console.log("res:", res.data);
-      setCartItemCount(cartItemCount + 1);
+      const data = await res.json();
+      console.log("res:", data);
+     
     } catch (e) {
+      setCartItemCount(cartItemCount - 1);
       console.log("Error Occured: ", error);
+    } finally {
+      getCartItems();
     }
   };
 
   return (
+    <ScreenWrapper cartItemCount={cartItemCount} >
     <View
       style={{
         flex: 1,
@@ -637,10 +657,10 @@ export default function ShopPage() {
         }
       >
         {/* Header */}
-        <Header cartItemCount={cartItemCount} />
+        {/* <Header cartItemCount_={cartItemCount} /> */}
 
         {/* Auto-sliding Banner */}
-        <View style={{ marginBottom: 24 }}>
+        <View style={{ marginBottom: 24 , marginTop: 12}}>
           <ScrollView
             ref={bannerScrollRef}
             horizontal
@@ -868,5 +888,6 @@ export default function ShopPage() {
         </View>
       </ScrollView>
     </View>
+    </ScreenWrapper>
   );
 }

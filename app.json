@@ -40,29 +40,8 @@
           "backgroundColor": "#ffffff"
         }
       ],
-      "expo-secure-store",
-      [
-        "expo-font",
-        {
-          "fonts": ["./assets/fonts/BadlocICG-Regular.ttf"],
-          "android": {
-            "fonts": [
-              {
-                "fontFamily": "BadlocICG-Regular",
-                "fontDefinitions": [
-                  {
-                    "path": "./assets/fonts/BadlocICG-Regular.ttf",
-                    "weight": 400
-                  }
-                ]
-              }
-            ]
-          },
-          "ios": {
-            "fonts": ["./assets/fonts/BadlocICG-Regular.ttf"]
-          }
-        }
-      ]
+      "expo-secure-store"
+    
     ],
     "experiments": {
       "typedRoutes": true

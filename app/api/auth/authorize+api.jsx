@@ -36,7 +36,7 @@ export async function GET(request) {
     platform = "mobile";
   } else {
     return Response.json({ message: "Invalid redirect URI" }, { status: 400 });
-    // redirectUri = "exp://192.168.100.3:8081";
+    // redirectUri = "exp://192.168.18.5:8081";
     // url.searchParams.set("redirectUri", redirectUri);
     // platform = "mobile";
   }

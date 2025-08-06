@@ -3,20 +3,20 @@ import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
 import {
-  Alert,
-  Dimensions,
-  FlatList,
-  Image,
-  RefreshControl,
-  ScrollView,
-  Text,
-  TouchableOpacity,
-  View,
+    Alert,
+    Dimensions,
+    FlatList,
+    Image,
+    RefreshControl,
+    ScrollView,
+    Text,
+    TouchableOpacity,
+    View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useAuthenticatedFetch, useAuthStore } from "../utils/authStore";
 
-const BACKEND_URL = "http://192.168.100.3:3000";
+const BACKEND_URL = "http://192.168.18.5:3000";
 const { width, height } = Dimensions.get("window");
 
 // Purple gradient theme colors
