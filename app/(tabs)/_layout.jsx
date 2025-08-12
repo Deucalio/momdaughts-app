@@ -51,10 +51,10 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="insights"
+        name="account"
         options={{
-          title: "Insights",
-          tabBarIcon: ({ color, size }) => <Ionicons name="analytics" size={size} color={color} />,
+          title: "Account",
+          tabBarIcon: ({ color, size }) => <Ionicons name="person-circle-outline" size={size} color={color} />,
         }}
       />
       

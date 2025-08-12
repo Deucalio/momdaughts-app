@@ -103,47 +103,7 @@ const Header = ({ cartItemCount }) => {
               )}
             </TouchableOpacity>
             {/* Profile Icon with Dropdown */}
-            <View style={styles.profileContainer}>
-              <TouchableOpacity
-                style={styles.headerButton}
-                onPress={handleProfileMenuToggle}
-              >
-                <Ionicons name="person-circle" size={26} color="#ec4899" />
-              </TouchableOpacity>
-              {/* Profile Dropdown Menu */}
-              {showProfileMenu && (
-                <View style={styles.profileDropdown}>
-                  <TouchableOpacity
-                    style={styles.dropdownItem}
-                    onPress={handleWishlistPress}
-                  >
-                    <Ionicons name="heart-outline" size={18} color="#666" />
-                    <Text style={styles.dropdownText}>Wishlist</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    style={styles.dropdownItem}
-                    onPress={handleProfileSettingsPress}
-                  >
-                    <Ionicons name="settings-outline" size={18} color="#666" />
-                    <Text style={styles.dropdownText}>Profile Settings</Text>
-                  </TouchableOpacity>
-                  <View style={styles.dropdownDivider} />
-                  <TouchableOpacity
-                    style={styles.dropdownItem}
-                    onPress={handleLogoutPress}
-                  >
-                    <Ionicons
-                      name="log-out-outline"
-                      size={18}
-                      color="#ec4899"
-                    />
-                    <Text style={[styles.dropdownText, { color: "#ec4899" }]}>
-                      Logout
-                    </Text>
-                  </TouchableOpacity>
-                </View>
-              )}
-            </View>
+          
           </View>
         </View>
       </View>

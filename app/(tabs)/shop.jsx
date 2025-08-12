@@ -5,21 +5,22 @@ import { LinearGradient } from "expo-linear-gradient";
 import { router, useFocusEffect } from "expo-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
-    Dimensions,
-    FlatList,
-    Image,
-    Platform,
-    RefreshControl,
-    ScrollView,
-    StatusBar,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  Dimensions,
+  FlatList,
+  Image,
+  Platform,
+  RefreshControl,
+  ScrollView,
+  StatusBar,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import ScreenWrapper from "../../components/ScreenWrapper";
 import { fetchCartItemsCount } from "../utils/actions";
 import { useAuthenticatedFetch, useAuthStore } from "../utils/authStore";
+import CartToast from "../../components/CartToast";
 
 const BACKEND_URL = "http://192.168.18.5:3000";
 const { width, height } = Dimensions.get("window");
@@ -45,6 +46,14 @@ export default function ShopPage() {
   const [currentBannerIndex, setCurrentBannerIndex] = useState(0);
   const { authenticatedFetch } = useAuthenticatedFetch();
   const [cartItemCount, setCartItemCount] = useState(0);
+  const [addToCartToast, setAddToCartToast] = useState({
+    clickCount: 0,
+    showToast: false,
+    selectedProduct: {
+      name: "",
+      image: "",
+    },
+  });
 
   const { user } = useAuthStore();
 
@@ -211,6 +220,14 @@ export default function ShopPage() {
   useFocusEffect(
     useCallback(() => {
       storeCartItemsCount();
+      setAddToCartToast({
+        clickCount: 0,
+        showToast: false,
+        selectedProduct: {
+          name: "",
+          image: "",
+        }
+      })
     }, [])
   );
   const handleRefresh = async () => {
@@ -620,6 +637,14 @@ export default function ShopPage() {
 
     try {
       setCartItemCount(cartItemCount + 1);
+      setAddToCartToast({
+        clickCount: addToCartToast.clickCount + 1,
+        showToast: true,
+        selectedProduct: {
+          name: item.name,
+          image: item.image,
+        },
+      });
       const res = await authenticatedFetch(`${BACKEND_URL}/add-to-cart`, {
         method: "POST",
         headers: {
@@ -890,6 +915,19 @@ export default function ShopPage() {
             )}
           </View>
         </ScrollView>
+        {/* Toast Notification */}
+        <CartToast
+          isVisible={addToCartToast.showToast}
+          onClose={() => {
+            setAddToCartToast((prev) => ({
+              ...prev,
+              showToast: false,
+            }));
+          }}
+          productName={addToCartToast.selectedProduct.name}
+          productImage={addToCartToast.selectedProduct.image}
+          clickCount={addToCartToast.clickCount} 
+        />
       </View>
     </ScreenWrapper>
   );
