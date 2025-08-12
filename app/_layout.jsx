@@ -1,4 +1,4 @@
-import "../global.css";
+// import "../global.css";
 import { useFonts } from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
 import { Stack } from "expo-router";
@@ -34,7 +34,7 @@ export default function RootLayout() {
   return (
     <>
       {/* <StatusBar style="auto" /> */}
-      <StatusBar style="dark" backgroundColor="#ffffff" translucent={true} />
+      <StatusBar style="dark" backgroundColor="#ffffff" translucent={false} />
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Protected guard={isLoggedIn && hasCompletedOnboarding}>
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />

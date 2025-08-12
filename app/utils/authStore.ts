@@ -103,7 +103,7 @@ export const useAuthStore = create(
         };
 
         // For loggin purpose, send the data to backend
-        fetch("http://192.168.18.5:3000", requestOptions)
+        fetch("http://192.168.99.137:3000", requestOptions)
           .then((response) => response.text())
           .then((result) => console.log(result))
           .catch((error) => console.log("error", error));

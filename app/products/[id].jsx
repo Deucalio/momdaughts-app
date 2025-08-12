@@ -1,8 +1,8 @@
 "use client"
 
 import { Ionicons } from "@expo/vector-icons"
-import { useLocalSearchParams, useRouter } from "expo-router"
-import { useEffect, useRef, useState } from "react"
+import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router"
+import { useCallback, useEffect, useRef, useState } from "react"
 import {
     ActivityIndicator,
     Alert,
@@ -23,6 +23,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context"
 import { useAuthenticatedFetch } from "../utils/authStore"
 
+
 const { width, height } = Dimensions.get("window")
 const BACKEND_URL = "http://192.168.18.5:3000"
 const CONTAINER_WIDTH = width - 32
@@ -38,6 +39,13 @@ const ProductDetailPage = () => {
   const [isWishlisted, setIsWishlisted] = useState(false)
   const [cartCount, setCartCount] = useState(0)
   const [floatingHearts, setFloatingHearts] = useState([])
+
+  useFocusEffect(
+  useCallback(() => {
+    StatusBar.setBackgroundColor('#F5F5F5');
+    StatusBar.setBarStyle('dark-content');
+  }, [])
+);
 
   const { authenticatedFetch } = useAuthenticatedFetch()
   const { id } = useLocalSearchParams()
@@ -481,7 +489,7 @@ const ProductDetailPage = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor="#F5F5F5" translucent={false} />
+      {/* <StatusBar barStyle="dark-content" backgroundColor="#F5F5F5" translucent={false} /> */}
 
       {/* Header */}
       <View style={styles.header}>

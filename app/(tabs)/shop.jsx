@@ -2,22 +2,23 @@
 
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
-import { router } from "expo-router";
-import { useEffect, useRef, useState } from "react";
+import { router, useFocusEffect } from "expo-router";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
-  Dimensions,
-  FlatList,
-  Image,
-  Platform,
-  RefreshControl,
-  ScrollView,
-  StatusBar,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View
+    Dimensions,
+    FlatList,
+    Image,
+    Platform,
+    RefreshControl,
+    ScrollView,
+    StatusBar,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
 } from "react-native";
 import ScreenWrapper from "../../components/ScreenWrapper";
+import { fetchCartItemsCount } from "../utils/actions";
 import { useAuthenticatedFetch, useAuthStore } from "../utils/authStore";
 
 const BACKEND_URL = "http://192.168.18.5:3000";
@@ -46,6 +47,15 @@ export default function ShopPage() {
   const [cartItemCount, setCartItemCount] = useState(0);
 
   const { user } = useAuthStore();
+
+  const storeCartItemsCount = async () => {
+    const count = await fetchCartItemsCount(authenticatedFetch);
+    if (count.success) {
+      setCartItemCount(count.count);
+      return;
+    }
+    throw new Error("Failed to fetch cart items count");
+  };
 
   // Banner auto-slide
   const bannerScrollRef = useRef(null);
@@ -193,24 +203,16 @@ export default function ShopPage() {
     }
   };
 
-   const getCartItems = async () => {
-    try {
-      const res = await authenticatedFetch(`${BACKEND_URL}/cart-items-count`);
-      if (res.ok) {
-        const data = await res.json();
-        console.log("Cart Items Count:", data.count);
-        setCartItemCount(data.count);
-      }
-    } catch (e) {
-      console.log(e);
-    }
-  }
-
   useEffect(() => {
     fetchProducts();
-    getCartItems();
+    storeCartItemsCount();
   }, []);
 
+  useFocusEffect(
+    useCallback(() => {
+      storeCartItemsCount();
+    }, [])
+  );
   const handleRefresh = async () => {
     setRefreshing(true);
     await fetchProducts(true);
@@ -615,7 +617,6 @@ export default function ShopPage() {
       addedAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
-    console.log("cartItem:", cartItem);
 
     try {
       setCartItemCount(cartItemCount + 1);
@@ -627,92 +628,194 @@ export default function ShopPage() {
         body: JSON.stringify({ cartData: cartItem }),
       });
       const data = await res.json();
-      console.log("res:", data);
-     
     } catch (e) {
       setCartItemCount(cartItemCount - 1);
       console.log("Error Occured: ", error);
     } finally {
-      getCartItems();
+      storeCartItemsCount();
     }
   };
 
   return (
-    <ScreenWrapper cartItemCount={cartItemCount} >
-    <View
-      style={{
-        flex: 1,
-        backgroundColor: "#ffffff",
-        paddingTop: Platform.OS === "android" ? StatusBar.currentHeight : 0,
-      }}
-    >
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={handleRefresh}
-            colors={[COLORS.light]}
-          />
-        }
+    <ScreenWrapper cartItemCount={cartItemCount}>
+      <View
+        style={{
+          flex: 1,
+          backgroundColor: "#ffffff",
+          paddingTop: Platform.OS === "android" ? StatusBar.currentHeight : 0,
+        }}
       >
-        {/* Header */}
-        {/* <Header cartItemCount_={cartItemCount} /> */}
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={handleRefresh}
+              colors={[COLORS.light]}
+            />
+          }
+        >
+          {/* Header */}
+          {/* <Header cartItemCount_={cartItemCount} /> */}
 
-        {/* Auto-sliding Banner */}
-        <View style={{ marginBottom: 24 , marginTop: 12}}>
-          <ScrollView
-            ref={bannerScrollRef}
-            horizontal
-            pagingEnabled
-            showsHorizontalScrollIndicator={false}
-            onMomentumScrollEnd={(event) => {
-              const index = Math.round(
-                event.nativeEvent.contentOffset.x / width
-              );
-              setCurrentBannerIndex(index);
-            }}
-          >
-            {bannerData.map((banner) => (
-              <View key={banner.id} style={{ width }}>
-                {renderBanner({ item: banner })}
-              </View>
-            ))}
-          </ScrollView>
+          {/* Auto-sliding Banner */}
+          <View style={{ marginBottom: 24, marginTop: 12 }}>
+            <ScrollView
+              ref={bannerScrollRef}
+              horizontal
+              pagingEnabled
+              showsHorizontalScrollIndicator={false}
+              onMomentumScrollEnd={(event) => {
+                const index = Math.round(
+                  event.nativeEvent.contentOffset.x / width
+                );
+                setCurrentBannerIndex(index);
+              }}
+            >
+              {bannerData.map((banner) => (
+                <View key={banner.id} style={{ width }}>
+                  {renderBanner({ item: banner })}
+                </View>
+              ))}
+            </ScrollView>
 
-          {/* Banner Indicators */}
-          <View
-            style={{
-              flexDirection: "row",
-              justifyContent: "center",
-              marginTop: 16,
-            }}
-          >
-            {bannerData.map((_, index) => (
-              <View
-                key={index}
-                style={{
-                  width: 8,
-                  height: 8,
-                  borderRadius: 4,
-                  backgroundColor:
-                    currentBannerIndex === index ? COLORS.light : "#ddd",
-                  marginHorizontal: 4,
-                }}
-              />
-            ))}
+            {/* Banner Indicators */}
+            <View
+              style={{
+                flexDirection: "row",
+                justifyContent: "center",
+                marginTop: 16,
+              }}
+            >
+              {bannerData.map((_, index) => (
+                <View
+                  key={index}
+                  style={{
+                    width: 8,
+                    height: 8,
+                    borderRadius: 4,
+                    backgroundColor:
+                      currentBannerIndex === index ? COLORS.light : "#ddd",
+                    marginHorizontal: 4,
+                  }}
+                />
+              ))}
+            </View>
           </View>
-        </View>
 
-        {/* Categories Section */}
-        {uniqueCategories.length > 0 && (
-          <View style={{ paddingHorizontal: 20, marginBottom: 24 }}>
+          {/* Categories Section */}
+          {uniqueCategories.length > 0 && (
+            <View style={{ paddingHorizontal: 20, marginBottom: 24 }}>
+              <View
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  marginBottom: 16,
+                }}
+              >
+                <Text
+                  style={{
+                    fontSize: 18,
+                    fontWeight: "600",
+                    color: COLORS.darkest,
+                  }}
+                >
+                  Categories
+                </Text>
+                <TouchableOpacity>
+                  <Text style={{ fontSize: 14, color: COLORS.light }}>
+                    See All
+                  </Text>
+                </TouchableOpacity>
+              </View>
+
+              <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                {uniqueCategories.map((category) => (
+                  <TouchableOpacity
+                    key={category.id}
+                    style={{
+                      alignItems: "center",
+                      marginRight: 20,
+                      width: 70,
+                    }}
+                  >
+                    <View
+                      style={{
+                        width: 50,
+                        height: 50,
+                        borderRadius: 25,
+                        backgroundColor: "#ff8fab",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        marginBottom: 8,
+                      }}
+                    >
+                      <Ionicons
+                        name={category.icon}
+                        size={22}
+                        color={COLORS.white}
+                      />
+                    </View>
+                    <Text
+                      style={{
+                        fontSize: 12,
+                        color: COLORS.darkest,
+                        textAlign: "center",
+                      }}
+                    >
+                      {category.label}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+            </View>
+          )}
+
+          {/* Search Bar */}
+          <View style={{ paddingHorizontal: 20, marginBottom: 20 }}>
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                backgroundColor: COLORS.white,
+                borderRadius: 25,
+                paddingHorizontal: 16,
+                paddingVertical: 12,
+                shadowColor: "#000",
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.1,
+                shadowRadius: 4,
+                elevation: 3,
+              }}
+            >
+              <Ionicons name="search" size={18} color="#999" />
+              <TextInput
+                style={{
+                  flex: 1,
+                  marginLeft: 12,
+                  fontSize: 16,
+                  color: COLORS.darkest,
+                }}
+                placeholder="Search products..."
+                placeholderTextColor="#999"
+                value={searchQuery}
+                onChangeText={setSearchQuery}
+              />
+              <TouchableOpacity>
+                <Ionicons name="mic-outline" size={18} color="#999" />
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          {/* Products Section */}
+          <View style={{ paddingHorizontal: 20, paddingBottom: 40 }}>
             <View
               style={{
                 flexDirection: "row",
                 alignItems: "center",
                 justifyContent: "space-between",
-                marginBottom: 16,
+                marginBottom: 20,
               }}
             >
               <Text
@@ -722,172 +825,72 @@ export default function ShopPage() {
                   color: COLORS.darkest,
                 }}
               >
-                Categories
+                Products
               </Text>
-              <TouchableOpacity>
-                <Text style={{ fontSize: 14, color: COLORS.light }}>
-                  See All
-                </Text>
-              </TouchableOpacity>
+              <Text style={{ fontSize: 14, color: "#666" }}>
+                {filteredProducts.length} items
+              </Text>
             </View>
 
-            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-              {uniqueCategories.map((category) => (
-                <TouchableOpacity
-                  key={category.id}
-                  style={{
-                    alignItems: "center",
-                    marginRight: 20,
-                    width: 70,
-                  }}
-                >
+            {loading ? (
+              <View
+                style={{
+                  flexDirection: "row",
+                  flexWrap: "wrap",
+                  justifyContent: "space-between",
+                }}
+              >
+                {Array.from({ length: 6 }).map((_, index) => (
                   <View
+                    key={index}
                     style={{
-                      width: 50,
-                      height: 50,
-                      borderRadius: 25,
-                      backgroundColor: "#ff8fab",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      marginBottom: 8,
+                      width: (width - 48) / 2,
+                      backgroundColor: COLORS.white,
+                      borderRadius: 16,
+                      marginBottom: 16,
+                      padding: 12,
                     }}
                   >
-                    <Ionicons
-                      name={category.icon}
-                      size={22}
-                      color={COLORS.white}
+                    <View
+                      style={{
+                        height: 120,
+                        backgroundColor: COLORS.lightest,
+                        borderRadius: 12,
+                        marginBottom: 12,
+                      }}
+                    />
+                    <View
+                      style={{
+                        height: 14,
+                        backgroundColor: "#2c2a6b",
+                        borderRadius: 4,
+                        marginBottom: 8,
+                      }}
+                    />
+                    <View
+                      style={{
+                        height: 12,
+                        backgroundColor: "#2c2a6b",
+                        borderRadius: 4,
+                        width: "60%",
+                      }}
                     />
                   </View>
-                  <Text
-                    style={{
-                      fontSize: 12,
-                      color: COLORS.darkest,
-                      textAlign: "center",
-                    }}
-                  >
-                    {category.label}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
+                ))}
+              </View>
+            ) : (
+              <FlatList
+                data={filteredProducts}
+                renderItem={renderProduct}
+                keyExtractor={(item) => item.id.toString()}
+                numColumns={2}
+                scrollEnabled={false}
+                showsVerticalScrollIndicator={false}
+              />
+            )}
           </View>
-        )}
-
-        {/* Search Bar */}
-        <View style={{ paddingHorizontal: 20, marginBottom: 20 }}>
-          <View
-            style={{
-              flexDirection: "row",
-              alignItems: "center",
-              backgroundColor: COLORS.white,
-              borderRadius: 25,
-              paddingHorizontal: 16,
-              paddingVertical: 12,
-              shadowColor: "#000",
-              shadowOffset: { width: 0, height: 2 },
-              shadowOpacity: 0.1,
-              shadowRadius: 4,
-              elevation: 3,
-            }}
-          >
-            <Ionicons name="search" size={18} color="#999" />
-            <TextInput
-              style={{
-                flex: 1,
-                marginLeft: 12,
-                fontSize: 16,
-                color: COLORS.darkest,
-              }}
-              placeholder="Search products..."
-              placeholderTextColor="#999"
-              value={searchQuery}
-              onChangeText={setSearchQuery}
-            />
-            <TouchableOpacity>
-              <Ionicons name="mic-outline" size={18} color="#999" />
-            </TouchableOpacity>
-          </View>
-        </View>
-
-        {/* Products Section */}
-        <View style={{ paddingHorizontal: 20, paddingBottom: 40 }}>
-          <View
-            style={{
-              flexDirection: "row",
-              alignItems: "center",
-              justifyContent: "space-between",
-              marginBottom: 20,
-            }}
-          >
-            <Text
-              style={{ fontSize: 18, fontWeight: "600", color: COLORS.darkest }}
-            >
-              Products
-            </Text>
-            <Text style={{ fontSize: 14, color: "#666" }}>
-              {filteredProducts.length} items
-            </Text>
-          </View>
-
-          {loading ? (
-            <View
-              style={{
-                flexDirection: "row",
-                flexWrap: "wrap",
-                justifyContent: "space-between",
-              }}
-            >
-              {Array.from({ length: 6 }).map((_, index) => (
-                <View
-                  key={index}
-                  style={{
-                    width: (width - 48) / 2,
-                    backgroundColor: COLORS.white,
-                    borderRadius: 16,
-                    marginBottom: 16,
-                    padding: 12,
-                  }}
-                >
-                  <View
-                    style={{
-                      height: 120,
-                      backgroundColor: COLORS.lightest,
-                      borderRadius: 12,
-                      marginBottom: 12,
-                    }}
-                  />
-                  <View
-                    style={{
-                      height: 14,
-                      backgroundColor: "#2c2a6b",
-                      borderRadius: 4,
-                      marginBottom: 8,
-                    }}
-                  />
-                  <View
-                    style={{
-                      height: 12,
-                      backgroundColor: "#2c2a6b",
-                      borderRadius: 4,
-                      width: "60%",
-                    }}
-                  />
-                </View>
-              ))}
-            </View>
-          ) : (
-            <FlatList
-              data={filteredProducts}
-              renderItem={renderProduct}
-              keyExtractor={(item) => item.id.toString()}
-              numColumns={2}
-              scrollEnabled={false}
-              showsVerticalScrollIndicator={false}
-            />
-          )}
-        </View>
-      </ScrollView>
-    </View>
+        </ScrollView>
+      </View>
     </ScreenWrapper>
   );
 }

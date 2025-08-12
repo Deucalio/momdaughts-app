@@ -1,44 +1,41 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   Image,
   Pressable,
   StyleSheet,
   Text,
   TouchableOpacity,
-  View
+  View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { logOut, useAuthenticatedFetch } from "../app/utils/authStore";
 
-const BACKEND_URL = "http://192.168.18.5:3000";
 
-const Header = ({ cartItemCount: cartItemCount_ }) => {
+const Header = ({ cartItemCount }) => {
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const router = useRouter();
   const { authenticatedFetch } = useAuthenticatedFetch();
   const insets = useSafeAreaInsets();
-  const [cartItemCount, setCartItemCount] = useState(cartItemCount_);
-  
-const getCartItems = async () => {
-    try {
-      const res = await authenticatedFetch(`${BACKEND_URL}/cart-items-count`);
-      if (res.ok) {
-        const data = await res.json();
-        console.log("Cart Items Count:", data.count);
-        setCartItemCount(data.count);
-      }
-    } catch (e) {
-      console.log(e);
-    }
-  }
- 
 
-  useEffect(() => {
-    console.log("Calling getCartItems");
-    getCartItems();
-  }, []);
+  // const getCartItems = async () => {
+  //     try {
+  //       const res = await authenticatedFetch(`${BACKEND_URL}/cart-items-count`);
+  //       if (res.ok) {
+  //         const data = await res.json();
+  //         console.log("Cart Items Count:", data.count);
+  //         setCartItemCount(data.count);
+  //       }
+  //     } catch (e) {
+  //       console.log(e);
+  //     }
+  //   }
+
+  //   useEffect(() => {
+  //     console.log("Calling getCartItems");
+  //     getCartItems();
+  //   }, []);
 
   const handleCartPress = () => {
     console.log("Navigate to Cart");
@@ -82,9 +79,11 @@ const getCartItems = async () => {
               }}
               style={styles.logoTitle}
             >
-              <Text style={{
-                color: "#2c2a6b"
-              }}>
+              <Text
+                style={{
+                  color: "#2c2a6b",
+                }}
+              >
                 Mom
               </Text>
               Daughts
@@ -133,7 +132,11 @@ const getCartItems = async () => {
                     style={styles.dropdownItem}
                     onPress={handleLogoutPress}
                   >
-                    <Ionicons name="log-out-outline" size={18} color="#ec4899" />
+                    <Ionicons
+                      name="log-out-outline"
+                      size={18}
+                      color="#ec4899"
+                    />
                     <Text style={[styles.dropdownText, { color: "#ec4899" }]}>
                       Logout
                     </Text>
@@ -144,7 +147,7 @@ const getCartItems = async () => {
           </View>
         </View>
       </View>
-      
+
       {/* Overlay to close dropdown when clicking outside */}
       {showProfileMenu && (
         <Pressable
@@ -158,7 +161,7 @@ const getCartItems = async () => {
 
 const styles = StyleSheet.create({
   header: {
-    position: 'absolute',
+    position: "absolute",
     top: 0,
     left: 0,
     right: 0,

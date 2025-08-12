@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   Dimensions,
   ScrollView,
@@ -21,22 +21,42 @@ import {
 
 /*******  fb45f32e-bf05-446d-9d28-7247b9612e0e  *******/ import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
-import { router } from "expo-router";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { useAuthStore } from "../utils/authStore";
+import { router, useFocusEffect } from "expo-router";
+import { useAuthStore, useAuthenticatedFetch } from "../utils/authStore";
 import { logOut } from "../utils/auth";
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import OldHeader from "../../components/OldHeader";
 import ScreenWrapper from "../../components/ScreenWrapper";
+import { fetchCartItemsCount } from "../utils/actions";
 
 const { width } = Dimensions.get("window");
 
 export default function HomePage() {
   const user = useAuthStore((state) => state.user);
+  const { authenticatedFetch } = useAuthenticatedFetch();
 
-   const insets = useSafeAreaInsets();
-  
+  const insets = useSafeAreaInsets();
+  const [cartItemsCount, setCartItemsCount] = useState(0);
+
+  const storeCartItemsCount = async () => {
+    const count = await fetchCartItemsCount(authenticatedFetch);
+    if (count.success) {
+      setCartItemsCount(count.count);
+      return;
+    }
+    throw new Error("Failed to fetch cart items count");
+  };
+
+  useEffect(() => {
+    storeCartItemsCount();
+  }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      storeCartItemsCount();
+    }, [])
+  );
+
   // Calculate the header height (safe area top + padding + content height)
   const headerHeight = insets.top + 12 + 52 + 12; // top padding + top spacing + content height + bottom padding
 
@@ -126,210 +146,211 @@ export default function HomePage() {
   ];
 
   return (
-    <ScreenWrapper>
-     
-    <View style={styles.container}>
-   
-      <ScrollView showsVerticalScrollIndicator={false}>
-        {/* Header */}
+    <ScreenWrapper cartItemCount={cartItemsCount}>
+      <View style={styles.container}>
+        <ScrollView showsVerticalScrollIndicator={false}>
+          {/* Header */}
 
-        {/* Hero Section */}
-        <LinearGradient
-          colors={["#fdf2f8", "#f3e8ff", "#eff6ff"]}
-          style={styles.heroSection}
-        >
-          <View style={styles.heroContent}>
-            <Text style={styles.heroTitle}>
-              <Text style={styles.heroTitleGradient}>Your {user.email}</Text>
-              {"\n"}Journey Starts Here
-            </Text>
-            <Text style={styles.heroSubtitle}>
-              Track your cycle, monitor your health, and discover products
-              designed for your unique wellness needs.
-            </Text>
-            <Text className="text-red-500 text-2xl">Hello There</Text>
+          {/* Hero Section */}
+          <LinearGradient
+            colors={["#fdf2f8", "#f3e8ff", "#eff6ff"]}
+            style={styles.heroSection}
+          >
+            <View style={styles.heroContent}>
+              <Text style={styles.heroTitle}>
+                <Text style={styles.heroTitleGradient}>Your {user.email}</Text>
+                {"\n"}Journey Starts Here
+              </Text>
+              <Text style={styles.heroSubtitle}>
+                Track your cycle, monitor your health, and discover products
+                designed for your unique wellness needs.
+              </Text>
+              <Text className="text-red-500 text-2xl">Hello There</Text>
 
-            {/* Quick Stats */}
-            <View style={styles.quickStats}>
-              {quickStats.map((stat, index) => (
+              {/* Quick Stats */}
+              <View style={styles.quickStats}>
+                {quickStats.map((stat, index) => (
+                  <LinearGradient
+                    key={index}
+                    colors={stat.colors}
+                    style={styles.statCard}
+                  >
+                    <Text style={styles.statValue}>{stat.value}</Text>
+                    <Text style={styles.statLabel}>{stat.label}</Text>
+                  </LinearGradient>
+                ))}
+              </View>
+
+              <TouchableOpacity style={styles.ctaButton}>
                 <LinearGradient
-                  key={index}
-                  colors={stat.colors}
-                  style={styles.statCard}
+                  colors={["#ec4899", "#8b5cf6"]}
+                  style={styles.ctaGradient}
                 >
-                  <Text style={styles.statValue}>{stat.value}</Text>
-                  <Text style={styles.statLabel}>{stat.label}</Text>
+                  <Text style={styles.ctaText}>Get Started</Text>
+                  <Ionicons name="arrow-forward" size={16} color="white" />
                 </LinearGradient>
+              </TouchableOpacity>
+            </View>
+          </LinearGradient>
+
+          {/* Current Cycle Status */}
+          <View style={styles.section}>
+            <LinearGradient
+              colors={["#fdf2f8", "#f3e8ff"]}
+              style={styles.cycleCard}
+            >
+              <View style={styles.cycleHeader}>
+                <View>
+                  <Text style={styles.cycleTitle}>Current Cycle</Text>
+                  <Text style={styles.cycleSubtitle}>
+                    Day {currentCycle.dayOfCycle} • {currentCycle.phase} Phase
+                  </Text>
+                </View>
+                <View style={styles.phaseBadge}>
+                  <Text style={styles.phaseBadgeText}>
+                    {currentCycle.phase}
+                  </Text>
+                </View>
+              </View>
+
+              <View style={styles.progressContainer}>
+                <View style={styles.progressHeader}>
+                  <Text style={styles.progressLabel}>Cycle Progress</Text>
+                  <Text style={styles.progressPercent}>
+                    {Math.round((currentCycle.dayOfCycle / 28) * 100)}%
+                  </Text>
+                </View>
+                <View style={styles.progressBar}>
+                  <View
+                    style={[
+                      styles.progressFill,
+                      { width: `${(currentCycle.dayOfCycle / 28) * 100}%` },
+                    ]}
+                  />
+                </View>
+                <Text style={styles.nextPeriod}>
+                  Next period expected: {currentCycle.nextPeriod}
+                </Text>
+              </View>
+
+              <View style={styles.cycleActions}>
+                <TouchableOpacity style={styles.cycleButton}>
+                  <Text style={styles.cycleButtonText}>Log Symptoms</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.cycleButton, styles.cycleButtonOutline]}
+                >
+                  <Text style={styles.cycleButtonOutlineText}>
+                    View Calendar
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </LinearGradient>
+          </View>
+
+          {/* Wellness Tools */}
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitle}>Wellness Tools</Text>
+              <TouchableOpacity>
+                <Text style={styles.viewAllText}>View All</Text>
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.utilitiesGrid}>
+              {utilities.map((utility, index) => (
+                <TouchableOpacity
+                  key={index}
+                  style={styles.utilityCard}
+                  onPress={() => router.push(utility.route)}
+                >
+                  <LinearGradient
+                    colors={utility.colors}
+                    style={styles.utilityIcon}
+                  >
+                    <Ionicons name={utility.icon} size={24} color="white" />
+                  </LinearGradient>
+                  <Text style={styles.utilityTitle}>{utility.title}</Text>
+                  <Text style={styles.utilityDescription}>
+                    {utility.description}
+                  </Text>
+                </TouchableOpacity>
               ))}
             </View>
-
-            <TouchableOpacity style={styles.ctaButton}>
-              <LinearGradient
-                colors={["#ec4899", "#8b5cf6"]}
-                style={styles.ctaGradient}
-              >
-                <Text style={styles.ctaText}>Get Started</Text>
-                <Ionicons name="arrow-forward" size={16} color="white" />
-              </LinearGradient>
-            </TouchableOpacity>
           </View>
-        </LinearGradient>
 
-        {/* Current Cycle Status */}
-        <View style={styles.section}>
-          <LinearGradient
-            colors={["#fdf2f8", "#f3e8ff"]}
-            style={styles.cycleCard}
-          >
-            <View style={styles.cycleHeader}>
-              <View>
-                <Text style={styles.cycleTitle}>Current Cycle</Text>
-                <Text style={styles.cycleSubtitle}>
-                  Day {currentCycle.dayOfCycle} • {currentCycle.phase} Phase
-                </Text>
-              </View>
-              <View style={styles.phaseBadge}>
-                <Text style={styles.phaseBadgeText}>{currentCycle.phase}</Text>
-              </View>
-            </View>
-
-            <View style={styles.progressContainer}>
-              <View style={styles.progressHeader}>
-                <Text style={styles.progressLabel}>Cycle Progress</Text>
-                <Text style={styles.progressPercent}>
-                  {Math.round((currentCycle.dayOfCycle / 28) * 100)}%
-                </Text>
-              </View>
-              <View style={styles.progressBar}>
-                <View
-                  style={[
-                    styles.progressFill,
-                    { width: `${(currentCycle.dayOfCycle / 28) * 100}%` },
-                  ]}
-                />
-              </View>
-              <Text style={styles.nextPeriod}>
-                Next period expected: {currentCycle.nextPeriod}
-              </Text>
-            </View>
-
-            <View style={styles.cycleActions}>
-              <TouchableOpacity style={styles.cycleButton}>
-                <Text style={styles.cycleButtonText}>Log Symptoms</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.cycleButton, styles.cycleButtonOutline]}
-              >
-                <Text style={styles.cycleButtonOutlineText}>View Calendar</Text>
+          {/* Featured Products */}
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitle}>Featured Products</Text>
+              <TouchableOpacity onPress={() => router.push("/shop")}>
+                <Text style={styles.viewAllText}>Shop All</Text>
               </TouchableOpacity>
             </View>
-          </LinearGradient>
-        </View>
 
-        {/* Wellness Tools */}
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Wellness Tools</Text>
-            <TouchableOpacity>
-              <Text style={styles.viewAllText}>View All</Text>
-            </TouchableOpacity>
-          </View>
-
-          <View style={styles.utilitiesGrid}>
-            {utilities.map((utility, index) => (
-              <TouchableOpacity
-                key={index}
-                style={styles.utilityCard}
-                onPress={() => router.push(utility.route)}
-              >
-                <LinearGradient
-                  colors={utility.colors}
-                  style={styles.utilityIcon}
-                >
-                  <Ionicons name={utility.icon} size={24} color="white" />
-                </LinearGradient>
-                <Text style={styles.utilityTitle}>{utility.title}</Text>
-                <Text style={styles.utilityDescription}>
-                  {utility.description}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-        </View>
-
-        {/* Featured Products */}
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Featured Products</Text>
-            <TouchableOpacity onPress={() => router.push("/shop")}>
-              <Text style={styles.viewAllText}>Shop All</Text>
-            </TouchableOpacity>
-          </View>
-
-          <View style={styles.productsGrid}>
-            {featuredProducts.map((product) => (
-              <TouchableOpacity key={product.id} style={styles.productCard}>
-                <View style={styles.productImage}>
-                  <LinearGradient
-                    colors={["#fdf2f8", "#f3e8ff"]}
-                    style={styles.productImageGradient}
-                  />
-                  {product.badge && (
-                    <View style={styles.productBadge}>
-                      <Text style={styles.productBadgeText}>
-                        {product.badge}
-                      </Text>
-                    </View>
-                  )}
-                </View>
-                <View style={styles.productInfo}>
-                  <Text style={styles.productName}>{product.name}</Text>
-                  <View style={styles.productRating}>
-                    <Ionicons name="star" size={12} color="#fbbf24" />
-                    <Text style={styles.ratingText}>{product.rating}</Text>
-                  </View>
-                  <View style={styles.productPricing}>
-                    <Text style={styles.productPrice}>${product.price}</Text>
-                    {product.originalPrice && (
-                      <Text style={styles.originalPrice}>
-                        ${product.originalPrice}
-                      </Text>
+            <View style={styles.productsGrid}>
+              {featuredProducts.map((product) => (
+                <TouchableOpacity key={product.id} style={styles.productCard}>
+                  <View style={styles.productImage}>
+                    <LinearGradient
+                      colors={["#fdf2f8", "#f3e8ff"]}
+                      style={styles.productImageGradient}
+                    />
+                    {product.badge && (
+                      <View style={styles.productBadge}>
+                        <Text style={styles.productBadgeText}>
+                          {product.badge}
+                        </Text>
+                      </View>
                     )}
                   </View>
-                </View>
-              </TouchableOpacity>
-            ))}
-          </View>
-        </View>
-
-        {/* Wellness Tip */}
-        <View style={styles.section}>
-          <LinearGradient
-            colors={["#ecfdf5", "#d1fae5"]}
-            style={styles.tipCard}
-          >
-            <View style={styles.tipContent}>
-              <LinearGradient
-                colors={["#10b981", "#059669"]}
-                style={styles.tipIcon}
-              >
-                <Ionicons name="flash" size={20} color="white" />
-              </LinearGradient>
-              <View style={styles.tipText}>
-                <Text style={styles.tipTitle}>Today's Wellness Tip</Text>
-                <Text style={styles.tipDescription}>
-                  During your follicular phase, your energy levels are naturally
-                  higher. This is a great time to try new workouts or start new
-                  healthy habits!
-                </Text>
-              </View>
+                  <View style={styles.productInfo}>
+                    <Text style={styles.productName}>{product.name}</Text>
+                    <View style={styles.productRating}>
+                      <Ionicons name="star" size={12} color="#fbbf24" />
+                      <Text style={styles.ratingText}>{product.rating}</Text>
+                    </View>
+                    <View style={styles.productPricing}>
+                      <Text style={styles.productPrice}>${product.price}</Text>
+                      {product.originalPrice && (
+                        <Text style={styles.originalPrice}>
+                          ${product.originalPrice}
+                        </Text>
+                      )}
+                    </View>
+                  </View>
+                </TouchableOpacity>
+              ))}
             </View>
-          </LinearGradient>
-        </View>
-      </ScrollView>
-    </View>
-    </ScreenWrapper>
+          </View>
 
+          {/* Wellness Tip */}
+          <View style={styles.section}>
+            <LinearGradient
+              colors={["#ecfdf5", "#d1fae5"]}
+              style={styles.tipCard}
+            >
+              <View style={styles.tipContent}>
+                <LinearGradient
+                  colors={["#10b981", "#059669"]}
+                  style={styles.tipIcon}
+                >
+                  <Ionicons name="flash" size={20} color="white" />
+                </LinearGradient>
+                <View style={styles.tipText}>
+                  <Text style={styles.tipTitle}>Today's Wellness Tip</Text>
+                  <Text style={styles.tipDescription}>
+                    During your follicular phase, your energy levels are
+                    naturally higher. This is a great time to try new workouts
+                    or start new healthy habits!
+                  </Text>
+                </View>
+              </View>
+            </LinearGradient>
+          </View>
+        </ScrollView>
+      </View>
+    </ScreenWrapper>
   );
 }
 
@@ -338,8 +359,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#ffffff",
     paddingTop: Platform.OS === "android" ? StatusBar.currentHeight : 0,
-  
-   
+
     // backgroundColor: "white",
   },
   header: {

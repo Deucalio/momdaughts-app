@@ -1,6 +1,12 @@
-const { getDefaultConfig } = require("expo/metro-config");
-const { withNativeWind } = require("nativewind/metro");
+const { getDefaultConfig } = require('@expo/metro-config');
+const config = getDefaultConfig(__dirname);
 
-module.exports = withNativeWind(getDefaultConfig(__dirname), {
-  input: "./global.css",
-});
+config.resolver.platforms = ['ios', 'android'];
+config.transformer.minifierConfig = {
+  keep_fnames: true,
+  mangle: {
+    keep_fnames: true,
+  },
+};
+
+module.exports = config;
