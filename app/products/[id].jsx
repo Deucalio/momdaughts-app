@@ -75,9 +75,10 @@ const ProductDetailPage = () => {
       const response = await authenticatedFetch(`${BACKEND_URL}/wishlist`);
       if (response.ok) {
         const wishlistData = await response.json();
-        // Extract variant IDs from wishlist
+        // Extract variant IDs from wishlist - ensure they're strings
         const variantIds = new Set(
-          wishlistData.wishlist?.map((item) => item.shopifyVariantId) || []
+          wishlistData.wishlist?.map((item) => String(item.shopifyVariantId)) ||
+            []
         );
         setWishlistedVariants(variantIds);
       }
@@ -88,9 +89,6 @@ const ProductDetailPage = () => {
 
   // Check if current variant is wishlisted
   const isCurrentVariantWishlisted = () => {
-    console.log("Wishlisted Variants:", wishlistedVariants);
-    console.log("Selected Variant:", selectedVariant.id);
-    console.log("res:" , wishlistedVariants.has(selectedVariant.id))
     return selectedVariant ? wishlistedVariants.has(selectedVariant.id) : false;
   };
 
@@ -386,7 +384,8 @@ const ProductDetailPage = () => {
 
     try {
       const isCurrentlyWishlisted = isCurrentVariantWishlisted();
-      console.log("isCurrentlyWishlisted", isCurrentlyWishlisted);
+
+      // Optimistically update the UI
       setWishlistedVariants((prev) => {
         const newSet = new Set(prev);
         if (isCurrentlyWishlisted) {
@@ -398,23 +397,36 @@ const ProductDetailPage = () => {
       });
 
       let actionResult;
-      const body = isCurrentlyWishlisted
-        ? undefined
-        : JSON.stringify({
-            shopifyProductId: product.id,
-            shopifyVariantId: selectedVariant.id,
-          });
 
       if (isCurrentlyWishlisted) {
+        // For removal, pass the variant ID in the request body or as a parameter
+        const body = JSON.stringify({
+          shopifyVariantId: selectedVariant.id,
+        });
+        console.log("body", body);
         actionResult = await removeFromWishlist(authenticatedFetch, body);
       } else {
+        // For addition, pass both product and variant IDs
+        const body = JSON.stringify({
+          shopifyProductId: product.id,
+          shopifyVariantId: selectedVariant.id,
+        });
         actionResult = await addToWishlist(authenticatedFetch, body);
       }
 
-
       // Handle the result of the action
-      if (!actionResult) {
-        throw new Error("No action result returned");
+      if (!actionResult.success) {
+        // Revert the optimistic update if the API call failed
+        setWishlistedVariants((prev) => {
+          const newSet = new Set(prev);
+          if (isCurrentlyWishlisted) {
+            newSet.add(selectedVariant.id);
+          } else {
+            newSet.delete(selectedVariant.id);
+          }
+          return newSet;
+        });
+        throw new Error(actionResult.error || "Failed to update wishlist");
       }
     } catch (error) {
       console.error("Error updating wishlist:", error);
@@ -699,32 +711,10 @@ const ProductDetailPage = () => {
             </View>
           </View>
 
-          {/* Variant Info */}
-          {selectedVariant && (
-            <View style={styles.variantInfo}>
-              <Text style={styles.variantTitle}>
-                {selectedVariant.displayName}
-              </Text>
-              <Text style={styles.variantSku}>SKU: {selectedVariant.sku}</Text>
-            </View>
-          )}
-
           <Text style={styles.price}>{price}</Text>
 
           {/* Stock and Rating Info */}
           <View style={styles.infoRow}>
-            <Text
-              style={[
-                styles.stockText,
-                selectedVariant?.inventoryQuantity <= 0 &&
-                  styles.outOfStockText,
-              ]}
-            >
-              {selectedVariant?.inventoryQuantity > 0
-                ? `${selectedVariant.inventoryQuantity} Left`
-                : "Out of Stock"}
-            </Text>
-            <Text style={styles.soldText}>Sold 50</Text>
             <View style={styles.ratingContainer}>
               <Ionicons name="star" size={14} color="#FFD700" />
               <Text style={styles.ratingText}>

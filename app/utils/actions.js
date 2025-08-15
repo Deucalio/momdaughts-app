@@ -85,8 +85,9 @@ export const addToWishlist = async (authenticatedFetch, body) => {
     });
 
     const data = await res.json();
+    console.log("data:", data);
 
-    if (res.ok && data.success) {
+    if (res.ok) {
       return {
         success: true,
       };
@@ -116,7 +117,7 @@ export const removeFromWishlist = async (authenticatedFetch, body) => {
 
     const data = await res.json();
 
-    if (res.ok && data.success) {
+    if (res.ok) {
       return {
         success: true,
       };
