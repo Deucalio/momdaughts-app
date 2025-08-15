@@ -12,13 +12,16 @@ import {
   StatusBar,
   StyleSheet,
   Text,
+  PressableOpacity,
   View,
+  TouchableOpacity,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuthenticatedFetch } from "../utils/authStore";
 import { useFocusEffect, useRouter } from "expo-router";
 
 import { fetchWishlistItems } from "../utils/actions";
+import { Touchable } from "react-native";
 
 // Your color theme
 const COLORS = {
@@ -134,6 +137,10 @@ export default function WishlistScreen({ navigation }) {
 
   const renderWishlistItem = ({ item }) => (
     <WishlistItem
+      navigateToProduct={() => {
+        console.log("\n\nitem:" , item)
+        router.push(`/products/${item.shopifyProductId}?variantId=${item.shopifyVariantId}`);
+      }}
       item={item}
       onRemove={() => handleRemoveFromWishlist(item.id)}
       onAddToCart={() => handleAddToCart(item)}
@@ -166,7 +173,7 @@ export default function WishlistScreen({ navigation }) {
       </Text>
       <Pressable
         style={styles.shopNowButton}
-        onPress={() => navigation.navigate("Home")}
+        onPress={() => router.push("/shop")}
       >
         <Text style={styles.shopNowText}>Start Shopping</Text>
       </Pressable>
@@ -226,6 +233,7 @@ function WishlistItem({
   onAddToCart,
   isRemoving,
   isAddingToCart,
+  navigateToProduct,
 }) {
   const [fadeAnim] = useState(new Animated.Value(1));
 
@@ -273,7 +281,10 @@ function WishlistItem({
         </Pressable>
 
         {/* Product Image */}
-        <View style={styles.imageContainer}>
+        <TouchableOpacity
+          onPress={() => navigateToProduct()}
+          style={styles.imageContainer}
+        >
           <Image
             source={{ uri: item.variantImage }}
             style={styles.productImage}
@@ -286,7 +297,7 @@ function WishlistItem({
               <Text style={styles.outOfStockText}>Out of Stock</Text>
             </View>
           )}
-        </View>
+        </TouchableOpacity>
 
         {/* Product Info */}
         <View style={styles.productInfo}>

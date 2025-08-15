@@ -30,6 +30,8 @@ const BACKEND_URL = "http://192.168.18.5:3000"
 const CONTAINER_WIDTH = width - 32
 
 const ProductDetailPage = () => {
+  const params   = useLocalSearchParams()
+  console.log("params:", params)
   const [product, setProduct] = useState(null)
   const [loading, setLoading] = useState(true)
   const [quantity, setQuantity] = useState(1)
@@ -200,6 +202,8 @@ const ProductDetailPage = () => {
   })
 
   useEffect(() => {
+
+
     if (product && product.variants && Object.keys(selectedOptions).length > 0) {
       const variant = product.variants.find((v) => {
         if (!v.title) return false
