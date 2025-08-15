@@ -1,203 +1,252 @@
-"use client"
-
-import { Ionicons } from "@expo/vector-icons"
-import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router"
-import { useCallback, useEffect, useRef, useState } from "react"
+"use client";
+import { Ionicons } from "@expo/vector-icons";
+import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
-    ActivityIndicator,
-    Alert,
-    Animated,
-    Dimensions,
-    Easing,
-    FlatList,
-    Image,
-    PanResponder,
-    SafeAreaView,
-    ScrollView,
-    StatusBar,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
-} from "react-native"
-import { useSafeAreaInsets } from "react-native-safe-area-context"
-import { useAuthenticatedFetch } from "../utils/authStore"
+  ActivityIndicator,
+  Alert,
+  Animated,
+  Dimensions,
+  Easing,
+  FlatList,
+  Image,
+  PanResponder,
+  SafeAreaView,
+  ScrollView,
+  StatusBar,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useAuthenticatedFetch } from "../utils/authStore";
+import { removeFromWishlist, addToWishlist } from "../utils/actions";
 
-
-const { width, height } = Dimensions.get("window")
-const BACKEND_URL = "http://192.168.18.5:3000"
-const CONTAINER_WIDTH = width - 32
+const { width, height } = Dimensions.get("window");
+const BACKEND_URL = "http://192.168.18.5:3000";
+const CONTAINER_WIDTH = width - 32;
 
 const ProductDetailPage = () => {
-  const [product, setProduct] = useState(null)
-  const [loading, setLoading] = useState(true)
-  const [quantity, setQuantity] = useState(1)
-  const [selectedOptions, setSelectedOptions] = useState({})
-  const [selectedVariant, setSelectedVariant] = useState(null)
-  const [currentImageIndex, setCurrentImageIndex] = useState(0)
-  const [allImages, setAllImages] = useState([])
-  const [isWishlisted, setIsWishlisted] = useState(false)
-  const [cartCount, setCartCount] = useState(0)
-  const [floatingHearts, setFloatingHearts] = useState([])
+  const [product, setProduct] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [quantity, setQuantity] = useState(1);
+  const [selectedOptions, setSelectedOptions] = useState({});
+  const [selectedVariant, setSelectedVariant] = useState(null);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [allImages, setAllImages] = useState([]);
+  const [wishlistedVariants, setWishlistedVariants] = useState(new Set()); // Track wishlisted variants
+  const [cartCount, setCartCount] = useState(0);
+  const [floatingHearts, setFloatingHearts] = useState([]);
+  const [wishlistLoading, setWishlistLoading] = useState(false); // Loading state for wishlist operations
 
   useFocusEffect(
-  useCallback(() => {
-    StatusBar.setBackgroundColor('#F5F5F5');
-    StatusBar.setBarStyle('dark-content');
-  }, [])
-);
+    useCallback(() => {
+      StatusBar.setBackgroundColor("#F5F5F5");
+      StatusBar.setBarStyle("dark-content");
+    }, [])
+  );
 
-  const { authenticatedFetch } = useAuthenticatedFetch()
-  const { id } = useLocalSearchParams()
-  const router = useRouter()
-  const insets = useSafeAreaInsets()
+  const { authenticatedFetch } = useAuthenticatedFetch();
+  const { id } = useLocalSearchParams();
+  const router = useRouter();
+  const insets = useSafeAreaInsets();
 
   // Animation values
-  const slideAnim = useRef(new Animated.Value(0)).current
-
+  const slideAnim = useRef(new Animated.Value(0)).current;
   // Wishlist animations
-  const heartScale = useRef(new Animated.Value(1)).current
-  const heartRotation = useRef(new Animated.Value(0)).current
-  const wishlistButtonScale = useRef(new Animated.Value(1)).current
-
+  const heartScale = useRef(new Animated.Value(1)).current;
+  const heartRotation = useRef(new Animated.Value(0)).current;
+  const wishlistButtonScale = useRef(new Animated.Value(1)).current;
   // Add to cart animations - minimal
-  const addToCartScale = useRef(new Animated.Value(1)).current
-  const addToCartTranslateY = useRef(new Animated.Value(0)).current
-
+  const addToCartScale = useRef(new Animated.Value(1)).current;
+  const addToCartTranslateY = useRef(new Animated.Value(0)).current;
   // Cart badge animation
-  const cartBounce = useRef(new Animated.Value(0)).current
+  const cartBounce = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    loadProduct()
-  }, [])
+    loadProduct();
+    loadWishlistedVariants(); // Load user's wishlisted variants
+  }, []);
+
+  // Load user's wishlisted variants from API
+  const loadWishlistedVariants = async () => {
+    try {
+      const response = await authenticatedFetch(`${BACKEND_URL}/wishlist`);
+      if (response.ok) {
+        const wishlistData = await response.json();
+        // Extract variant IDs from wishlist
+        const variantIds = new Set(
+          wishlistData.wishlist?.map((item) => item.shopifyVariantId) || []
+        );
+        setWishlistedVariants(variantIds);
+      }
+    } catch (error) {
+      console.error("Error loading wishlist:", error);
+    }
+  };
+
+  // Check if current variant is wishlisted
+  const isCurrentVariantWishlisted = () => {
+    console.log("Wishlisted Variants:", wishlistedVariants);
+    console.log("Selected Variant:", selectedVariant.id);
+    console.log("res:" , wishlistedVariants.has(selectedVariant.id))
+    return selectedVariant ? wishlistedVariants.has(selectedVariant.id) : false;
+  };
 
   const buildImageArray = () => {
-    const images = []
+    const images = [];
     if (selectedVariant?.image?.url) {
       images.push({
         id: `variant-${selectedVariant.id}`,
         url: selectedVariant.image.url,
         altText: selectedVariant.image.altText || "Product variant image",
         isVariant: true,
-      })
+      });
     }
     if (product?.images?.length > 0) {
       product.images.forEach((image, index) => {
-        const isDuplicate = selectedVariant?.image?.url === image.url
+        const isDuplicate = selectedVariant?.image?.url === image.url;
         if (!isDuplicate) {
           images.push({
             id: `product-${index}`,
             url: image.url,
             altText: image.altText || "Product image",
             isVariant: false,
-          })
+          });
         }
-      })
+      });
     }
     return images.length > 0
       ? images
-      : [{ id: "placeholder", url: "https://via.placeholder.com/300", altText: "Placeholder", isVariant: false }]
-  }
+      : [
+          {
+            id: "placeholder",
+            url: "https://via.placeholder.com/300",
+            altText: "Placeholder",
+            isVariant: false,
+          },
+        ];
+  };
 
   useEffect(() => {
-    const newImages = buildImageArray()
-    setAllImages(newImages)
-    setCurrentImageIndex(0)
-    slideAnim.setValue(0)
-  }, [selectedVariant, product])
+    const newImages = buildImageArray();
+    setAllImages(newImages);
+    setCurrentImageIndex(0);
+    slideAnim.setValue(0);
+  }, [selectedVariant, product]);
 
   const animateToIndex = (index) => {
-    const targetValue = -index * CONTAINER_WIDTH
+    const targetValue = -index * CONTAINER_WIDTH;
     Animated.timing(slideAnim, {
       toValue: targetValue,
       duration: 300,
       useNativeDriver: true,
-    }).start()
-  }
+    }).start();
+  };
 
   const handleThumbnailPress = (index) => {
     if (index >= 0 && index < allImages.length && index !== currentImageIndex) {
-      setCurrentImageIndex(index)
-      animateToIndex(index)
+      setCurrentImageIndex(index);
+      animateToIndex(index);
     }
-  }
+  };
 
   const panResponder = PanResponder.create({
     onStartShouldSetPanResponder: () => true,
     onMoveShouldSetPanResponder: (evt, gestureState) => {
-      return Math.abs(gestureState.dx) > Math.abs(gestureState.dy) && Math.abs(gestureState.dx) > 10
+      return (
+        Math.abs(gestureState.dx) > Math.abs(gestureState.dy) &&
+        Math.abs(gestureState.dx) > 10
+      );
     },
     onPanResponderGrant: () => {
-      slideAnim.stopAnimation()
+      slideAnim.stopAnimation();
     },
     onPanResponderMove: (evt, gestureState) => {
-      const baseValue = -currentImageIndex * CONTAINER_WIDTH
-      const newValue = baseValue + gestureState.dx
-      slideAnim.setValue(newValue)
+      const baseValue = -currentImageIndex * CONTAINER_WIDTH;
+      const newValue = baseValue + gestureState.dx;
+      slideAnim.setValue(newValue);
     },
     onPanResponderRelease: (evt, gestureState) => {
-      const { dx, vx } = gestureState
-      const threshold = CONTAINER_WIDTH * 0.25
-      const velocity = Math.abs(vx) > 0.3
-
-      let newIndex = currentImageIndex
+      const { dx, vx } = gestureState;
+      const threshold = CONTAINER_WIDTH * 0.25;
+      const velocity = Math.abs(vx) > 0.3;
+      let newIndex = currentImageIndex;
       if ((dx > threshold || (velocity && dx > 0)) && currentImageIndex > 0) {
-        newIndex = currentImageIndex - 1
-      } else if ((dx < -threshold || (velocity && dx < 0)) && currentImageIndex < allImages.length - 1) {
-        newIndex = currentImageIndex + 1
+        newIndex = currentImageIndex - 1;
+      } else if (
+        (dx < -threshold || (velocity && dx < 0)) &&
+        currentImageIndex < allImages.length - 1
+      ) {
+        newIndex = currentImageIndex + 1;
       }
-
-      setCurrentImageIndex(newIndex)
-      animateToIndex(newIndex)
+      setCurrentImageIndex(newIndex);
+      animateToIndex(newIndex);
     },
-  })
+  });
 
   useEffect(() => {
-    if (product && product.variants && Object.keys(selectedOptions).length > 0) {
+    if (
+      product &&
+      product.variants &&
+      Object.keys(selectedOptions).length > 0
+    ) {
       const variant = product.variants.find((v) => {
-        if (!v.title) return false
-        const selectedOptionString = Object.values(selectedOptions).join(" / ")
-        return v.title === selectedOptionString || v.displayName === selectedOptionString
-      })
-      const newVariant = variant || product.variants[0]
-      setSelectedVariant(newVariant)
+        if (!v.title) return false;
+        const selectedOptionString = Object.values(selectedOptions).join(" / ");
+        return (
+          v.title === selectedOptionString ||
+          v.displayName === selectedOptionString
+        );
+      });
+      const newVariant = variant || product.variants[0];
+      setSelectedVariant(newVariant);
     }
-  }, [selectedOptions, product])
+  }, [selectedOptions, product]);
 
   const loadProduct = async () => {
     try {
-      setLoading(true)
-      const response = await authenticatedFetch(`${BACKEND_URL}/products?productId=${id}`)
+      setLoading(true);
+      const response = await authenticatedFetch(
+        `${BACKEND_URL}/products?productId=${id}`
+      );
       if (!response.ok) {
-        throw new Error(`Failed to fetch product data: ${response.status} ${response.statusText}`)
+        throw new Error(
+          `Failed to fetch product data: ${response.status} ${response.statusText}`
+        );
       }
-      const productData = await response.json()
-      setProduct(productData.product)
-
-      if (productData.product.options && productData.product.options.length > 0) {
-        const initialOptions = {}
+      const productData = await response.json();
+      setProduct(productData.product);
+      if (
+        productData.product.options &&
+        productData.product.options.length > 0
+      ) {
+        const initialOptions = {};
         productData.product.options.forEach((option) => {
           if (option.values && option.values.length > 0) {
-            initialOptions[option.name] = option.values[0]
+            initialOptions[option.name] = option.values[0];
           }
-        })
-        setSelectedOptions(initialOptions)
+        });
+        setSelectedOptions(initialOptions);
       }
-
-      if (productData.product.variants && productData.product.variants.length > 0) {
-        setSelectedVariant(productData.product.variants[0])
+      if (
+        productData.product.variants &&
+        productData.product.variants.length > 0
+      ) {
+        setSelectedVariant(productData.product.variants[0]);
       }
     } catch (error) {
-      console.error("Error loading product:", error)
-      Alert.alert("Error", "Failed to load product data")
+      console.error("Error loading product:", error);
+      Alert.alert("Error", "Failed to load product data");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   // Create floating hearts effect
   const createFloatingHearts = () => {
-    const hearts = []
+    const hearts = [];
     for (let i = 0; i < 6; i++) {
       hearts.push({
         id: Date.now() + i,
@@ -208,15 +257,12 @@ const ProductDetailPage = () => {
         rotation: new Animated.Value(0),
         startX: -15 + Math.random() * 30,
         startY: 0,
-      })
+      });
     }
-
-    setFloatingHearts((prev) => [...prev, ...hearts])
-
+    setFloatingHearts((prev) => [...prev, ...hearts]);
     hearts.forEach((heart, index) => {
-      const delay = index * 120
-      const duration = 1800 + Math.random() * 800
-
+      const delay = index * 120;
+      const duration = 1800 + Math.random() * 800;
       Animated.parallel([
         Animated.timing(heart.translateY, {
           toValue: -100 - Math.random() * 60,
@@ -264,12 +310,14 @@ const ProductDetailPage = () => {
       ]).start(() => {
         if (index === hearts.length - 1) {
           setTimeout(() => {
-            setFloatingHearts((prev) => prev.filter((h) => !hearts.find((heart) => heart.id === h.id)))
-          }, 500)
+            setFloatingHearts((prev) =>
+              prev.filter((h) => !hearts.find((heart) => heart.id === h.id))
+            );
+          }, 500);
         }
-      })
-    })
-  }
+      });
+    });
+  };
 
   // Minimal add to cart animation
   const animateAddToCart = () => {
@@ -290,7 +338,6 @@ const ProductDetailPage = () => {
           easing: Easing.out(Easing.quad),
         }),
       ]),
-
       // Subtle upward movement
       Animated.sequence([
         Animated.timing(addToCartTranslateY, {
@@ -306,7 +353,7 @@ const ProductDetailPage = () => {
           easing: Easing.out(Easing.quad),
         }),
       ]),
-    ]).start()
+    ]).start();
 
     // Cart icon bounce
     Animated.sequence([
@@ -322,124 +369,119 @@ const ProductDetailPage = () => {
         useNativeDriver: true,
         easing: Easing.out(Easing.quad),
       }),
-    ]).start()
-  }
+    ]).start();
+  };
 
   const handleAddToCart = () => {
-    setCartCount((prev) => prev + quantity)
-    animateAddToCart()
-  }
+    setCartCount((prev) => prev + quantity);
+    animateAddToCart();
+  };
 
-  const animateWishlist = () => {
-    // Create floating hearts effect
-    if (!isWishlisted) {
-      createFloatingHearts()
+  // Add/Remove variant from wishlist
+  const handleWishlistToggle = async () => {
+    if (!selectedVariant) {
+      Alert.alert("Error", "Please select a variant first");
+      return;
     }
 
-    // Wishlist animation
-    Animated.parallel([
-      // Heart scale with bounce
-      Animated.sequence([
-        Animated.timing(heartScale, {
-          toValue: 1.4,
-          duration: 120,
-          useNativeDriver: true,
-          easing: Easing.out(Easing.back(2)),
-        }),
-        Animated.timing(heartScale, {
-          toValue: 0.9,
-          duration: 80,
-          useNativeDriver: true,
-          easing: Easing.out(Easing.quad),
-        }),
-        Animated.timing(heartScale, {
-          toValue: 1,
-          duration: 120,
-          useNativeDriver: true,
-          easing: Easing.out(Easing.back(1)),
-        }),
-      ]),
+    try {
+      const isCurrentlyWishlisted = isCurrentVariantWishlisted();
+      console.log("isCurrentlyWishlisted", isCurrentlyWishlisted);
+      setWishlistedVariants((prev) => {
+        const newSet = new Set(prev);
+        if (isCurrentlyWishlisted) {
+          newSet.delete(selectedVariant.id);
+        } else {
+          newSet.add(selectedVariant.id);
+        }
+        return newSet;
+      });
 
-      // Heart rotation
-      Animated.sequence([
-        Animated.timing(heartRotation, {
-          toValue: 1,
-          duration: 150,
-          useNativeDriver: true,
-          easing: Easing.out(Easing.quad),
-        }),
-        Animated.timing(heartRotation, {
-          toValue: 0,
-          duration: 150,
-          useNativeDriver: true,
-          easing: Easing.out(Easing.quad),
-        }),
-      ]),
+      let actionResult;
+      const body = isCurrentlyWishlisted
+        ? undefined
+        : JSON.stringify({
+            shopifyProductId: product.id,
+            shopifyVariantId: selectedVariant.id,
+          });
 
-      // Button scale
-      Animated.sequence([
-        Animated.timing(wishlistButtonScale, {
-          toValue: 1.2,
-          duration: 120,
-          useNativeDriver: true,
-          easing: Easing.out(Easing.back(2)),
-        }),
-        Animated.timing(wishlistButtonScale, {
-          toValue: 1,
-          duration: 200,
-          useNativeDriver: true,
-          easing: Easing.out(Easing.back(1)),
-        }),
-      ]),
-    ]).start()
-  }
+      if (isCurrentlyWishlisted) {
+        actionResult = await removeFromWishlist(authenticatedFetch, body);
+      } else {
+        actionResult = await addToWishlist(authenticatedFetch, body);
+      }
 
-  const handleWishlistToggle = () => {
-    setIsWishlisted((prev) => !prev)
-    animateWishlist()
-  }
+
+      // Handle the result of the action
+      if (!actionResult) {
+        throw new Error("No action result returned");
+      }
+    } catch (error) {
+      console.error("Error updating wishlist:", error);
+      Alert.alert("Error", "Failed to update wishlist. Please try again.");
+    } finally {
+    }
+  };
 
   const handleBuyNow = () => {
-    Alert.alert("Buy Now", `Proceeding to checkout with ${quantity} x ${product.title}`)
-  }
+    Alert.alert(
+      "Buy Now",
+      `Proceeding to checkout with ${quantity} x ${
+        selectedVariant?.displayName || product.title
+      }`
+    );
+  };
 
   const getPrice = () => {
     if (selectedVariant && selectedVariant.price) {
-      const price = Number.parseFloat(selectedVariant.price)
-      return `Rs. ${price.toFixed(2)}`
+      const price = Number.parseFloat(selectedVariant.price);
+      return `Rs. ${price.toFixed(2)}`;
     }
-    return ""
-  }
+    return "";
+  };
 
   const getRating = () => {
-    const ratingMetafield = product?.metafields?.find((m) => m.key === "rating")
+    const ratingMetafield = product?.metafields?.find(
+      (m) => m.key === "rating"
+    );
     if (ratingMetafield) {
-      const ratingData = JSON.parse(ratingMetafield.value)
-      return Number.parseFloat(ratingData.value)
+      const ratingData = JSON.parse(ratingMetafield.value);
+      return Number.parseFloat(ratingData.value);
     }
-    return 4.7
-  }
+    return 4.7;
+  };
 
   const getReviewCount = () => {
-    const reviewCountMetafield = product?.metafields?.find((m) => m.key === "rating_count")
-    return reviewCountMetafield ? Number.parseInt(reviewCountMetafield.value) : 69
-  }
+    const reviewCountMetafield = product?.metafields?.find(
+      (m) => m.key === "rating_count"
+    );
+    return reviewCountMetafield
+      ? Number.parseInt(reviewCountMetafield.value)
+      : 69;
+  };
 
   const handleOptionSelect = (optionName, value) => {
     setSelectedOptions((prev) => ({
       ...prev,
       [optionName]: value,
-    }))
-  }
+    }));
+  };
 
   const renderImageThumbnail = ({ item, index }) => (
     <TouchableOpacity
-      style={[styles.thumbnailContainer, currentImageIndex === index && styles.activeThumbnail]}
+      style={[
+        styles.thumbnailContainer,
+        currentImageIndex === index && styles.activeThumbnail,
+      ]}
       onPress={() => handleThumbnailPress(index)}
     >
-      <Image source={{ uri: item.url }} style={styles.thumbnail} resizeMode="cover" />
+      <Image
+        source={{ uri: item.url }}
+        style={styles.thumbnail}
+        resizeMode="cover"
+      />
     </TouchableOpacity>
-  )
+  );
 
   // Custom Quantity Selector Component
   const QuantitySelector = () => (
@@ -447,19 +489,29 @@ const ProductDetailPage = () => {
       <Text style={styles.quantityLabel}>Quantity</Text>
       <View style={styles.quantitySelector}>
         <TouchableOpacity
-          style={[styles.quantityButton, quantity <= 1 && styles.quantityButtonDisabled]}
+          style={[
+            styles.quantityButton,
+            quantity <= 1 && styles.quantityButtonDisabled,
+          ]}
           onPress={() => setQuantity(Math.max(1, quantity - 1))}
           disabled={quantity <= 1}
         >
-          <Ionicons name="remove" size={18} color={quantity <= 1 ? "#ccc" : "#2c2a6b"} />
+          <Ionicons
+            name="remove"
+            size={18}
+            color={quantity <= 1 ? "#ccc" : "#2c2a6b"}
+          />
         </TouchableOpacity>
         <Text style={styles.quantityText}>{quantity}</Text>
-        <TouchableOpacity style={styles.quantityButton} onPress={() => setQuantity(quantity + 1)}>
+        <TouchableOpacity
+          style={styles.quantityButton}
+          onPress={() => setQuantity(quantity + 1)}
+        >
           <Ionicons name="add" size={18} color="#2c2a6b" />
         </TouchableOpacity>
       </View>
     </View>
-  )
+  );
 
   if (loading) {
     return (
@@ -468,7 +520,7 @@ const ProductDetailPage = () => {
         <ActivityIndicator size="large" color="#22C55E" />
         <Text style={styles.loadingText}>Loading product...</Text>
       </SafeAreaView>
-    )
+    );
   }
 
   if (!product) {
@@ -480,21 +532,23 @@ const ProductDetailPage = () => {
           <Text style={styles.retryButtonText}>Retry</Text>
         </TouchableOpacity>
       </SafeAreaView>
-    )
+    );
   }
 
-  const rating = getRating()
-  const reviewCount = getReviewCount()
-  const price = getPrice()
+  const rating = getRating();
+  const reviewCount = getReviewCount();
+  const price = getPrice();
+  const isWishlisted = isCurrentVariantWishlisted();
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* <StatusBar barStyle="dark-content" backgroundColor="#F5F5F5" translucent={false} /> */}
-
       {/* Header */}
       <View style={styles.header}>
         <View style={styles.headerContent}>
-          <TouchableOpacity onPress={() => router.back()} style={styles.headerButton}>
+          <TouchableOpacity
+            onPress={() => router.back()}
+            style={styles.headerButton}
+          >
             <Ionicons name="arrow-back" size={24} color="#000" />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Product Detail</Text>
@@ -525,7 +579,10 @@ const ProductDetailPage = () => {
       <ScrollView
         style={styles.scrollView}
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={[styles.scrollContent, { paddingBottom: insets.bottom + 100 }]}
+        contentContainerStyle={[
+          styles.scrollContent,
+          { paddingBottom: insets.bottom + 100 },
+        ]}
       >
         {/* Image Section */}
         <View style={styles.imageSection}>
@@ -541,12 +598,15 @@ const ProductDetailPage = () => {
               {allImages.map((image, index) => (
                 <View key={image.id} style={styles.imageSlide}>
                   <View style={styles.imageShadow} />
-                  <Image source={{ uri: image.url }} style={styles.mainImage} resizeMode="cover" />
+                  <Image
+                    source={{ uri: image.url }}
+                    style={styles.mainImage}
+                    resizeMode="cover"
+                  />
                 </View>
               ))}
             </Animated.View>
           </View>
-
           {/* Image Thumbnails */}
           <FlatList
             data={allImages}
@@ -563,8 +623,7 @@ const ProductDetailPage = () => {
         <View style={styles.productInfo}>
           <View style={styles.productHeader}>
             <Text style={styles.productTitle}>{product.title}</Text>
-
-            {/* Animated Wishlist Button */}
+            {/* Enhanced Animated Wishlist Button */}
             <View style={styles.wishlistButtonContainer}>
               <Animated.View
                 style={[
@@ -574,29 +633,42 @@ const ProductDetailPage = () => {
                   },
                 ]}
               >
-                <TouchableOpacity style={styles.favoriteButton} onPress={handleWishlistToggle}>
-                  <Animated.View
-                    style={{
-                      transform: [
-                        { scale: heartScale },
-                        {
-                          rotate: heartRotation.interpolate({
-                            inputRange: [0, 1],
-                            outputRange: ["0deg", "12deg"],
-                          }),
-                        },
-                      ],
-                    }}
-                  >
-                    <Ionicons
-                      name={isWishlisted ? "heart" : "heart-outline"}
-                      size={24}
+                <TouchableOpacity
+                  style={[
+                    styles.favoriteButton,
+                    isWishlisted && styles.favoriteButtonActive,
+                  ]}
+                  onPress={handleWishlistToggle}
+                  disabled={wishlistLoading}
+                >
+                  {wishlistLoading ? (
+                    <ActivityIndicator
+                      size="small"
                       color={isWishlisted ? "#EF4444" : "#666"}
                     />
-                  </Animated.View>
+                  ) : (
+                    <Animated.View
+                      style={{
+                        transform: [
+                          { scale: heartScale },
+                          {
+                            rotate: heartRotation.interpolate({
+                              inputRange: [0, 1],
+                              outputRange: ["0deg", "12deg"],
+                            }),
+                          },
+                        ],
+                      }}
+                    >
+                      <Ionicons
+                        name={isWishlisted ? "heart" : "heart-outline"}
+                        size={24}
+                        color={isWishlisted ? "#EF4444" : "#666"}
+                      />
+                    </Animated.View>
+                  )}
                 </TouchableOpacity>
               </Animated.View>
-
               {/* Floating Hearts */}
               {floatingHearts.map((heart) => (
                 <Animated.View
@@ -627,11 +699,31 @@ const ProductDetailPage = () => {
             </View>
           </View>
 
+          {/* Variant Info */}
+          {selectedVariant && (
+            <View style={styles.variantInfo}>
+              <Text style={styles.variantTitle}>
+                {selectedVariant.displayName}
+              </Text>
+              <Text style={styles.variantSku}>SKU: {selectedVariant.sku}</Text>
+            </View>
+          )}
+
           <Text style={styles.price}>{price}</Text>
 
           {/* Stock and Rating Info */}
           <View style={styles.infoRow}>
-            <Text style={styles.stockText}>5 Pair Left</Text>
+            <Text
+              style={[
+                styles.stockText,
+                selectedVariant?.inventoryQuantity <= 0 &&
+                  styles.outOfStockText,
+              ]}
+            >
+              {selectedVariant?.inventoryQuantity > 0
+                ? `${selectedVariant.inventoryQuantity} Left`
+                : "Out of Stock"}
+            </Text>
             <Text style={styles.soldText}>Sold 50</Text>
             <View style={styles.ratingContainer}>
               <Ionicons name="star" size={14} color="#FFD700" />
@@ -654,14 +746,16 @@ const ProductDetailPage = () => {
                       key={value}
                       style={[
                         styles.optionButton,
-                        selectedOptions[option.name] === value && styles.optionButtonSelected,
+                        selectedOptions[option.name] === value &&
+                          styles.optionButtonSelected,
                       ]}
                       onPress={() => handleOptionSelect(option.name, value)}
                     >
                       <Text
                         style={[
                           styles.optionButtonText,
-                          selectedOptions[option.name] === value && styles.optionButtonTextSelected,
+                          selectedOptions[option.name] === value &&
+                            styles.optionButtonTextSelected,
                         ]}
                       >
                         {value}
@@ -686,35 +780,67 @@ const ProductDetailPage = () => {
       </ScrollView>
 
       {/* Fixed Action Buttons - Safe Area Aware */}
-      <View style={[styles.bottomContainer, { paddingBottom: Math.max(insets.bottom, 20) }]}>
+      <View
+        style={[
+          styles.bottomContainer,
+          { paddingBottom: Math.max(insets.bottom, 20) },
+        ]}
+      >
         <View style={styles.actionButtons}>
           <TouchableOpacity style={styles.chatButton}>
             <Ionicons name="chatbubble-outline" size={20} color="#2c2a6b" />
           </TouchableOpacity>
-
           {/* Minimalist Add to Cart Button */}
           <Animated.View
             style={[
               styles.addToCartButtonContainer,
               {
-                transform: [{ scale: addToCartScale }, { translateY: addToCartTranslateY }],
+                transform: [
+                  { scale: addToCartScale },
+                  { translateY: addToCartTranslateY },
+                ],
               },
             ]}
           >
-            <TouchableOpacity style={styles.addToCartButton} onPress={handleAddToCart} activeOpacity={0.8}>
+            <TouchableOpacity
+              style={[
+                styles.addToCartButton,
+                selectedVariant?.inventoryQuantity <= 0 &&
+                  styles.addToCartButtonDisabled,
+              ]}
+              onPress={handleAddToCart}
+              activeOpacity={0.8}
+              disabled={selectedVariant?.inventoryQuantity <= 0}
+            >
               <Ionicons name="bag-add-outline" size={18} color="#ffffff" />
-              <Text style={styles.addToCartButtonText}>Add to Cart</Text>
+              <Text style={styles.addToCartButtonText}>
+                {selectedVariant?.inventoryQuantity <= 0
+                  ? "Out of Stock"
+                  : "Add to Cart"}
+              </Text>
             </TouchableOpacity>
           </Animated.View>
-
-          <TouchableOpacity style={styles.buyButton} onPress={handleBuyNow} activeOpacity={0.8}>
-            <Text style={styles.buyButtonText}>Buy Now</Text>
+          <TouchableOpacity
+            style={[
+              styles.buyButton,
+              selectedVariant?.inventoryQuantity <= 0 &&
+                styles.buyButtonDisabled,
+            ]}
+            onPress={handleBuyNow}
+            activeOpacity={0.8}
+            disabled={selectedVariant?.inventoryQuantity <= 0}
+          >
+            <Text style={styles.buyButtonText}>
+              {selectedVariant?.inventoryQuantity <= 0
+                ? "Unavailable"
+                : "Buy Now"}
+            </Text>
           </TouchableOpacity>
         </View>
       </View>
     </SafeAreaView>
-  )
-}
+  );
+};
 
 const styles = StyleSheet.create({
   container: {
@@ -902,9 +1028,26 @@ const styles = StyleSheet.create({
     height: 40,
     justifyContent: "center",
     alignItems: "center",
+    borderRadius: 20,
+  },
+  favoriteButtonActive: {
+    backgroundColor: "#FEF2F2",
   },
   floatingHeart: {
     position: "absolute",
+  },
+  variantInfo: {
+    marginBottom: 8,
+  },
+  variantTitle: {
+    fontSize: 14,
+    fontWeight: "500",
+    color: "#2c2a6b",
+  },
+  variantSku: {
+    fontSize: 12,
+    color: "#666",
+    marginTop: 2,
   },
   price: {
     fontSize: 20,
@@ -920,7 +1063,11 @@ const styles = StyleSheet.create({
   },
   stockText: {
     fontSize: 12,
-    color: "#666",
+    color: "#22C55E",
+    fontWeight: "600",
+  },
+  outOfStockText: {
+    color: "#EF4444",
   },
   soldText: {
     fontSize: 12,
@@ -1078,6 +1225,10 @@ const styles = StyleSheet.create({
     borderColor: "#2c2a6b",
     gap: 6,
   },
+  addToCartButtonDisabled: {
+    backgroundColor: "#ccc",
+    borderColor: "#ccc",
+  },
   addToCartButtonText: {
     fontSize: 14,
     fontWeight: "600",
@@ -1091,11 +1242,14 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     backgroundColor: "#2c2a6b",
   },
+  buyButtonDisabled: {
+    backgroundColor: "#ccc",
+  },
   buyButtonText: {
     fontSize: 14,
     fontWeight: "600",
     color: "white",
   },
-})
+});
 
-export default ProductDetailPage
+export default ProductDetailPage;

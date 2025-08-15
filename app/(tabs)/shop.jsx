@@ -17,10 +17,10 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import CartToast from "../../components/CartToast";
 import ScreenWrapper from "../../components/ScreenWrapper";
 import { fetchCartItemsCount } from "../utils/actions";
 import { useAuthenticatedFetch, useAuthStore } from "../utils/authStore";
-import CartToast from "../../components/CartToast";
 
 const BACKEND_URL = "http://192.168.18.5:3000";
 const { width, height } = Dimensions.get("window");
@@ -42,7 +42,6 @@ export default function ShopPage() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState(null);
-  const [wishlistedItems, setWishlistedItems] = useState(new Set());
   const [currentBannerIndex, setCurrentBannerIndex] = useState(0);
   const { authenticatedFetch } = useAuthenticatedFetch();
   const [cartItemCount, setCartItemCount] = useState(0);
@@ -226,25 +225,13 @@ export default function ShopPage() {
         selectedProduct: {
           name: "",
           image: "",
-        }
-      })
+        },
+      });
     }, [])
   );
   const handleRefresh = async () => {
     setRefreshing(true);
     await fetchProducts(true);
-  };
-
-  const handleWishlistToggle = (productId) => {
-    setWishlistedItems((prev) => {
-      const newSet = new Set(prev);
-      if (newSet.has(productId)) {
-        newSet.delete(productId);
-      } else {
-        newSet.add(productId);
-      }
-      return newSet;
-    });
   };
 
   const transformedProducts = products.map((product) => {
@@ -410,7 +397,7 @@ export default function ShopPage() {
   };
 
   const renderProduct = ({ item, index }) => {
-    const isWishlisted = wishlistedItems.has(item.id);
+
     const discountPercentage = item.originalPrice
       ? Math.round(
           ((Number.parseFloat(item.originalPrice.replace("Rs. ", "")) -
@@ -502,7 +489,7 @@ export default function ShopPage() {
               </Text>
             </View>
           )}
-
+          {/* 
           <TouchableOpacity
             style={{
               position: "absolute",
@@ -519,7 +506,7 @@ export default function ShopPage() {
               size={16}
               color={isWishlisted ? COLORS.light : "#666"}
             />
-          </TouchableOpacity>
+          </TouchableOpacity> */}
         </View>
 
         <View style={{ padding: 12 }}>
@@ -926,7 +913,7 @@ export default function ShopPage() {
           }}
           productName={addToCartToast.selectedProduct.name}
           productImage={addToCartToast.selectedProduct.image}
-          clickCount={addToCartToast.clickCount} 
+          clickCount={addToCartToast.clickCount}
         />
       </View>
     </ScreenWrapper>

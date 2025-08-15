@@ -73,3 +73,60 @@ export const createOrder = async (authenticatedFetch, orderData) => {
     };
   }
 };
+
+export const addToWishlist = async (authenticatedFetch, body) => {
+  try {
+    const res = await authenticatedFetch(`${BACKEND_URL}/add-to-wishlist`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: body,
+    });
+
+    const data = await res.json();
+
+    if (res.ok && data.success) {
+      return {
+        success: true,
+      };
+    }
+    return {
+      success: false,
+      error: data.error || "Failed to add to wishlist",
+    };
+  } catch (e) {
+    console.log("Failed to add to wishlist:", e);
+    return { success: false, error: "Failed to add to wishlist" };
+  }
+};
+
+export const removeFromWishlist = async (authenticatedFetch, body) => {
+  try {
+    const res = await authenticatedFetch(
+      `${BACKEND_URL}/remove-from-wishlist`,
+      {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: body,
+      }
+    );
+
+    const data = await res.json();
+
+    if (res.ok && data.success) {
+      return {
+        success: true,
+      };
+    }
+    return {
+      success: false,
+      error: data.error || "Failed to remove from wishlist",
+    };
+  } catch (e) {
+    console.log("Failed to remove from wishlist:", e);
+    return { success: false, error: "Failed to remove from wishlist" };
+  }
+};

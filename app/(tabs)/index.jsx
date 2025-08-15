@@ -47,9 +47,9 @@ export default function HomePage() {
     throw new Error("Failed to fetch cart items count");
   };
 
-  useEffect(() => {
-    storeCartItemsCount();
-  }, []);
+  // useEffect(() => {
+  //   storeCartItemsCount();
+  // }, []);
 
   useFocusEffect(
     useCallback(() => {

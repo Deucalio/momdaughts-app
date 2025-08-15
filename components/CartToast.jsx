@@ -153,7 +153,7 @@ const CartToast = ({
 
         {/* Content */}
         <View style={styles.content}>
-          <Text style={styles.productName} numberOfLines={1}>
+          <Text style={styles.productName} numberOfLines={3}>
             {productName}
           </Text>
           <Text style={styles.subText}>

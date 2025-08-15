@@ -1,412 +1,742 @@
-import { View, Text, ScrollView, StyleSheet, Dimensions } from "react-native"
-import { LinearGradient } from "expo-linear-gradient"
-import { Ionicons } from "@expo/vector-icons"
-import { SafeAreaView } from "react-native-safe-area-context"
+"use client";
+import { Ionicons } from "@expo/vector-icons";
+import { router } from "expo-router";
+import { useEffect, useState } from "react";
+import {
+  Alert,
+  Dimensions,
+  Image,
+  RefreshControl,
+  ScrollView,
+  Switch,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { useAuthenticatedFetch, useAuthStore } from "../utils/authStore";
 
-const { width } = Dimensions.get("window")
+const BACKEND_URL = "http://192.168.18.5:3000";
+const { width } = Dimensions.get("window");
 
-export default function InsightsPage() {
-  const monthlyStats = [
-    { label: "Avg Cycle Length", value: "28 days", trend: "+0.5", positive: true },
-    { label: "Symptom-Free Days", value: "22 days", trend: "+3", positive: true },
-    { label: "Sleep Quality", value: "7.8/10", trend: "+0.3", positive: true },
-    { label: "Mood Score", value: "8.2/10", trend: "-0.1", positive: false },
-  ]
+// Color palette matching the cart design
+const COLORS = {
+  darkest: '#21152B',
+  dark: '#2C103A', 
+  medium: '#382449',
+  light: '#432B57',
+  lightest: '#4E3366',
+  white: '#ffffff',
+  background: '#f8f9fa',
+  buttonColor: '#2c2a6b',
+  accent: '#eb9fc1',
+  success: '#10b981',
+  warning: '#f59e0b',
+  error: '#ef4444',
+  gray: '#6b7280',
+  lightGray: '#f3f4f6',
+  border: '#e5e7eb'
+};
 
-  const insights = [
-    {
-      title: "Cycle Patterns",
-      description:
-        "Your cycles have been consistently 28-29 days over the past 6 months. This regularity indicates good hormonal balance.",
-      icon: "calendar",
-      colors: ["#ec4899", "#f43f5e"],
-      confidence: 95,
-    },
-    {
-      title: "Energy Levels",
-      description:
-        "You tend to have higher energy during days 7-14 of your cycle. Consider scheduling important tasks during this time.",
-      icon: "flash",
-      colors: ["#f59e0b", "#d97706"],
-      confidence: 88,
-    },
-    {
-      title: "Sleep & Mood Connection",
-      description:
-        "Your mood scores are 23% higher on days when you get 7+ hours of sleep. Prioritizing sleep could improve your wellbeing.",
-      icon: "happy",
-      colors: ["#8b5cf6", "#7c3aed"],
-      confidence: 92,
-    },
-    {
-      title: "Symptom Triggers",
-      description:
-        "Cramps tend to be more severe when you consume less than 6 glasses of water daily. Stay hydrated for better comfort.",
-      icon: "heart",
-      colors: ["#3b82f6", "#06b6d4"],
-      confidence: 78,
-    },
-  ]
+export default function AccountScreen() {
+  const [userProfile, setUserProfile] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [notifications, setNotifications] = useState(true);
+  const [darkMode, setDarkMode] = useState(false);
+  const [orderHistory, setOrderHistory] = useState([]);
+  
+  const { authenticatedFetch, logout } = useAuthenticatedFetch();
+  const { user } = useAuthStore();
 
-  const goals = [
-    { title: "Track 30 consecutive days", progress: 87, current: 26, target: 30 },
-    { title: "Log symptoms daily", progress: 93, current: 28, target: 30 },
-    { title: "Maintain regular sleep", progress: 76, current: 23, target: 30 },
-    { title: "Stay hydrated", progress: 82, current: 25, target: 30 },
-  ]
+  const fetchUserProfile = async (isRefresh = false) => {
+    try {
+      if (!isRefresh) setLoading(true);
+      
+      // Fetch user profile
+      const profileResponse = await authenticatedFetch(`${BACKEND_URL}/user/profile`);
+      if (profileResponse.ok) {
+        const profileData = await profileResponse.json();
+        setUserProfile(profileData);
+      }
 
-  const recommendations = [
-    {
-      title: "Optimize Your Follicular Phase",
-      description: "Try high-intensity workouts during days 7-14 when your energy is naturally higher.",
-      colors: ["#ecfdf5", "#d1fae5"],
-      iconColor: "#10b981",
-    },
-    {
-      title: "Improve Sleep Consistency",
-      description: "Set a bedtime reminder for 10 PM to help maintain your 7+ hour sleep goal.",
-      colors: ["#eff6ff", "#dbeafe"],
-      iconColor: "#3b82f6",
-    },
-    {
-      title: "Hydration Strategy",
-      description: "Set hourly water reminders to reach your 8-glass daily goal and reduce cramp severity.",
-      colors: ["#f3e8ff", "#e9d5ff"],
-      iconColor: "#8b5cf6",
-    },
-  ]
+      // Fetch recent orders
+      const ordersResponse = await authenticatedFetch(`${BACKEND_URL}/orders?limit=3`);
+      if (ordersResponse.ok) {
+        const ordersData = await ordersResponse.json();
+        setOrderHistory(ordersData.orders || []);
+      }
+      
+    } catch (error) {
+      console.error("Error fetching profile:", error);
+    } finally {
+      setLoading(false);
+      if (isRefresh) setRefreshing(false);
+    }
+  };
 
-  return (
-    <SafeAreaView style={styles.container}>
-      <ScrollView showsVerticalScrollIndicator={false}>
-        {/* Header */}
-        <LinearGradient colors={["#f5f3ff", "#ede9fe", "#fdf4ff"]} style={styles.heroSection}>
-          <View style={styles.heroContent}>
-            <Text style={styles.heroTitle}>Health Insights</Text>
-            <Text style={styles.heroSubtitle}>
-              Discover patterns in your health data and get personalized recommendations based on your tracking history.
+  const handleLogout = () => {
+    Alert.alert(
+      "Logout",
+      "Are you sure you want to logout?",
+      [
+        { text: "Cancel", style: "cancel" },
+        { 
+          text: "Logout", 
+          style: "destructive",
+          onPress: async () => {
+            try {
+              await logout();
+              router.replace("/auth/login");
+            } catch (error) {
+              Alert.alert("Error", "Failed to logout");
+            }
+          }
+        }
+      ]
+    );
+  };
+
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    await fetchUserProfile(true);
+  };
+
+  useEffect(() => {
+    fetchUserProfile();
+  }, []);
+
+  const menuItems = [
+    {
+      id: 'orders',
+      title: 'My Orders',
+      subtitle: 'Track your orders',
+      icon: 'bag-outline',
+      onPress: () => router.push('/orders'),
+      badge: orderHistory.length > 0 ? orderHistory.length.toString() : null
+    },
+    {
+      id: 'wishlist',
+      title: 'Wishlist',
+      subtitle: 'Your saved items',
+      icon: 'heart-outline',
+      onPress: () => router.push('/screens/wishlist')
+    },
+    {
+      id: 'addresses',
+      title: 'Addresses',
+      subtitle: 'Manage delivery addresses',
+      icon: 'location-outline',
+      onPress: () => router.push('/addresses')
+    },
+    {
+      id: 'payment',
+      title: 'Payment Methods',
+      subtitle: 'Cards & payment options',
+      icon: 'card-outline',
+      onPress: () => router.push('/payment-methods')
+    },
+    {
+      id: 'support',
+      title: 'Help & Support',
+      subtitle: 'Get help when you need it',
+      icon: 'help-circle-outline',
+      onPress: () => router.push('/support')
+    },
+    {
+      id: 'about',
+      title: 'About',
+      subtitle: 'App info & terms',
+      icon: 'information-circle-outline',
+      onPress: () => router.push('/about')
+    }
+  ];
+
+  const renderProfileHeader = () => (
+    <View style={{
+      backgroundColor: COLORS.white,
+      marginHorizontal: 16,
+      marginTop: 16,
+      borderRadius: 16,
+      padding: 20,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.1,
+      shadowRadius: 4,
+      elevation: 3,
+    }}>
+      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+        {/* Profile Image */}
+        <View style={{
+          width: 80,
+          height: 80,
+          borderRadius: 40,
+          backgroundColor: COLORS.lightGray,
+          alignItems: 'center',
+          justifyContent: 'center',
+          marginRight: 16,
+          overflow: 'hidden'
+        }}>
+          {userProfile?.avatar ? (
+            <Image 
+              source={{ uri: userProfile.avatar }}
+              style={{ width: 80, height: 80, borderRadius: 40 }}
+              resizeMode="cover"
+            />
+          ) : (
+            <Ionicons name="person" size={40} color={COLORS.gray} />
+          )}
+        </View>
+
+        {/* Profile Info */}
+        <View style={{ flex: 1 }}>
+          <Text style={{
+            fontSize: 20,
+            fontWeight: 'bold',
+            color: COLORS.darkest,
+            marginBottom: 4
+          }}>
+            {userProfile?.name || user?.name || 'User Name'}
+          </Text>
+          
+          <Text style={{
+            fontSize: 14,
+            color: COLORS.gray,
+            marginBottom: 8
+          }}>
+            {userProfile?.email || user?.email || 'user@example.com'}
+          </Text>
+
+          <View style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            backgroundColor: COLORS.lightGray,
+            paddingHorizontal: 8,
+            paddingVertical: 4,
+            borderRadius: 12,
+            alignSelf: 'flex-start'
+          }}>
+            <Ionicons name="star" size={12} color={COLORS.warning} />
+            <Text style={{
+              fontSize: 12,
+              fontWeight: '600',
+              color: COLORS.darkest,
+              marginLeft: 4
+            }}>
+              {userProfile?.loyaltyPoints || 0} Points
             </Text>
           </View>
-        </LinearGradient>
-
-        {/* Monthly Overview */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>This Month's Overview</Text>
-          <View style={styles.statsGrid}>
-            {monthlyStats.map((stat, index) => (
-              <View key={index} style={styles.statCard}>
-                <Text style={styles.statLabel}>{stat.label}</Text>
-                <Text style={styles.statValue}>{stat.value}</Text>
-                <View style={styles.trendContainer}>
-                  <Ionicons
-                    name={stat.positive ? "trending-up" : "trending-down"}
-                    size={12}
-                    color={stat.positive ? "#10b981" : "#ef4444"}
-                  />
-                  <Text style={[styles.trendText, { color: stat.positive ? "#10b981" : "#ef4444" }]}>{stat.trend}</Text>
-                </View>
-              </View>
-            ))}
-          </View>
         </View>
 
-        {/* AI Insights */}
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>AI-Powered Insights</Text>
-            <LinearGradient colors={["#8b5cf6", "#ec4899"]} style={styles.betaBadge}>
-              <Text style={styles.betaBadgeText}>Beta</Text>
-            </LinearGradient>
-          </View>
-          <View style={styles.insightsList}>
-            {insights.map((insight, index) => (
-              <View key={index} style={styles.insightCard}>
-                <View style={styles.insightContent}>
-                  <LinearGradient colors={insight.colors} style={styles.insightIcon}>
-                    <Ionicons name={insight.icon} size={24} color="white" />
-                  </LinearGradient>
-                  <View style={styles.insightText}>
-                    <View style={styles.insightHeader}>
-                      <Text style={styles.insightTitle}>{insight.title}</Text>
-                      <View style={styles.confidenceBadge}>
-                        <Text style={styles.confidenceText}>{insight.confidence}% confidence</Text>
-                      </View>
-                    </View>
-                    <Text style={styles.insightDescription}>{insight.description}</Text>
-                  </View>
-                </View>
-              </View>
-            ))}
-          </View>
+        {/* Edit Button */}
+        <TouchableOpacity
+          style={{
+            padding: 8,
+            borderRadius: 8,
+            backgroundColor: COLORS.lightGray
+          }}
+          onPress={() => router.push('/profile/edit')}
+        >
+          <Ionicons name="pencil" size={18} color={COLORS.buttonColor} />
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+
+  const renderQuickStats = () => (
+    <View style={{
+      flexDirection: 'row',
+      marginHorizontal: 16,
+      marginTop: 16,
+      gap: 12
+    }}>
+      <View style={{
+        flex: 1,
+        backgroundColor: COLORS.white,
+        borderRadius: 12,
+        padding: 16,
+        alignItems: 'center',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.1,
+        shadowRadius: 2,
+        elevation: 2,
+      }}>
+        <Ionicons name="bag-outline" size={24} color={COLORS.buttonColor} />
+        <Text style={{
+          fontSize: 18,
+          fontWeight: 'bold',
+          color: COLORS.darkest,
+          marginTop: 8
+        }}>
+          {orderHistory.length}
+        </Text>
+        <Text style={{
+          fontSize: 12,
+          color: COLORS.gray,
+          textAlign: 'center'
+        }}>
+          Orders
+        </Text>
+      </View>
+
+      <View style={{
+        flex: 1,
+        backgroundColor: COLORS.white,
+        borderRadius: 12,
+        padding: 16,
+        alignItems: 'center',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.1,
+        shadowRadius: 2,
+        elevation: 2,
+      }}>
+        <Ionicons name="heart-outline" size={24} color={COLORS.error} />
+        <Text style={{
+          fontSize: 18,
+          fontWeight: 'bold',
+          color: COLORS.darkest,
+          marginTop: 8
+        }}>
+          {userProfile?.wishlistCount || 0}
+        </Text>
+        <Text style={{
+          fontSize: 12,
+          color: COLORS.gray,
+          textAlign: 'center'
+        }}>
+          Wishlist
+        </Text>
+      </View>
+
+      <View style={{
+        flex: 1,
+        backgroundColor: COLORS.white,
+        borderRadius: 12,
+        padding: 16,
+        alignItems: 'center',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.1,
+        shadowRadius: 2,
+        elevation: 2,
+      }}>
+        <Ionicons name="gift-outline" size={24} color={COLORS.success} />
+        <Text style={{
+          fontSize: 18,
+          fontWeight: 'bold',
+          color: COLORS.darkest,
+          marginTop: 8
+        }}>
+          {userProfile?.couponsCount || 0}
+        </Text>
+        <Text style={{
+          fontSize: 12,
+          color: COLORS.gray,
+          textAlign: 'center'
+        }}>
+          Coupons
+        </Text>
+      </View>
+    </View>
+  );
+
+  const renderRecentOrders = () => {
+    if (orderHistory.length === 0) return null;
+
+    return (
+      <View style={{
+        backgroundColor: COLORS.white,
+        marginHorizontal: 16,
+        marginTop: 16,
+        borderRadius: 12,
+        padding: 16,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.1,
+        shadowRadius: 2,
+        elevation: 2,
+      }}>
+        <View style={{
+          flexDirection: 'row',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          marginBottom: 12
+        }}>
+          <Text style={{
+            fontSize: 16,
+            fontWeight: 'bold',
+            color: COLORS.darkest
+          }}>
+            Recent Orders
+          </Text>
+          <TouchableOpacity onPress={() => router.push('/orders')}>
+            <Text style={{
+              fontSize: 12,
+              color: COLORS.buttonColor,
+              fontWeight: '600'
+            }}>
+              View All
+            </Text>
+          </TouchableOpacity>
         </View>
 
-        {/* Goals Progress */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Monthly Goals</Text>
-          <View style={styles.goalsList}>
-            {goals.map((goal, index) => (
-              <View key={index} style={styles.goalCard}>
-                <View style={styles.goalHeader}>
-                  <Text style={styles.goalTitle}>{goal.title}</Text>
-                  <Text style={styles.goalProgress}>
-                    {goal.current}/{goal.target}
-                  </Text>
-                </View>
-                <View style={styles.progressContainer}>
-                  <View style={styles.progressBar}>
-                    <View style={[styles.progressFill, { width: `${goal.progress}%` }]} />
-                  </View>
-                  <View style={styles.progressLabels}>
-                    <Text style={styles.progressPercent}>{goal.progress}% complete</Text>
-                    <Text style={styles.remainingDays}>{goal.target - goal.current} days remaining</Text>
-                  </View>
-                </View>
-              </View>
-            ))}
-          </View>
-        </View>
+        {orderHistory.slice(0, 2).map((order, index) => (
+          <TouchableOpacity
+            key={order.id || index}
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              paddingVertical: 8,
+              borderBottomWidth: index < orderHistory.length - 1 ? 1 : 0,
+              borderBottomColor: COLORS.border
+            }}
+            onPress={() => router.push(`/orders/${order.id}`)}
+          >
+            <View style={{
+              width: 40,
+              height: 40,
+              borderRadius: 8,
+              backgroundColor: COLORS.lightGray,
+              alignItems: 'center',
+              justifyContent: 'center',
+              marginRight: 12
+            }}>
+              <Ionicons name="bag" size={20} color={COLORS.buttonColor} />
+            </View>
 
-        {/* Recommendations */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Personalized Recommendations</Text>
-          <View style={styles.recommendationsList}>
-            {recommendations.map((rec, index) => (
-              <LinearGradient key={index} colors={rec.colors} style={styles.recommendationCard}>
-                <View style={styles.recommendationContent}>
-                  <Ionicons name="target" size={20} color={rec.iconColor} style={styles.recommendationIcon} />
-                  <View style={styles.recommendationText}>
-                    <Text style={styles.recommendationTitle}>{rec.title}</Text>
-                    <Text style={styles.recommendationDescription}>{rec.description}</Text>
-                  </View>
-                </View>
-              </LinearGradient>
-            ))}
-          </View>
+            <View style={{ flex: 1 }}>
+              <Text style={{
+                fontSize: 14,
+                fontWeight: '600',
+                color: COLORS.darkest,
+                marginBottom: 2
+              }}>
+                Order #{order.orderNumber || `ORD${order.id}`}
+              </Text>
+              <Text style={{
+                fontSize: 12,
+                color: COLORS.gray
+              }}>
+                {order.itemsCount || 1} item{(order.itemsCount || 1) > 1 ? 's' : ''} • Rs. {order.total?.toLocaleString() || '0'}
+              </Text>
+            </View>
+
+            <View style={{
+              backgroundColor: order.status === 'delivered' ? '#dcfce7' : '#fef3c7',
+              paddingHorizontal: 8,
+              paddingVertical: 4,
+              borderRadius: 12
+            }}>
+              <Text style={{
+                fontSize: 10,
+                fontWeight: '600',
+                color: order.status === 'delivered' ? COLORS.success : COLORS.warning,
+                textTransform: 'capitalize'
+              }}>
+                {order.status || 'Processing'}
+              </Text>
+            </View>
+          </TouchableOpacity>
+        ))}
+      </View>
+    );
+  };
+
+  const renderSettings = () => (
+    <View style={{
+      backgroundColor: COLORS.white,
+      marginHorizontal: 16,
+      marginTop: 16,
+      borderRadius: 12,
+      padding: 16,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 1 },
+      shadowOpacity: 0.1,
+      shadowRadius: 2,
+      elevation: 2,
+    }}>
+      <Text style={{
+        fontSize: 16,
+        fontWeight: 'bold',
+        color: COLORS.darkest,
+        marginBottom: 12
+      }}>
+        Preferences
+      </Text>
+
+      <View style={{
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        paddingVertical: 8,
+        borderBottomWidth: 1,
+        borderBottomColor: COLORS.border
+      }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+          <Ionicons name="notifications-outline" size={20} color={COLORS.gray} />
+          <Text style={{
+            fontSize: 14,
+            color: COLORS.darkest,
+            marginLeft: 12
+          }}>
+            Push Notifications
+          </Text>
         </View>
+        <Switch
+          value={notifications}
+          onValueChange={setNotifications}
+          trackColor={{ false: COLORS.lightGray, true: COLORS.buttonColor }}
+          thumbColor={notifications ? COLORS.white : COLORS.gray}
+        />
+      </View>
+
+      <View style={{
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        paddingVertical: 8
+      }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+          <Ionicons name="moon-outline" size={20} color={COLORS.gray} />
+          <Text style={{
+            fontSize: 14,
+            color: COLORS.darkest,
+            marginLeft: 12
+          }}>
+            Dark Mode
+          </Text>
+        </View>
+        <Switch
+          value={darkMode}
+          onValueChange={setDarkMode}
+          trackColor={{ false: COLORS.lightGray, true: COLORS.buttonColor }}
+          thumbColor={darkMode ? COLORS.white : COLORS.gray}
+        />
+      </View>
+    </View>
+  );
+
+  const renderMenuItem = (item) => (
+    <TouchableOpacity
+      key={item.id}
+      style={{
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingVertical: 12,
+        paddingHorizontal: 16,
+        borderBottomWidth: 1,
+        borderBottomColor: COLORS.border
+      }}
+      onPress={item.onPress}
+    >
+      <View style={{
+        width: 40,
+        height: 40,
+        borderRadius: 20,
+        backgroundColor: COLORS.lightGray,
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginRight: 12
+      }}>
+        <Ionicons name={item.icon} size={20} color={COLORS.buttonColor} />
+      </View>
+
+      <View style={{ flex: 1 }}>
+        <Text style={{
+          fontSize: 14,
+          fontWeight: '600',
+          color: COLORS.darkest,
+          marginBottom: 2
+        }}>
+          {item.title}
+        </Text>
+        <Text style={{
+          fontSize: 12,
+          color: COLORS.gray
+        }}>
+          {item.subtitle}
+        </Text>
+      </View>
+
+      {item.badge && (
+        <View style={{
+          backgroundColor: COLORS.error,
+          borderRadius: 10,
+          paddingHorizontal: 6,
+          paddingVertical: 2,
+          marginRight: 8
+        }}>
+          <Text style={{
+            fontSize: 10,
+            fontWeight: 'bold',
+            color: COLORS.white
+          }}>
+            {item.badge}
+          </Text>
+        </View>
+      )}
+
+      <Ionicons name="chevron-forward" size={16} color={COLORS.gray} />
+    </TouchableOpacity>
+  );
+
+  const renderMenuSection = () => (
+    <View style={{
+      backgroundColor: COLORS.white,
+      marginHorizontal: 16,
+      marginTop: 16,
+      borderRadius: 12,
+      overflow: 'hidden',
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 1 },
+      shadowOpacity: 0.1,
+      shadowRadius: 2,
+      elevation: 2,
+    }}>
+      {menuItems.map((item, index) => (
+        <View key={item.id}>
+          {renderMenuItem(item)}
+        </View>
+      ))}
+    </View>
+  );
+
+  if (loading) {
+    return (
+      <SafeAreaView style={{ flex: 1, backgroundColor: COLORS.background }}>
+        <View style={{
+          flexDirection: "row",
+          alignItems: "center",
+          justifyContent: "space-between",
+          paddingHorizontal: 16,
+          paddingVertical: 12,
+          backgroundColor: COLORS.white,
+        }}>
+          <TouchableOpacity onPress={() => router.back()}>
+            <Ionicons name="chevron-back" size={24} color={COLORS.darkest} />
+          </TouchableOpacity>
+          <Text style={{
+            fontSize: 18,
+            fontWeight: "700",
+            color: COLORS.darkest
+          }}>
+            Account
+          </Text>
+          <View style={{ width: 24 }} />
+        </View>
+        
+        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+          <Text style={{ color: COLORS.gray }}>Loading...</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  return (
+    <SafeAreaView style={{ flex: 1, backgroundColor: COLORS.background }}>
+      {/* Header */}
+      <View style={{
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "space-between",
+        paddingHorizontal: 16,
+        paddingVertical: 12,
+        backgroundColor: COLORS.white,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.1,
+        shadowRadius: 2,
+        elevation: 2,
+      }}>
+        <TouchableOpacity
+          onPress={() => router.back()}
+          style={{
+            padding: 4,
+            borderRadius: 6,
+          }}
+        >
+          <Ionicons name="chevron-back" size={24} color={COLORS.darkest} />
+        </TouchableOpacity>
+
+        <Text style={{
+          fontSize: 18,
+          fontWeight: "700",
+          color: COLORS.darkest
+        }}>
+          Account
+        </Text>
+
+        <TouchableOpacity
+          onPress={() => router.push('/settings')}
+          style={{
+            padding: 4,
+            borderRadius: 6,
+          }}
+        >
+          <Ionicons name="settings-outline" size={20} color={COLORS.gray} />
+        </TouchableOpacity>
+      </View>
+
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={handleRefresh}
+            colors={[COLORS.buttonColor]}
+            tintColor={COLORS.buttonColor}
+          />
+        }
+        contentContainerStyle={{ paddingBottom: 32 }}
+      >
+        {renderProfileHeader()}
+        {renderQuickStats()}
+        {renderRecentOrders()}
+        {renderSettings()}
+        {renderMenuSection()}
+
+        {/* Logout Button */}
+        <TouchableOpacity
+          style={{
+            backgroundColor: COLORS.white,
+            marginHorizontal: 16,
+            marginTop: 16,
+            borderRadius: 12,
+            padding: 16,
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'center',
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: 1 },
+            shadowOpacity: 0.1,
+            shadowRadius: 2,
+            elevation: 2,
+          }}
+          onPress={handleLogout}
+        >
+          <Ionicons name="log-out-outline" size={20} color={COLORS.error} />
+          <Text style={{
+            fontSize: 14,
+            fontWeight: '600',
+            color: COLORS.error,
+            marginLeft: 8
+          }}>
+            Logout
+          </Text>
+        </TouchableOpacity>
+
+        {/* App Version */}
+        <Text style={{
+          textAlign: 'center',
+          fontSize: 12,
+          color: COLORS.gray,
+          marginTop: 20
+        }}>
+          Version 1.0.0
+        </Text>
       </ScrollView>
     </SafeAreaView>
-  )
+  );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#ffffff",
-  },
-  heroSection: {
-    paddingHorizontal: 16,
-    paddingVertical: 32,
-  },
-  heroContent: {
-    alignItems: "center",
-  },
-  heroTitle: {
-    fontSize: 28,
-    fontWeight: "bold",
-    color: "#7c3aed",
-    marginBottom: 8,
-  },
-  heroSubtitle: {
-    fontSize: 16,
-    color: "#6b7280",
-    textAlign: "center",
-    lineHeight: 24,
-  },
-  section: {
-    paddingHorizontal: 16,
-    paddingVertical: 16,
-  },
-  sectionHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-    marginBottom: 16,
-  },
-  sectionTitle: {
-    fontSize: 20,
-    fontWeight: "bold",
-    color: "#1f2937",
-  },
-  betaBadge: {
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
-  },
-  betaBadgeText: {
-    color: "white",
-    fontSize: 10,
-    fontWeight: "600",
-  },
-  statsGrid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 12,
-  },
-  statCard: {
-    width: (width - 44) / 2,
-    backgroundColor: "#ffffff",
-    borderRadius: 16,
-    padding: 16,
-    alignItems: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  statLabel: {
-    fontSize: 12,
-    color: "#6b7280",
-    marginBottom: 4,
-    textAlign: "center",
-  },
-  statValue: {
-    fontSize: 20,
-    fontWeight: "bold",
-    color: "#1f2937",
-    marginBottom: 8,
-  },
-  trendContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
-  },
-  trendText: {
-    fontSize: 12,
-    fontWeight: "600",
-  },
-  insightsList: {
-    gap: 16,
-  },
-  insightCard: {
-    backgroundColor: "#ffffff",
-    borderRadius: 16,
-    padding: 20,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  insightContent: {
-    flexDirection: "row",
-    gap: 16,
-  },
-  insightIcon: {
-    width: 48,
-    height: 48,
-    borderRadius: 12,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  insightText: {
-    flex: 1,
-  },
-  insightHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-    marginBottom: 8,
-  },
-  insightTitle: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: "#1f2937",
-  },
-  confidenceBadge: {
-    backgroundColor: "#f3f4f6",
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 6,
-  },
-  confidenceText: {
-    fontSize: 10,
-    color: "#6b7280",
-  },
-  insightDescription: {
-    fontSize: 14,
-    color: "#6b7280",
-    lineHeight: 20,
-  },
-  goalsList: {
-    gap: 12,
-  },
-  goalCard: {
-    backgroundColor: "#ffffff",
-    borderRadius: 16,
-    padding: 16,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  goalHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 12,
-  },
-  goalTitle: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: "#1f2937",
-  },
-  goalProgress: {
-    fontSize: 14,
-    color: "#6b7280",
-  },
-  progressContainer: {
-    gap: 8,
-  },
-  progressBar: {
-    height: 8,
-    backgroundColor: "#f3f4f6",
-    borderRadius: 4,
-  },
-  progressFill: {
-    height: "100%",
-    backgroundColor: "#ec4899",
-    borderRadius: 4,
-  },
-  progressLabels: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-  },
-  progressPercent: {
-    fontSize: 12,
-    color: "#6b7280",
-  },
-  remainingDays: {
-    fontSize: 12,
-    color: "#6b7280",
-  },
-  recommendationsList: {
-    gap: 12,
-  },
-  recommendationCard: {
-    borderRadius: 16,
-    padding: 16,
-  },
-  recommendationContent: {
-    flexDirection: "row",
-    gap: 12,
-  },
-  recommendationIcon: {
-    marginTop: 2,
-  },
-  recommendationText: {
-    flex: 1,
-  },
-  recommendationTitle: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: "#1f2937",
-    marginBottom: 4,
-  },
-  recommendationDescription: {
-    fontSize: 14,
-    color: "#6b7280",
-    lineHeight: 20,
-  },
-})
