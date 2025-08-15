@@ -19,7 +19,7 @@ import {
 } from "react-native";
 import CartToast from "../../components/CartToast";
 import ScreenWrapper from "../../components/ScreenWrapper";
-import { fetchCartItemsCount } from "../utils/actions";
+import { fetchCartItemsCount, addToCart } from "../utils/actions";
 import { useAuthenticatedFetch, useAuthStore } from "../utils/authStore";
 
 const BACKEND_URL = "http://192.168.18.5:3000";
@@ -632,14 +632,15 @@ export default function ShopPage() {
           image: item.image,
         },
       });
-      const res = await authenticatedFetch(`${BACKEND_URL}/add-to-cart`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ cartData: cartItem }),
-      });
-      const data = await res.json();
+      // const res = await authenticatedFetch(`${BACKEND_URL}/add-to-cart`, {
+      //   method: "POST",
+      //   headers: {
+      //     "Content-Type": "application/json",
+      //   },
+      //   body: JSON.stringify({ cartData: cartItem }),
+      // });
+      // const data = await res.json();
+      const addToCartAction = await addToCart(authenticatedFetch, cartItem);
     } catch (e) {
       setCartItemCount(cartItemCount - 1);
       console.log("Error Occured: ", error);

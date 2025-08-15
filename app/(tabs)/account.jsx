@@ -196,7 +196,10 @@ export default function AccountScreen() {
             color: COLORS.darkest,
             marginBottom: 4
           }}>
-            {userProfile?.name || user?.name || 'User Name'}
+            {/* {userProfile?.name || user?.name || 'User Name'} */}
+            {
+              user.firstName ? `${user.firstName} ${user.lastName}` : 'User Name'
+            }
           </Text>
           
           <Text style={{

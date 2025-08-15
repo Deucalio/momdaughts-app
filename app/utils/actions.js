@@ -131,3 +131,52 @@ export const removeFromWishlist = async (authenticatedFetch, body) => {
     return { success: false, error: "Failed to remove from wishlist" };
   }
 };
+
+export const addToCart = async (authenticatedFetch, cartItem) => {
+  try {
+    const res = await authenticatedFetch(`${BACKEND_URL}/add-to-cart`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ cartData: cartItem }),
+    });
+
+    const data = await res.json();
+
+    if (res.ok) {
+      return {
+        success: true,
+      };
+    }
+    return {
+      success: false,
+      error: data.error || "Failed to add to cart",
+    };
+  } catch (e) {
+    console.log("Failed to add to cart:", e);
+    return { success: false, error: "Failed to add to cart" };
+  }
+};
+
+export const fetchWishlistItems = async (authenticatedFetch) => {
+  try {
+    const res = await authenticatedFetch(`${BACKEND_URL}/wishlist`, {});
+
+    const data = await res.json();
+    console.log("hqhqhq:", data)
+    if (res.ok) {
+      return {
+        wishlist: data.wishlist,
+        success: true,
+      };
+    }
+    return {
+      success: false,
+      error: data.error || "Failed to fetch cart Items",
+    };
+  } catch (e) {
+    console.log("Failed to fetch items from cart:", e);
+    return { success: false, error: "Failed to fetch items from cart" };
+  }
+};

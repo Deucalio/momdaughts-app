@@ -4,9 +4,9 @@ import {
   Text,
   StyleSheet,
   Animated,
-  PanGestureHandler,
   Dimensions,
   Easing,
+  PanResponder,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -16,9 +16,10 @@ const SWIPE_THRESHOLD = SCREEN_WIDTH * 0.25;
 const WishlistToast = ({ 
   visible, 
   onHide, 
-  productName = "Item", 
-  variant = null,
-  duration = 4000 
+  product = null, 
+  selectedVariant = null,
+  duration = 2000,
+  isRemoved = false // New prop to indicate if item was removed
 }) => {
   const translateY = useRef(new Animated.Value(-100)).current;
   const translateX = useRef(new Animated.Value(0)).current;
@@ -27,6 +28,77 @@ const WishlistToast = ({
   
   const [isVisible, setIsVisible] = useState(false);
   const timeoutRef = useRef(null);
+
+  // PanResponder for swipe gestures
+  const panResponder = PanResponder.create({
+    onStartShouldSetPanResponder: () => true,
+    onMoveShouldSetPanResponder: (evt, gestureState) => {
+      return Math.abs(gestureState.dx) > 10 || Math.abs(gestureState.dy) > 10;
+    },
+    onPanResponderGrant: () => {
+      // Clear auto-hide timeout when user starts interacting
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    },
+    onPanResponderMove: (evt, gestureState) => {
+      translateX.setValue(gestureState.dx);
+      translateY.setValue(gestureState.dy);
+    },
+    onPanResponderRelease: (evt, gestureState) => {
+      const { dx, dy, vx, vy } = gestureState;
+      
+      // Determine swipe direction and threshold
+      const absX = Math.abs(dx);
+      const absY = Math.abs(dy);
+      const fastSwipe = Math.abs(vx) > 0.5 || Math.abs(vy) > 0.5;
+
+      if (fastSwipe || absX > SWIPE_THRESHOLD || absY > 50) {
+        // Swipe detected - hide toast
+        if (absX > absY) {
+          // Horizontal swipe
+          Animated.parallel([
+            Animated.timing(translateX, {
+              toValue: dx > 0 ? SCREEN_WIDTH : -SCREEN_WIDTH,
+              duration: 200,
+              useNativeDriver: true,
+              easing: Easing.out(Easing.quad),
+            }),
+            Animated.timing(opacity, {
+              toValue: 0,
+              duration: 200,
+              useNativeDriver: true,
+            }),
+          ]).start(() => {
+            resetAndHide();
+          });
+        } else {
+          // Vertical swipe
+          const direction = dy > 0 ? 'down' : 'up';
+          hideToast(direction);
+        }
+      } else {
+        // Snap back to original position
+        Animated.parallel([
+          Animated.spring(translateX, {
+            toValue: 0,
+            tension: 200,
+            friction: 8,
+            useNativeDriver: true,
+          }),
+          Animated.spring(translateY, {
+            toValue: 0,
+            tension: 200,
+            friction: 8,
+            useNativeDriver: true,
+          }),
+        ]).start(() => {
+          // Don't restart auto-hide timer after user interaction
+          // Let it stay until user manually dismisses or full duration completes
+        });
+      }
+    },
+  });
 
   useEffect(() => {
     if (visible) {
@@ -106,151 +178,90 @@ const WishlistToast = ({
         easing: Easing.in(Easing.back(1)),
       }),
     ]).start(() => {
-      setIsVisible(false);
-      onHide && onHide();
+      resetAndHide();
     });
   };
 
-  const onGestureEvent = Animated.event(
-    [{ nativeEvent: { translationX: translateX, translationY: translateY } }],
-    { useNativeDriver: true }
-  );
-
-  const onHandlerStateChange = (event) => {
-    const { translationX, translationY, velocityX, velocityY } = event.nativeEvent;
-
-    // Determine swipe direction and threshold
-    const absX = Math.abs(translationX);
-    const absY = Math.abs(translationY);
-    const fastSwipe = Math.abs(velocityX) > 500 || Math.abs(velocityY) > 500;
-
-    if (fastSwipe || absX > SWIPE_THRESHOLD || absY > 50) {
-      // Swipe detected - hide toast
-      let direction = 'up';
-      if (absX > absY) {
-        // Horizontal swipe
-        Animated.parallel([
-          Animated.timing(translateX, {
-            toValue: translationX > 0 ? SCREEN_WIDTH : -SCREEN_WIDTH,
-            duration: 200,
-            useNativeDriver: true,
-            easing: Easing.out(Easing.quad),
-          }),
-          Animated.timing(opacity, {
-            toValue: 0,
-            duration: 200,
-            useNativeDriver: true,
-          }),
-        ]).start(() => {
-          setIsVisible(false);
-          onHide && onHide();
-        });
-      } else {
-        // Vertical swipe
-        direction = translationY > 0 ? 'down' : 'up';
-        hideToast(direction);
-      }
-    } else {
-      // Snap back to original position
-      Animated.parallel([
-        Animated.spring(translateX, {
-          toValue: 0,
-          tension: 200,
-          friction: 8,
-          useNativeDriver: true,
-        }),
-        Animated.spring(translateY, {
-          toValue: 0,
-          tension: 200,
-          friction: 8,
-          useNativeDriver: true,
-        }),
-      ]).start();
-    }
+  const resetAndHide = () => {
+    setIsVisible(false);
+    // Reset animations to initial values
+    translateY.setValue(-100);
+    translateX.setValue(0);
+    opacity.setValue(0);
+    scale.setValue(0.9);
+    onHide && onHide();
   };
 
   const formatVariantText = () => {
-    if (!variant) return '';
+    if (!selectedVariant) return '';
     
+    // Extract size and color from variant title (e.g., "Small / Pink")
     const variantParts = [];
-    if (variant.size) variantParts.push(variant.size);
-    if (variant.color) variantParts.push(variant.color);
+    if (selectedVariant.title && typeof selectedVariant.title === 'string') {
+      const parts = selectedVariant.title.split(' / ');
+      if (parts.length >= 2) {
+        variantParts.push(parts[0]); // Size
+        variantParts.push(parts[1]); // Color
+      } else if (parts.length === 1) {
+        variantParts.push(parts[0]); // Single option
+      }
+    }
     
     return variantParts.length > 0 ? ` (${variantParts.join(', ')})` : '';
+  };
+
+  const getProductName = () => {
+    if (!product) return 'Item';
+    return (product.title && typeof product.title === 'string') ? product.title : 'Item';
   };
 
   if (!isVisible) return null;
 
   return (
-    <PanGestureHandler
-      onGestureEvent={onGestureEvent}
-      onHandlerStateChange={onHandlerStateChange}
+    <Animated.View
+      style={[
+        styles.toastContainer,
+        {
+          transform: [
+            { translateX },
+            { translateY },
+            { scale },
+          ],
+          opacity,
+        },
+      ]}
+      {...panResponder.panHandlers}
     >
-      <Animated.View
-        style={[
-          styles.toastContainer,
-          {
-            transform: [
-              { translateX },
-              { translateY },
-              { scale },
-            ],
-            opacity,
-          },
-        ]}
-      >
-        {/* Subtle gradient background */}
-        <View style={styles.gradientOverlay} />
-        
-        {/* Content */}
-        <View style={styles.contentContainer}>
-          {/* Heart icon with subtle animation */}
-          <View style={styles.iconContainer}>
-            <Ionicons name="heart" size={18} color="#e74c3c" />
-          </View>
-          
-          {/* Text content */}
-          <View style={styles.textContainer}>
-            <Text style={styles.mainText}>
-              Added to Wishlist
-            </Text>
-            <Text style={styles.subText} numberOfLines={1}>
-              {productName}{formatVariantText()}
-            </Text>
-          </View>
-          
-          {/* Swipe indicator */}
-          <View style={styles.swipeIndicator}>
-            <View style={styles.swipeHandle} />
-          </View>
-        </View>
-      </Animated.View>
-    </PanGestureHandler>
-  );
-};
-
-// Usage component example
-const WishlistToastExample = () => {
-  const [showToast, setShowToast] = useState(false);
-
-  const handleAddToWishlist = () => {
-    // Your wishlist logic here
-    setShowToast(true);
-  };
-
-  return (
-    <View style={styles.exampleContainer}>
-      {/* Your existing product component */}
+      {/* Subtle gradient background - changes color based on action */}
+      <View style={[styles.gradientOverlay, { backgroundColor: isRemoved ? '#95a5a6' : '#e74c3c' }]} />
       
-      {/* Wishlist Toast */}
-      <WishlistToast
-        visible={showToast}
-        onHide={() => setShowToast(false)}
-        productName="Premium Cotton T-Shirt"
-        variant={{ size: 'M', color: 'Navy Blue' }}
-        duration={4000}
-      />
-    </View>
+      {/* Content */}
+      <View style={styles.contentContainer}>
+        {/* Heart icon with subtle animation */}
+        <View style={[styles.iconContainer, { backgroundColor: isRemoved ? 'rgba(149, 165, 166, 0.1)' : 'rgba(231, 76, 60, 0.1)' }]}>
+          <Ionicons 
+            name={isRemoved ? "heart-outline" : "heart"} 
+            size={18} 
+            color={isRemoved ? "#95a5a6" : "#e74c3c"} 
+          />
+        </View>
+        
+        {/* Text content */}
+        <View style={styles.textContainer}>
+          <Text style={styles.mainText}>
+            {isRemoved ? 'Removed from Wishlist' : 'Added to Wishlist'}
+          </Text>
+          <Text style={styles.subText} numberOfLines={2}>
+            {getProductName()}{formatVariantText()}
+          </Text>
+        </View>
+        
+        {/* Swipe indicator */}
+        <View style={styles.swipeIndicator}>
+          <View style={styles.swipeHandle} />
+        </View>
+      </View>
+    </Animated.View>
   );
 };
 
@@ -281,7 +292,6 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     height: 2,
-    backgroundColor: '#e74c3c',
     opacity: 0.8,
   },
   contentContainer: {
@@ -294,7 +304,6 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: 'rgba(231, 76, 60, 0.1)',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
@@ -326,10 +335,6 @@ const styles = StyleSheet.create({
     borderRadius: 1.5,
     backgroundColor: '#bdc3c7',
     opacity: 0.6,
-  },
-  exampleContainer: {
-    flex: 1,
-    backgroundColor: '#f8f9fa',
   },
 });
 
