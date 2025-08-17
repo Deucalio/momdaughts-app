@@ -20,18 +20,16 @@ import {
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useAuthenticatedFetch } from "../utils/authStore";
-import { removeFromWishlist, addToWishlist } from "../utils/actions";
-import WishlistToast from "../../components/WishlistToast";
 import CartToast from "../../components/CartToast";
-import { fetchCartItemsCount, addToCart } from "../utils/actions";
+import WishlistToast from "../../components/WishlistToast";
+import { addToCart, addToWishlist, fetchCartItemsCount, removeFromWishlist } from "../utils/actions";
+import { useAuthenticatedFetch } from "../utils/authStore";
 const { width, height } = Dimensions.get("window");
 const BACKEND_URL = "http://192.168.18.5:3000";
 const CONTAINER_WIDTH = width - 32;
 
 const ProductDetailPage = () => {
   const params = useLocalSearchParams();
-  console.log("params:", params);
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [quantity, setQuantity] = useState(1);

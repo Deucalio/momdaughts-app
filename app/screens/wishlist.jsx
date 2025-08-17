@@ -38,6 +38,7 @@ const COLORS = {
   success: "#28a745",
   danger: "#dc3545",
 };
+//  e99ebf
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const ITEM_WIDTH = (SCREEN_WIDTH - 48) / 2; // 2 columns with padding

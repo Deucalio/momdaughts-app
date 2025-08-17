@@ -2,10 +2,8 @@ const BACKEND_URL = "http://192.168.18.5:3000";
 export const fetchCartItemsCount = async (authenticatedFetch) => {
   try {
     const res = await authenticatedFetch(`${BACKEND_URL}/cart-items-count`);
-    console.log("res:", res);
     if (res.ok) {
       const data = await res.json();
-      console.log("Cart Items Count:", data.count);
       return { success: true, count: data.count };
     }
   } catch (e) {
@@ -102,6 +100,23 @@ export const addToWishlist = async (authenticatedFetch, body) => {
   }
 };
 
+export const fetchProducts = async (authenticatedFetch) => {
+  try {
+    const response = await authenticatedFetch(`${BACKEND_URL}/products`);
+    if (!response.ok) {
+      throw new Error(`Failed to fetch products: ${response.status}`);
+    }
+    const data = await response.json();
+    if (!data || !Array.isArray(data.products)) {
+      throw new Error("Invalid response format");
+    }
+    return data.products || [];
+  } catch (error) {
+    console.error("Error fetching products:", error);
+    return [];
+  }
+};
+
 export const removeFromWishlist = async (authenticatedFetch, body) => {
   try {
     const res = await authenticatedFetch(
@@ -164,7 +179,7 @@ export const fetchWishlistItems = async (authenticatedFetch) => {
     const res = await authenticatedFetch(`${BACKEND_URL}/wishlist`, {});
 
     const data = await res.json();
-    console.log("hqhqhq:", data)
+    console.log("hqhqhq:", data);
     if (res.ok) {
       return {
         wishlist: data.wishlist,

@@ -1,355 +1,368 @@
-"use client";
-
-import { useState, useEffect, useCallback } from "react";
 import {
-  Dimensions,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
   View,
-  Platform,
+  Text,
+  ScrollView,
+  TouchableOpacity,
+  Image,
+  StyleSheet,
+  SafeAreaView,
   StatusBar,
 } from "react-native";
-/*************  ✨ Windsurf Command ⭐  *************/
-/**
- * HomePage component displays an overview of a user's health and wellness journey.
- * It includes current cycle information, quick stats, wellness tools, and featured products.
- * Users can navigate to different sections of the app, such as the period tracker or wellness hub,
- * and view details about their current cycle and wellness tips.
- */
-
-/*******  fb45f32e-bf05-446d-9d28-7247b9612e0e  *******/ import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
-import { router, useFocusEffect } from "expo-router";
-import { useAuthStore, useAuthenticatedFetch } from "../utils/authStore";
-import { logOut } from "../utils/auth";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-
+import { fetchProducts } from "../utils/actions";
+import { useAuthenticatedFetch } from "../utils/authStore";
+import { useEffect, useState } from "react";
 import ScreenWrapper from "../../components/ScreenWrapper";
-import { fetchCartItemsCount } from "../utils/actions";
 
-const { width } = Dimensions.get("window");
+const COLORS = {
+  lightPink: "#f5b8d0",
+  lavender: "#e2c6df",
+  mediumPink: "#eb9fc1",
+  darkBlue: "#2b2b6b",
+  almostBlack: "#040707",
+  white: "#ffffff",
+  lightGray: "#f8f9fa",
+  mediumGray: "#6c757d",
+  border: "#e9ecef",
+  success: "#28a745",
+  danger: "#dc3545",
+};
 
-export default function HomePage() {
-  const user = useAuthStore((state) => state.user);
+const StarRating = ({ rating }) => {
+  return (
+    <View style={styles.starContainer}>
+      {[1, 2, 3, 4, 5].map((star) => (
+        <Text key={star} style={styles.star}>
+          {star <= Math.floor(rating) ? "★" : star <= rating ? "☆" : "☆"}
+        </Text>
+      ))}
+      <Text style={styles.ratingText}>{rating}</Text>
+    </View>
+  );
+};
+
+const ProductCard = ({
+  title,
+  subtitle,
+  price,
+  rating,
+  isNew = false,
+  imageUrl,
+}) => {
+  return (
+    <View style={styles.productCard}>
+      <View style={styles.productImageContainer}>
+        <Image source={{ uri: imageUrl }} style={styles.productImage} />
+        <TouchableOpacity style={styles.heartButton}>
+          <Text style={styles.heartIcon}>♡</Text>
+        </TouchableOpacity>
+        {isNew && (
+          <View style={styles.newBadge}>
+            <Text style={styles.newBadgeText}>New Launch</Text>
+          </View>
+        )}
+      </View>
+      <View style={styles.productInfo}>
+        <Text style={styles.productTitle}>{title}</Text>
+        <Text style={styles.productSubtitle}>{subtitle}</Text>
+        <StarRating rating={rating} />
+        <View style={styles.productFooter}>
+          <Text style={styles.productPrice}>{price}</Text>
+          <TouchableOpacity style={styles.addButton}>
+            <Text style={styles.addButtonText}>Add</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    </View>
+  );
+};
+
+const RoutineStep = ({ step, completed = false }) => {
+  return (
+    <View style={styles.routineStep}>
+      <View
+        style={[
+          styles.stepIndicator,
+          completed ? styles.stepCompleted : styles.stepIncomplete,
+        ]}
+      >
+        {completed && <Text style={styles.checkmark}>✓</Text>}
+      </View>
+      <Text
+        style={[
+          styles.stepText,
+          completed ? styles.stepTextCompleted : styles.stepTextIncomplete,
+        ]}
+      >
+        {step}
+      </Text>
+    </View>
+  );
+};
+
+const HorizontalProductCard = ({
+  title,
+  subtitle,
+  price,
+  rating,
+  imageUrl,
+}) => {
+  return (
+    <View style={styles.horizontalProductCard}>
+      <View style={styles.horizontalProductImageContainer}>
+        <Image
+          source={{ uri: imageUrl }}
+          style={styles.horizontalProductImage}
+        />
+        <TouchableOpacity style={styles.heartButtonSmall}>
+          <Text style={styles.heartIcon}>♡</Text>
+        </TouchableOpacity>
+      </View>
+      <View style={styles.horizontalProductInfo}>
+        <Text style={styles.horizontalProductTitle}>{title}</Text>
+        <Text style={styles.horizontalProductSubtitle}>{subtitle}</Text>
+        <View style={styles.horizontalProductFooter}>
+          <StarRating rating={rating} />
+          <Text style={styles.horizontalProductPrice}>{price}</Text>
+        </View>
+      </View>
+    </View>
+  );
+};
+
+export default function App() {
   const { authenticatedFetch } = useAuthenticatedFetch();
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const insets = useSafeAreaInsets();
-  const [cartItemsCount, setCartItemsCount] = useState(0);
-
-  const storeCartItemsCount = async () => {
-    const count = await fetchCartItemsCount(authenticatedFetch);
-    if (count.success) {
-      setCartItemsCount(count.count);
-      return;
+  const loadProducts = async () => {
+    try {
+      setLoading(true);
+      const products_ = await fetchProducts(authenticatedFetch);
+      setProducts(products_);
+      console.log("[v0] Loaded products:", products_.length);
+      return products_;
+    } catch (error) {
+      console.error("[v0] Failed to load products:", error);
+    } finally {
+      setLoading(false);
     }
-    throw new Error("Failed to fetch cart items count");
   };
 
-  // useEffect(() => {
-  //   storeCartItemsCount();
-  // }, []);
-
-  useFocusEffect(
-    useCallback(() => {
-      storeCartItemsCount();
-    }, [])
-  );
-
-  // Calculate the header height (safe area top + padding + content height)
-  const headerHeight = insets.top + 12 + 52 + 12; // top padding + top spacing + content height + bottom padding
-
-  console.log("User:", user);
-  const [currentCycle] = useState({
-    dayOfCycle: 12,
-    nextPeriod: "March 15, 2024",
-    daysUntilNext: 16,
-    phase: "Follicular",
-  });
-
-  const quickStats = [
-    {
-      label: "Cycle Day",
-      value: currentCycle.dayOfCycle,
-      colors: ["#ec4899", "#f43f5e"],
-    },
-    {
-      label: "Days Until",
-      value: currentCycle.daysUntilNext,
-      colors: ["#8b5cf6", "#7c3aed"],
-    },
-    { label: "Avg Cycle", value: 28, colors: ["#3b82f6", "#06b6d4"] },
-  ];
-
-  const utilities = [
-    {
-      title: "Period Tracker",
-      description: "Track your cycle and symptoms",
-      icon: "calendar",
-      colors: ["#ec4899", "#f43f5e"],
-      route: "/tracker",
-    },
-    {
-      title: "Wellness Hub",
-      description: "Health tips and insights",
-      icon: "fitness",
-      colors: ["#10b981", "#059669"],
-      route: "/wellness",
-    },
-    {
-      title: "Mood Tracker",
-      description: "Monitor your emotional wellbeing",
-      icon: "heart",
-      colors: ["#8b5cf6", "#7c3aed"],
-      route: "/mood",
-    },
-    {
-      title: "Sleep Tracker",
-      description: "Track your sleep patterns",
-      icon: "moon",
-      colors: ["#6366f1", "#3b82f6"],
-      route: "/sleep",
-    },
-    {
-      title: "Nutrition Log",
-      description: "Log your meals and nutrients",
-      icon: "restaurant",
-      colors: ["#f59e0b", "#d97706"],
-      route: "/nutrition",
-    },
-    {
-      title: "Hydration",
-      description: "Track your daily water intake",
-      icon: "water",
-      colors: ["#06b6d4", "#0891b2"],
-      route: "/hydration",
-    },
-  ];
-
-  const featuredProducts = [
-    {
-      id: 1,
-      name: "Organic Cotton Pads",
-      price: 12.99,
-      originalPrice: 15.99,
-      rating: 4.8,
-      badge: "Best Seller",
-    },
-    {
-      id: 2,
-      name: "Wellness Tea Blend",
-      price: 18.99,
-      rating: 4.6,
-      badge: "New",
-    },
-  ];
-
+  useEffect(() => {
+    loadProducts();
+  }, []);
   return (
-    <ScreenWrapper cartItemCount={cartItemsCount}>
-      <View style={styles.container}>
-        <ScrollView showsVerticalScrollIndicator={false}>
-          {/* Header */}
+    <ScreenWrapper>
+      <SafeAreaView style={styles.container}>
+        <StatusBar barStyle="dark-content" backgroundColor={COLORS.white} />
 
-          {/* Hero Section */}
-          <LinearGradient
-            colors={["#fdf2f8", "#f3e8ff", "#eff6ff"]}
-            style={styles.heroSection}
-          >
-            <View style={styles.heroContent}>
-              <Text style={styles.heroTitle}>
-                <Text style={styles.heroTitleGradient}>Your {user.email}</Text>
-                {"\n"}Journey Starts Here
-              </Text>
-              <Text style={styles.heroSubtitle}>
-                Track your cycle, monitor your health, and discover products
-                designed for your unique wellness needs.
-              </Text>
-              <Text className="text-red-500 text-2xl">Hello There</Text>
+        {/* Header Space - Left empty as requested */}
+        <View style={styles.headerSpace} />
 
-              {/* Quick Stats */}
-              <View style={styles.quickStats}>
-                {quickStats.map((stat, index) => (
-                  <LinearGradient
-                    key={index}
-                    colors={stat.colors}
-                    style={styles.statCard}
-                  >
-                    <Text style={styles.statValue}>{stat.value}</Text>
-                    <Text style={styles.statLabel}>{stat.label}</Text>
-                  </LinearGradient>
-                ))}
+        <ScrollView
+          style={styles.scrollView}
+          showsVerticalScrollIndicator={false}
+        >
+          {/* Hello Beautiful Section */}
+          <View style={styles.section}>
+            <View style={styles.greetingHeader}>
+              <View>
+                <Text style={styles.greetingTitle}>Hello, Beautiful!</Text>
+                <Text style={styles.greetingSubtitle}>
+                  Your skin journey continues today
+                </Text>
               </View>
+              <Image
+                source={{
+                  uri: "https://i.ibb.co/TqRgNddL/freepik-the-style-is-candid-image-photography-with-natural-65105.png",
+                }}
+                style={styles.profileImage}
+              />
+            </View>
+          </View>
 
-              <TouchableOpacity style={styles.ctaButton}>
-                <LinearGradient
-                  colors={["#ec4899", "#8b5cf6"]}
-                  style={styles.ctaGradient}
-                >
-                  <Text style={styles.ctaText}>Get Started</Text>
-                  <Ionicons name="arrow-forward" size={16} color="white" />
-                </LinearGradient>
+          {/* Your Trackers */}
+          <LinearGradient
+            colors={[COLORS.darkBlue, COLORS.mediumPink]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.trackersSection}
+          >
+            <View style={styles.trackersHeader}>
+              <Text style={styles.trackersTitle}>Your Trackers</Text>
+              <TouchableOpacity>
+                <Text style={styles.viewAllTextWhite}>View All</Text>
               </TouchableOpacity>
+            </View>
+            <View style={styles.trackersContent}>
+              <View style={styles.trackerItem}>
+                <View style={styles.trackerIcon}>
+                  <Text style={styles.trackerIconText}>↓</Text>
+                </View>
+                <View>
+                  <Text style={styles.trackerLabel}>IPL Sessions</Text>
+                  <Text style={styles.trackerValue}>3 of 6 completed</Text>
+                </View>
+              </View>
+              <View style={styles.trackerItem}>
+                <View style={styles.trackerIcon}>
+                  <Text style={styles.trackerIconText}>🌙</Text>
+                </View>
+                <View>
+                  <Text style={styles.trackerLabel}>Cycle Day</Text>
+                  <Text style={styles.trackerValue}>18</Text>
+                  <Text style={styles.trackerSubValue}>Next in 10 days</Text>
+                </View>
+              </View>
             </View>
           </LinearGradient>
 
-          {/* Current Cycle Status */}
-          <View style={styles.section}>
-            <LinearGradient
-              colors={["#fdf2f8", "#f3e8ff"]}
-              style={styles.cycleCard}
-            >
-              <View style={styles.cycleHeader}>
-                <View>
-                  <Text style={styles.cycleTitle}>Current Cycle</Text>
-                  <Text style={styles.cycleSubtitle}>
-                    Day {currentCycle.dayOfCycle} • {currentCycle.phase} Phase
-                  </Text>
-                </View>
-                <View style={styles.phaseBadge}>
-                  <Text style={styles.phaseBadgeText}>
-                    {currentCycle.phase}
-                  </Text>
-                </View>
+          {/* Daily Routine */}
+          <View style={styles.routineSection}>
+            <View style={styles.routineHeader}>
+              <Text style={styles.routineTitle}>Daily Routine</Text>
+              <View style={styles.routineToggle}>
+                <Text style={styles.routineToggleText}>Evening</Text>
               </View>
+            </View>
 
-              <View style={styles.progressContainer}>
-                <View style={styles.progressHeader}>
-                  <Text style={styles.progressLabel}>Cycle Progress</Text>
-                  <Text style={styles.progressPercent}>
-                    {Math.round((currentCycle.dayOfCycle / 28) * 100)}%
-                  </Text>
+            <View style={styles.routineCard}>
+              <View style={styles.routineCardHeader}>
+                <View style={styles.routineInfo}>
+                  <View style={styles.routineIcon}>
+                    <Text style={styles.routineIconText}>🌙</Text>
+                  </View>
+                  <View>
+                    <Text style={styles.routineCardTitle}>PM Routine</Text>
+                    <Text style={styles.routineProgress}>
+                      2 of 4 steps completed
+                    </Text>
+                  </View>
                 </View>
-                <View style={styles.progressBar}>
-                  <View
-                    style={[
-                      styles.progressFill,
-                      { width: `${(currentCycle.dayOfCycle / 28) * 100}%` },
-                    ]}
-                  />
-                </View>
-                <Text style={styles.nextPeriod}>
-                  Next period expected: {currentCycle.nextPeriod}
-                </Text>
-              </View>
-
-              <View style={styles.cycleActions}>
-                <TouchableOpacity style={styles.cycleButton}>
-                  <Text style={styles.cycleButtonText}>Log Symptoms</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={[styles.cycleButton, styles.cycleButtonOutline]}
-                >
-                  <Text style={styles.cycleButtonOutlineText}>
-                    View Calendar
-                  </Text>
+                <TouchableOpacity style={styles.continueButton}>
+                  <Text style={styles.continueButtonText}>Continue</Text>
                 </TouchableOpacity>
               </View>
-            </LinearGradient>
+
+              <View style={styles.routineSteps}>
+                <RoutineStep step="Cleanse" completed={true} />
+                <RoutineStep step="Tone" completed={true} />
+                <RoutineStep step="Serum" completed={false} />
+                <RoutineStep step="Moisturize" completed={false} />
+              </View>
+            </View>
           </View>
 
-          {/* Wellness Tools */}
+          {/* Featured Products Section */}
           <View style={styles.section}>
             <View style={styles.sectionHeader}>
-              <Text style={styles.sectionTitle}>Wellness Tools</Text>
-              <TouchableOpacity>
+              <Text style={styles.sectionTitle}>Featured Products</Text>
+              <TouchableOpacity style={styles.viewAllButton}>
                 <Text style={styles.viewAllText}>View All</Text>
               </TouchableOpacity>
             </View>
 
-            <View style={styles.utilitiesGrid}>
-              {utilities.map((utility, index) => (
-                <TouchableOpacity
-                  key={index}
-                  style={styles.utilityCard}
-                  onPress={() => router.push(utility.route)}
-                >
-                  <LinearGradient
-                    colors={utility.colors}
-                    style={styles.utilityIcon}
-                  >
-                    <Ionicons name={utility.icon} size={24} color="white" />
-                  </LinearGradient>
-                  <Text style={styles.utilityTitle}>{utility.title}</Text>
-                  <Text style={styles.utilityDescription}>
-                    {utility.description}
-                  </Text>
-                </TouchableOpacity>
-              ))}
+            <View style={styles.productsGrid}>
+              <ProductCard
+                title="Hydrating Serum"
+                subtitle="Hyaluronic Acid Complex"
+                price="$34.99"
+                rating={4.5}
+                isNew={true}
+                imageUrl="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-yGC7Efy35Vu0JbQhY7hYO3uVRStrsl.png"
+              />
+              <View style={styles.productRow}>
+                <ProductCard
+                  title="Daily Moisturizer"
+                  subtitle=""
+                  price="$29.99"
+                  rating={4.0}
+                  imageUrl="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-yGC7Efy35Vu0JbQhY7hYO3uVRStrsl.png"
+                />
+                <ProductCard
+                  title="Gentle Cleanser"
+                  subtitle=""
+                  price="$24.99"
+                  rating={4.7}
+                  imageUrl="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-yGC7Efy35Vu0JbQhY7hYO3uVRStrsl.png"
+                />
+              </View>
             </View>
           </View>
 
-          {/* Featured Products */}
+          {/* Trending Products Horizontal Banner */}
           <View style={styles.section}>
             <View style={styles.sectionHeader}>
-              <Text style={styles.sectionTitle}>Featured Products</Text>
-              <TouchableOpacity onPress={() => router.push("/shop")}>
-                <Text style={styles.viewAllText}>Shop All</Text>
+              <Text style={styles.sectionTitle}>Trending Now</Text>
+              <TouchableOpacity>
+                <Text style={styles.viewAllText}>See More</Text>
               </TouchableOpacity>
             </View>
 
-            <View style={styles.productsGrid}>
-              {featuredProducts.map((product) => (
-                <TouchableOpacity key={product.id} style={styles.productCard}>
-                  <View style={styles.productImage}>
-                    <LinearGradient
-                      colors={["#fdf2f8", "#f3e8ff"]}
-                      style={styles.productImageGradient}
-                    />
-                    {product.badge && (
-                      <View style={styles.productBadge}>
-                        <Text style={styles.productBadgeText}>
-                          {product.badge}
-                        </Text>
-                      </View>
-                    )}
-                  </View>
-                  <View style={styles.productInfo}>
-                    <Text style={styles.productName}>{product.name}</Text>
-                    <View style={styles.productRating}>
-                      <Ionicons name="star" size={12} color="#fbbf24" />
-                      <Text style={styles.ratingText}>{product.rating}</Text>
-                    </View>
-                    <View style={styles.productPricing}>
-                      <Text style={styles.productPrice}>${product.price}</Text>
-                      {product.originalPrice && (
-                        <Text style={styles.originalPrice}>
-                          ${product.originalPrice}
-                        </Text>
-                      )}
-                    </View>
-                  </View>
-                </TouchableOpacity>
-              ))}
-            </View>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              style={styles.horizontalScroll}
+            >
+              <HorizontalProductCard
+                title="Vitamin C Brightening Serum"
+                subtitle="Radiance Boost"
+                price="$42.99"
+                rating={4.8}
+                imageUrl="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-yGC7Efy35Vu0JbQhY7hYO3uVRStrsl.png"
+              />
+              <HorizontalProductCard
+                title="Retinol Night Cream"
+                subtitle="Anti-Aging Formula"
+                price="$56.99"
+                rating={4.6}
+                imageUrl="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-yGC7Efy35Vu0JbQhY7hYO3uVRStrsl.png"
+              />
+              <HorizontalProductCard
+                title="Niacinamide Toner"
+                subtitle="Pore Minimizer"
+                price="$28.99"
+                rating={4.4}
+                imageUrl="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-yGC7Efy35Vu0JbQhY7hYO3uVRStrsl.png"
+              />
+              <HorizontalProductCard
+                title="SPF 50 Sunscreen"
+                subtitle="Daily Protection"
+                price="$32.99"
+                rating={4.9}
+                imageUrl="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-yGC7Efy35Vu0JbQhY7hYO3uVRStrsl.png"
+              />
+            </ScrollView>
           </View>
 
-          {/* Wellness Tip */}
-          <View style={styles.section}>
-            <LinearGradient
-              colors={["#ecfdf5", "#d1fae5"]}
-              style={styles.tipCard}
-            >
-              <View style={styles.tipContent}>
-                <LinearGradient
-                  colors={["#10b981", "#059669"]}
-                  style={styles.tipIcon}
-                >
-                  <Ionicons name="flash" size={20} color="white" />
-                </LinearGradient>
-                <View style={styles.tipText}>
-                  <Text style={styles.tipTitle}>Today's Wellness Tip</Text>
-                  <Text style={styles.tipDescription}>
-                    During your follicular phase, your energy levels are
-                    naturally higher. This is a great time to try new workouts
-                    or start new healthy habits!
-                  </Text>
-                </View>
-              </View>
-            </LinearGradient>
-          </View>
+          {/* Discover Your Perfect Routine Section */}
+          <LinearGradient
+            colors={[COLORS.darkBlue, COLORS.mediumPink]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={[styles.discoverSection, styles.quizSectionEnhanced]}
+          >
+            <View style={styles.quizIconContainer}>
+              <Text style={styles.quizIcon}>✨</Text>
+            </View>
+            <Text style={styles.discoverTitle}>
+              Discover Your Perfect Routine
+            </Text>
+            <Text style={styles.discoverSubtitle}>
+              Take our 2-min skin quiz and get personalized product
+              recommendations tailored just for you
+            </Text>
+            <TouchableOpacity style={styles.startQuizButton}>
+              <Text style={styles.startQuizText}>Start Quiz</Text>
+              <Text style={styles.quizArrow}>→</Text>
+            </TouchableOpacity>
+          </LinearGradient>
+
+          {/* Bottom spacing for better scrolling experience */}
+          <View style={styles.bottomSpacing} />
         </ScrollView>
-      </View>
+      </SafeAreaView>
     </ScreenWrapper>
   );
 }
@@ -357,223 +370,55 @@ export default function HomePage() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#ffffff",
-    paddingTop: Platform.OS === "android" ? StatusBar.currentHeight : 0,
-
-    // backgroundColor: "white",
+    backgroundColor: COLORS.white,
   },
-  header: {
-    backgroundColor: "rgba(255, 255, 255, 0.95)",
-    borderBottomWidth: 1,
-    borderBottomColor: "#fce7f3",
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+  headerSpace: {
+    height: 60,
+    backgroundColor: COLORS.white,
   },
-  headerContent: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
+  scrollView: {
+    flex: 1,
+    paddingHorizontal: 20,
   },
-  logoContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  logo: {
-    width: 32,
-    height: 32,
-    borderRadius: 8,
-    justifyContent: "center",
-    alignItems: "center",
-    marginRight: 8,
-  },
-  logoText: {
-    color: "white",
-    fontSize: 14,
-    fontWeight: "bold",
-  },
-  logoTitle: {
-    fontSize: 20,
-    fontWeight: "bold",
-    color: "#ec4899",
-  },
-  headerActions: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-  },
-  headerButton: {
-    position: "relative",
-  },
-  notificationBadge: {
-    position: "absolute",
-    top: -4,
-    right: -4,
-    backgroundColor: "#ec4899",
-    borderRadius: 10,
-    width: 20,
-    height: 20,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  badgeText: {
-    color: "white",
-    fontSize: 10,
-    fontWeight: "bold",
-  },
-  heroSection: {
-    paddingHorizontal: 16,
-    paddingVertical: 32,
-  },
-  heroContent: {
-    alignItems: "center",
-  },
-  heroTitle: {
-    fontSize: 32,
-    fontWeight: "bold",
-    textAlign: "center",
-    marginBottom: 16,
-    color: "#1f2937",
-  },
-  heroTitleGradient: {
-    color: "#ec4899",
-  },
-  heroSubtitle: {
-    fontSize: 16,
-    color: "#6b7280",
-    textAlign: "center",
-    marginBottom: 24,
-    lineHeight: 24,
-  },
-  quickStats: {
-    flexDirection: "row",
-    justifyContent: "center",
-    gap: 16,
-    marginBottom: 24,
-  },
-  statCard: {
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+  discoverSection: {
     borderRadius: 16,
-    alignItems: "center",
-    minWidth: 80,
+    padding: 24,
+    marginBottom: 24,
   },
-  statValue: {
-    color: "white",
-    fontSize: 20,
+  discoverTitle: {
+    fontSize: 24,
     fontWeight: "bold",
+    color: COLORS.white,
+    marginBottom: 8,
   },
-  statLabel: {
-    color: "white",
-    fontSize: 12,
+  discoverSubtitle: {
+    fontSize: 16,
+    color: COLORS.white,
     opacity: 0.9,
+    marginBottom: 20,
+    lineHeight: 22,
   },
-  ctaButton: {
-    borderRadius: 12,
-    overflow: "hidden",
-  },
-  ctaGradient: {
-    flexDirection: "row",
-    alignItems: "center",
+  startQuizButton: {
+    backgroundColor: COLORS.white,
     paddingHorizontal: 24,
     paddingVertical: 12,
-    gap: 8,
-  },
-  ctaText: {
-    color: "white",
-    fontSize: 16,
-    fontWeight: "600",
-  },
-  section: {
-    paddingHorizontal: 16,
-    paddingVertical: 16,
-  },
-  cycleCard: {
-    borderRadius: 16,
-    padding: 20,
-  },
-  cycleHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "flex-start",
-    marginBottom: 16,
-  },
-  cycleTitle: {
-    fontSize: 20,
-    fontWeight: "600",
-    color: "#1f2937",
-  },
-  cycleSubtitle: {
-    fontSize: 14,
-    color: "#6b7280",
-    marginTop: 4,
-  },
-  phaseBadge: {
-    backgroundColor: "rgba(236, 72, 153, 0.1)",
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    borderRadius: 12,
-  },
-  phaseBadgeText: {
-    color: "#ec4899",
-    fontSize: 12,
-    fontWeight: "600",
-  },
-  progressContainer: {
-    marginBottom: 16,
-  },
-  progressHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: 8,
-  },
-  progressLabel: {
-    fontSize: 14,
-    color: "#6b7280",
-  },
-  progressPercent: {
-    fontSize: 14,
-    color: "#6b7280",
-  },
-  progressBar: {
-    height: 8,
-    backgroundColor: "rgba(236, 72, 153, 0.2)",
-    borderRadius: 4,
-    marginBottom: 8,
-  },
-  progressFill: {
-    height: "100%",
-    backgroundColor: "#ec4899",
-    borderRadius: 4,
-  },
-  nextPeriod: {
-    fontSize: 12,
-    color: "#6b7280",
-  },
-  cycleActions: {
-    flexDirection: "row",
-    gap: 8,
-  },
-  cycleButton: {
-    flex: 1,
-    backgroundColor: "#ec4899",
-    paddingVertical: 12,
     borderRadius: 8,
+    alignSelf: "flex-start",
+    flexDirection: "row",
     alignItems: "center",
   },
-  cycleButtonText: {
-    color: "white",
-    fontSize: 14,
+  startQuizText: {
+    color: COLORS.darkBlue,
     fontWeight: "600",
+    fontSize: 16,
   },
-  cycleButtonOutline: {
-    backgroundColor: "transparent",
-    borderWidth: 1,
-    borderColor: "#ec4899",
+  quizArrow: {
+    marginLeft: 8,
+    fontSize: 16,
+    color: COLORS.darkBlue,
   },
-  cycleButtonOutlineText: {
-    color: "#ec4899",
-    fontSize: 14,
-    fontWeight: "600",
+  section: {
+    marginBottom: 24,
   },
   sectionHeader: {
     flexDirection: "row",
@@ -584,145 +429,402 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 20,
     fontWeight: "bold",
-    color: "#1f2937",
+    color: COLORS.darkBlue,
+  },
+  viewAllButton: {
+    backgroundColor: COLORS.lightPink,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
   },
   viewAllText: {
-    color: "#ec4899",
+    color: COLORS.darkBlue,
+    fontWeight: "500",
     fontSize: 14,
-    fontWeight: "600",
   },
-  utilitiesGrid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 12,
-  },
-  utilityCard: {
-    width: (width - 44) / 2,
-    backgroundColor: "rgba(248, 250, 252, 0.5)",
-    borderRadius: 16,
-    padding: 16,
-    alignItems: "center",
-  },
-  utilityIcon: {
-    width: 48,
-    height: 48,
-    borderRadius: 12,
-    justifyContent: "center",
-    alignItems: "center",
-    marginBottom: 12,
-  },
-  utilityTitle: {
+  viewAllTextWhite: {
+    color: COLORS.white,
+    fontWeight: "500",
     fontSize: 14,
-    fontWeight: "600",
-    color: "#1f2937",
-    textAlign: "center",
-    marginBottom: 4,
-  },
-  utilityDescription: {
-    fontSize: 12,
-    color: "#6b7280",
-    textAlign: "center",
-    lineHeight: 16,
   },
   productsGrid: {
-    flexDirection: "row",
-    gap: 12,
+    gap: 16,
   },
-  productCard: {
-    width: (width - 44) / 2,
-    backgroundColor: "#ffffff",
-    borderRadius: 16,
-    padding: 12,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  productImage: {
-    height: 120,
-    borderRadius: 12,
-    marginBottom: 12,
-    position: "relative",
-    overflow: "hidden",
-  },
-  productImageGradient: {
-    flex: 1,
-  },
-  productBadge: {
-    position: "absolute",
-    top: 8,
-    left: 8,
-    backgroundColor: "#ec4899",
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 8,
-  },
-  productBadgeText: {
-    color: "white",
-    fontSize: 10,
-    fontWeight: "600",
-  },
-  productInfo: {
-    gap: 4,
-  },
-  productName: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: "#1f2937",
-    lineHeight: 18,
-  },
-  productRating: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
-  },
-  ratingText: {
-    fontSize: 12,
-    color: "#6b7280",
-  },
-  productPricing: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-  },
-  productPrice: {
-    fontSize: 16,
-    fontWeight: "bold",
-    color: "#ec4899",
-  },
-  originalPrice: {
-    fontSize: 12,
-    color: "#9ca3af",
-    textDecorationLine: "line-through",
-  },
-  tipCard: {
-    borderRadius: 16,
-    padding: 20,
-  },
-  tipContent: {
+  productRow: {
     flexDirection: "row",
     gap: 16,
   },
-  tipIcon: {
+  productCard: {
+    backgroundColor: COLORS.white,
+    borderRadius: 12,
+    padding: 16,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 3,
+    flex: 1,
+  },
+  productImageContainer: {
+    position: "relative",
+    backgroundColor: COLORS.lightPink,
+    borderRadius: 8,
+    height: 120,
+    marginBottom: 12,
+  },
+  productImage: {
+    width: "100%",
+    height: "100%",
+    borderRadius: 8,
+  },
+  heartButton: {
+    position: "absolute",
+    top: 8,
+    right: 8,
+    backgroundColor: COLORS.white,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  heartButtonSmall: {
+    position: "absolute",
+    top: 6,
+    right: 6,
+    backgroundColor: COLORS.white,
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  heartIcon: {
+    fontSize: 16,
+    color: COLORS.mediumGray,
+  },
+  newBadge: {
+    position: "absolute",
+    top: 8,
+    left: 8,
+    backgroundColor: COLORS.lavender,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  newBadgeText: {
+    fontSize: 10,
+    fontWeight: "600",
+    color: COLORS.darkBlue,
+  },
+  productInfo: {
+    flex: 1,
+  },
+  productTitle: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: COLORS.almostBlack,
+    marginBottom: 4,
+  },
+  productSubtitle: {
+    fontSize: 14,
+    color: COLORS.mediumGray,
+    marginBottom: 8,
+  },
+  starContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 12,
+  },
+  star: {
+    color: "#FFD700",
+    fontSize: 14,
+  },
+  ratingText: {
+    marginLeft: 4,
+    fontSize: 14,
+    color: COLORS.mediumGray,
+  },
+  productFooter: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  productPrice: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: COLORS.almostBlack,
+  },
+  addButton: {
+    backgroundColor: COLORS.darkBlue,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 6,
+  },
+  addButtonText: {
+    color: COLORS.white,
+    fontWeight: "600",
+    fontSize: 14,
+  },
+  greetingHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 20,
+  },
+  greetingTitle: {
+    fontSize: 24,
+    fontWeight: "bold",
+    color: COLORS.darkBlue,
+  },
+  greetingSubtitle: {
+    fontSize: 16,
+    color: COLORS.mediumGray,
+    marginTop: 4,
+  },
+  profileImage: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+  },
+  trackersSection: {
+    borderRadius: 16,
+    padding: 20,
+    marginBottom: 24,
+  },
+  trackersHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 16,
+  },
+  trackersTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: COLORS.white,
+  },
+  trackersContent: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+  },
+  trackerItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    flex: 1,
+  },
+  trackerIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: "rgba(255,255,255,0.2)",
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 12,
+  },
+  trackerIconText: {
+    fontSize: 18,
+    color: COLORS.white,
+  },
+  trackerLabel: {
+    fontSize: 14,
+    color: COLORS.white,
+    fontWeight: "600",
+  },
+  trackerValue: {
+    fontSize: 12,
+    color: COLORS.white,
+    opacity: 0.8,
+  },
+  trackerSubValue: {
+    fontSize: 10,
+    color: COLORS.white,
+    opacity: 0.6,
+  },
+  routineSection: {
+    marginBottom: 24,
+  },
+  routineHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 16,
+  },
+  routineTitle: {
+    fontSize: 20,
+    fontWeight: "bold",
+    color: COLORS.darkBlue,
+  },
+  routineToggle: {
+    backgroundColor: COLORS.lightPink,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+  },
+  routineToggleText: {
+    color: COLORS.darkBlue,
+    fontWeight: "500",
+    fontSize: 14,
+  },
+  routineCard: {
+    backgroundColor: COLORS.white,
+    borderRadius: 16,
+    padding: 20,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 3,
+  },
+  routineCardHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 20,
+  },
+  routineInfo: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  routineIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: COLORS.lightPink,
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 12,
+  },
+  routineIconText: {
+    fontSize: 18,
+  },
+  routineCardTitle: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: COLORS.almostBlack,
+  },
+  routineProgress: {
+    fontSize: 14,
+    color: COLORS.mediumGray,
+    marginTop: 2,
+  },
+  continueButton: {
+    backgroundColor: COLORS.darkBlue,
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 8,
+  },
+  continueButtonText: {
+    color: COLORS.white,
+    fontWeight: "600",
+    fontSize: 14,
+  },
+  routineSteps: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+  },
+  routineStep: {
+    alignItems: "center",
+    flex: 1,
+  },
+  stepIndicator: {
     width: 40,
     height: 40,
     borderRadius: 20,
     justifyContent: "center",
     alignItems: "center",
-  },
-  tipText: {
-    flex: 1,
-  },
-  tipTitle: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: "#1f2937",
     marginBottom: 8,
   },
-  tipDescription: {
+  stepCompleted: {
+    backgroundColor: COLORS.success,
+  },
+  stepIncomplete: {
+    backgroundColor: COLORS.border,
+  },
+  checkmark: {
+    color: COLORS.white,
+    fontSize: 16,
+    fontWeight: "bold",
+  },
+  stepText: {
+    fontSize: 12,
+    textAlign: "center",
+  },
+  stepTextCompleted: {
+    color: COLORS.almostBlack,
+    fontWeight: "600",
+  },
+  stepTextIncomplete: {
+    color: COLORS.mediumGray,
+  },
+  horizontalScroll: {
+    paddingLeft: 0,
+  },
+  horizontalProductCard: {
+    backgroundColor: COLORS.white,
+    borderRadius: 12,
+    padding: 12,
+    marginRight: 16,
+    width: 160,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 3,
+  },
+  horizontalProductImageContainer: {
+    position: "relative",
+    backgroundColor: COLORS.lightPink,
+    borderRadius: 8,
+    height: 100,
+    marginBottom: 8,
+  },
+  horizontalProductImage: {
+    width: "100%",
+    height: "100%",
+    borderRadius: 8,
+  },
+  horizontalProductInfo: {
+    flex: 1,
+  },
+  horizontalProductTitle: {
     fontSize: 14,
-    color: "#6b7280",
-    lineHeight: 20,
+    fontWeight: "bold",
+    color: COLORS.almostBlack,
+    marginBottom: 2,
+    lineHeight: 18,
+  },
+  horizontalProductSubtitle: {
+    fontSize: 12,
+    color: COLORS.mediumGray,
+    marginBottom: 8,
+  },
+  horizontalProductFooter: {
+    marginTop: 4,
+  },
+  horizontalProductPrice: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: COLORS.almostBlack,
+    marginTop: 4,
+  },
+  quizSectionEnhanced: {
+    alignItems: "center",
+    textAlign: "center",
+  },
+  quizIconContainer: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: "rgba(255,255,255,0.2)",
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 16,
+  },
+  quizIcon: {
+    fontSize: 24,
+    color: COLORS.white,
+  },
+  bottomSpacing: {
+    height: 40,
   },
 });

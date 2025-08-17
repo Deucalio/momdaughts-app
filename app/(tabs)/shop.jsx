@@ -19,7 +19,7 @@ import {
 } from "react-native";
 import CartToast from "../../components/CartToast";
 import ScreenWrapper from "../../components/ScreenWrapper";
-import { fetchCartItemsCount, addToCart } from "../utils/actions";
+import { addToCart, fetchCartItemsCount } from "../utils/actions";
 import { useAuthenticatedFetch, useAuthStore } from "../utils/authStore";
 
 const BACKEND_URL = "http://192.168.18.5:3000";
@@ -291,8 +291,6 @@ export default function ShopPage() {
             shadowRadius: 3.84,
           }}
           onPress={() => {
-            // Handle banner tap here
-            console.log("Banner tapped");
           }}
         >
           <Image

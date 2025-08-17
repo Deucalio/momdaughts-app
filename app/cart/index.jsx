@@ -92,7 +92,6 @@ export default function CartScreen() {
       // Mark request as active
       activeRequests.set(itemId, true);
 
-      console.log(`Syncing quantity ${quantity} for item ${itemId} to server`);
 
       const response = await authenticatedFetch(
         `${BACKEND_URL}/cart/${itemId}`,
@@ -107,7 +106,6 @@ export default function CartScreen() {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
 
-      console.log(`Quantity for item ${itemId} synced to server successfully`);
 
       // Clear the pending update since it was successful
       pendingUpdates.delete(itemId);
@@ -187,7 +185,6 @@ export default function CartScreen() {
       return;
     }
 
-    console.log("Optimistically updating quantity to:", newQuantity);
 
     // Instant local update with optimistic UI
     setCartItems((prev) =>
@@ -214,7 +211,6 @@ export default function CartScreen() {
 
   // Simplified remove function without animation
   const removeItem = async (itemId) => {
-    console.log("itemId", itemId);
     try {
       const response = await authenticatedFetch(
         `${BACKEND_URL}/cart/${itemId}`,
@@ -223,7 +219,6 @@ export default function CartScreen() {
           body: JSON.stringify({}), // Send dummy body
         }
       );
-      console.log("res:");
 
       if (!response.ok) throw new Error("Failed to remove item");
 

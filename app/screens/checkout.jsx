@@ -117,7 +117,6 @@ export default function CheckoutScreen() {
         const lines = data.cart;
         if (mounted) setItems(lines);
       } catch (e) {
-        console.log("e:", e);
         if (mounted) setError(e?.message || "Failed to load cart");
       } finally {
         if (mounted) setLoading(false);
@@ -253,7 +252,6 @@ export default function CheckoutScreen() {
   };
 
   const handlePay = async () => {
-    console.log("here we are!!!");
     if (!isFormValid()) {
       Alert.alert(
         "Incomplete Information",
