@@ -1,9 +1,9 @@
 import {
-    APP_SCHEME,
-    BASE_URL,
-    GOOGLE_AUTH_URL,
-    GOOGLE_CLIENT_ID,
-    GOOGLE_REDIRECT_URI,
+  APP_SCHEME,
+  BASE_URL,
+  GOOGLE_AUTH_URL,
+  GOOGLE_CLIENT_ID,
+  GOOGLE_REDIRECT_URI,
 } from "../../../constants";
 
 export async function GET(request) {

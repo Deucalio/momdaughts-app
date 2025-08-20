@@ -29,6 +29,7 @@ const COLORS = {
   lavender: "#e2c6df",
   mediumPink: "#eb9fc1",
   darkBlue: "#2b2b6b",
+  deepBlue: "#2c2a6b",
   almostBlack: "#040707",
   white: "#ffffff",
   // Additional utility colors
@@ -38,7 +39,6 @@ const COLORS = {
   success: "#28a745",
   danger: "#dc3545",
 };
-//  e99ebf
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const ITEM_WIDTH = (SCREEN_WIDTH - 48) / 2; // 2 columns with padding
@@ -139,8 +139,10 @@ export default function WishlistScreen({ navigation }) {
   const renderWishlistItem = ({ item }) => (
     <WishlistItem
       navigateToProduct={() => {
-        console.log("\n\nitem:" , item)
-        router.push(`/products/${item.shopifyProductId}?variantId=${item.shopifyVariantId}`);
+        console.log("\n\nitem:", item);
+        router.push(
+          `/products/${item.shopifyProductId}?variantId=${item.shopifyVariantId}`
+        );
       }}
       item={item}
       onRemove={() => handleRemoveFromWishlist(item.id)}

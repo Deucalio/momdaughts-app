@@ -1,17 +1,18 @@
+// https://www.behance.net/gallery/211430663/mobile-app-uiux-case-routine-tracker-app?tracking_source=search_projects|skincare+routine+mobile&l=0
 "use client";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
 import {
-    Alert,
-    Dimensions,
-    Image,
-    RefreshControl,
-    ScrollView,
-    Switch,
-    Text,
-    TouchableOpacity,
-    View,
+  Alert,
+  Dimensions,
+  Image,
+  RefreshControl,
+  ScrollView,
+  Switch,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useAuthenticatedFetch, useAuthStore } from "../utils/authStore";

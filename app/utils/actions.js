@@ -195,3 +195,20 @@ export const fetchWishlistItems = async (authenticatedFetch) => {
     return { success: false, error: "Failed to fetch items from cart" };
   }
 };
+
+export const fetchArticles = async (authenticatedFetch) => {
+  try {
+    const response = await authenticatedFetch(`${BACKEND_URL}/articles`);
+    if (!response.ok) {
+      throw new Error(`Failed to fetch blogs: ${response.status}`);
+    }
+    const data = await response.json();
+    if (!data || !Array.isArray(data.articles)) {
+      throw new Error("Invalid response format");
+    }
+    return data.articles || [];
+  } catch (error) {
+    console.error("Error fetching articles:", error);
+    return [];
+  }
+};

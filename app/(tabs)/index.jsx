@@ -1,3 +1,5 @@
+"use client";
+
 import {
   View,
   Text,
@@ -7,18 +9,36 @@ import {
   StyleSheet,
   SafeAreaView,
   StatusBar,
+  ActivityIndicator,
+  Dimensions,
+  Animated,
+  Modal,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
-import { fetchProducts } from "../utils/actions";
+import {
+  fetchProducts,
+  addToCart,
+  fetchCartItemsCount,
+  fetchArticles,
+} from "../utils/actions";
 import { useAuthenticatedFetch } from "../utils/authStore";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
+import { useRouter, useFocusEffect } from "expo-router";
 import ScreenWrapper from "../../components/ScreenWrapper";
+import TrendingSection from "../../components/TrendingSection";
+import BlogsSection from "../../components/BlogsSection";
+import QuizSection from "../../components/QuizSection";
+import AffiliateBanner from "../../components/AffiliateBanner";
+import WelnessSection from "../../components/WelnessSection";
+import RoutineModal_ from "../../components/RoutineModal";
+import AboutSection from "../../components/AboutSection";
 
 const COLORS = {
   lightPink: "#f5b8d0",
   lavender: "#e2c6df",
   mediumPink: "#eb9fc1",
   darkBlue: "#2b2b6b",
+  deepBlue: "#2c2a6b",
   almostBlack: "#040707",
   white: "#ffffff",
   lightGray: "#f8f9fa",
@@ -26,6 +46,34 @@ const COLORS = {
   border: "#e9ecef",
   success: "#28a745",
   danger: "#dc3545",
+  cream: "#faf9f7",
+  softGold: "#f4f1ea",
+};
+
+// Sample routine steps - you can move this to a separate data file
+
+
+
+
+
+// Simulated blog API
+const fetchBlogs = async (authenticatedFetch) => {
+  const articles = await fetchArticles(authenticatedFetch);
+  const updatedFormat = articles.map((blog) => {
+    return {
+      id: blog.id.split("/").pop(), // Extracting numeric ID from GID
+      title: blog.title,
+      excerpt: blog.cleanText.slice(0, 100) + "...",
+      author: blog.author?.name || "Unknown Author",
+      image:
+        blog.image?.url ||
+        "https://via.placeholder.com/300x300/f5b8d0/2b2b6b?text=Blog",
+      category: "", // Assuming category is not provided in the API
+      date: new Date(blog.createdAt).toISOString().split("T")[0], // Format date as YYYY-MM-DD
+      readTime: blog.readTime || "5 min read", // Use readTime from API or default
+    };
+  });
+  return updatedFormat;
 };
 
 const StarRating = ({ rating }) => {
@@ -37,42 +85,6 @@ const StarRating = ({ rating }) => {
         </Text>
       ))}
       <Text style={styles.ratingText}>{rating}</Text>
-    </View>
-  );
-};
-
-const ProductCard = ({
-  title,
-  subtitle,
-  price,
-  rating,
-  isNew = false,
-  imageUrl,
-}) => {
-  return (
-    <View style={styles.productCard}>
-      <View style={styles.productImageContainer}>
-        <Image source={{ uri: imageUrl }} style={styles.productImage} />
-        <TouchableOpacity style={styles.heartButton}>
-          <Text style={styles.heartIcon}>♡</Text>
-        </TouchableOpacity>
-        {isNew && (
-          <View style={styles.newBadge}>
-            <Text style={styles.newBadgeText}>New Launch</Text>
-          </View>
-        )}
-      </View>
-      <View style={styles.productInfo}>
-        <Text style={styles.productTitle}>{title}</Text>
-        <Text style={styles.productSubtitle}>{subtitle}</Text>
-        <StarRating rating={rating} />
-        <View style={styles.productFooter}>
-          <Text style={styles.productPrice}>{price}</Text>
-          <TouchableOpacity style={styles.addButton}>
-            <Text style={styles.addButtonText}>Add</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
     </View>
   );
 };
@@ -100,40 +112,263 @@ const RoutineStep = ({ step, completed = false }) => {
   );
 };
 
-const HorizontalProductCard = ({
-  title,
-  subtitle,
-  price,
-  rating,
-  imageUrl,
+const RoutineModal = ({
+  visible,
+  onClose,
+  currentStep,
+  onNextStep,
+  onComplete,
 }) => {
+  const step = ROUTINE_STEPS[currentStep];
+  const isLastStep = currentStep === ROUTINE_STEPS.length - 1;
+  const progress = ((currentStep + 1) / ROUTINE_STEPS.length) * 100;
+
   return (
-    <View style={styles.horizontalProductCard}>
-      <View style={styles.horizontalProductImageContainer}>
-        <Image
-          source={{ uri: imageUrl }}
-          style={styles.horizontalProductImage}
-        />
-        <TouchableOpacity style={styles.heartButtonSmall}>
-          <Text style={styles.heartIcon}>♡</Text>
-        </TouchableOpacity>
-      </View>
-      <View style={styles.horizontalProductInfo}>
-        <Text style={styles.horizontalProductTitle}>{title}</Text>
-        <Text style={styles.horizontalProductSubtitle}>{subtitle}</Text>
-        <View style={styles.horizontalProductFooter}>
-          <StarRating rating={rating} />
-          <Text style={styles.horizontalProductPrice}>{price}</Text>
-        </View>
-      </View>
-    </View>
+    <Modal
+      visible={visible}
+      animationType="slide"
+      presentationStyle="fullScreen"
+      onRequestClose={onClose}
+    >
+      <LinearGradient
+        colors={["#1a1a2e", "#16213e", "#0f3460"]}
+        style={styles.modalContainer}
+      >
+        <SafeAreaView style={styles.modalSafeArea}>
+          {/* Header */}
+          <View style={styles.modalHeader}>
+            <TouchableOpacity onPress={onClose} style={styles.closeButton}>
+              <Text style={styles.closeButtonText}>✕</Text>
+            </TouchableOpacity>
+            <Text style={styles.modalTitle}>PM Routine</Text>
+            <View style={styles.stepCounter}>
+              <Text style={styles.stepCounterText}>{currentStep + 1}/4</Text>
+            </View>
+          </View>
+
+          {/* Progress Bar */}
+          <View style={styles.progressContainer}>
+            <View style={styles.progressBar}>
+              <Animated.View
+                style={[styles.progressFill, { width: `${progress}%` }]}
+              />
+            </View>
+          </View>
+
+          {/* Step Content */}
+          <ScrollView
+            style={styles.modalContent}
+            showsVerticalScrollIndicator={false}
+          >
+            <View style={styles.stepContainer}>
+              <View style={styles.stepIconContainer}>
+                <Text style={styles.stepIcon}>{step.icon}</Text>
+              </View>
+
+              <Text style={styles.stepTitle}>{step.title}</Text>
+              <Text style={styles.stepDescription}>{step.description}</Text>
+
+              <View style={styles.tipContainer}>
+                <Text style={styles.tipLabel}>💡 Pro Tip</Text>
+                <Text style={styles.tipText}>{step.tips}</Text>
+              </View>
+
+              {/* Step Indicators */}
+              <View style={styles.stepIndicators}>
+                {ROUTINE_STEPS.map((_, index) => (
+                  <View
+                    key={index}
+                    style={[
+                      styles.indicator,
+                      index <= currentStep
+                        ? styles.indicatorActive
+                        : styles.indicatorInactive,
+                    ]}
+                  />
+                ))}
+              </View>
+            </View>
+          </ScrollView>
+
+          {/* Bottom Action */}
+          <View style={styles.modalFooter}>
+            <TouchableOpacity
+              style={styles.nextButton}
+              onPress={isLastStep ? onComplete : onNextStep}
+            >
+              <LinearGradient
+                colors={["#ff6b9d", "#c44569"]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+                style={styles.nextButtonGradient}
+              >
+                <Text style={styles.nextButtonText}>
+                  {isLastStep ? "Complete Routine" : "Next Step"}
+                </Text>
+              </LinearGradient>
+            </TouchableOpacity>
+          </View>
+        </SafeAreaView>
+      </LinearGradient>
+    </Modal>
   );
 };
+
+
+const { width: screenWidth } = Dimensions.get("window");
+
+const ROUTINE_STEPS = [
+  {
+    id: 1,
+    title: "Cleanse",
+    description:
+      "Start with a gentle cleanser to remove impurities and prepare your skin",
+    icon: "🧼",
+    tips: "Use lukewarm water and massage gently in circular motions",
+  },
+  {
+    id: 2,
+    title: "Tone",
+    description:
+      "Apply toner to balance your skin's pH and prep for the next steps",
+    icon: "💧",
+    tips: "Pat gently with cotton pad or press into skin with clean hands",
+  },
+  {
+    id: 3,
+    title: "Serum",
+    description: "Apply targeted serum to address specific skin concerns",
+    icon: "✨",
+    tips: "Use 2-3 drops and gently press into skin, avoiding the eye area",
+  },
+  {
+    id: 4,
+    title: "Moisturize",
+    description: "Lock in hydration with your favorite moisturizer",
+    icon: "🌸",
+    tips: "Apply in upward motions and don't forget your neck area",
+  },
+];
+
+// const RoutineModal = ({
+//   visible,
+//   onClose,
+//   currentStep,
+//   onNextStep,
+//   onComplete,
+// }) => {
+//   const step = ROUTINE_STEPS[currentStep];
+//   const isLastStep = currentStep === ROUTINE_STEPS.length - 1;
+//   const progress = ((currentStep + 1) / ROUTINE_STEPS.length) * 100;
+
+//   return (
+//     <Modal
+//       visible={visible}
+//       animationType="slide"
+//       presentationStyle="fullScreen"
+//       onRequestClose={onClose}
+//     >
+//       <LinearGradient
+//         colors={["#1a1a2e", "#16213e", "#0f3460"]}
+//         style={styles.modalContainer}
+//       >
+//         <SafeAreaView style={styles.modalSafeArea}>
+//           {/* Header */}
+//           <View style={styles.modalHeader}>
+//             <TouchableOpacity onPress={onClose} style={styles.closeButton}>
+//               <Text style={styles.closeButtonText}>✕</Text>
+//             </TouchableOpacity>
+//             <Text style={styles.modalTitle}>PM Routine</Text>
+//             <View style={styles.stepCounter}>
+//               <Text style={styles.stepCounterText}>{currentStep + 1}/4</Text>
+//             </View>
+//           </View>
+
+//           {/* Progress Bar */}
+//           <View style={styles.progressContainer}>
+//             <View style={styles.progressBar}>
+//               <Animated.View
+//                 style={[styles.progressFill, { width: `${progress}%` }]}
+//               />
+//             </View>
+//           </View>
+
+//           {/* Step Content */}
+//           <ScrollView
+//             style={styles.modalContent}
+//             showsVerticalScrollIndicator={false}
+//           >
+//             <View style={styles.stepContainer}>
+//               <View style={styles.stepIconContainer}>
+//                 <Text style={styles.stepIcon}>{step.icon}</Text>
+//               </View>
+
+//               <Text style={styles.stepTitle}>{step.title}</Text>
+//               <Text style={styles.stepDescription}>{step.description}</Text>
+
+//               <View style={styles.tipContainer}>
+//                 <Text style={styles.tipLabel}>💡 Pro Tip</Text>
+//                 <Text style={styles.tipText}>{step.tips}</Text>
+//               </View>
+
+//               {/* Step Indicators */}
+//               <View style={styles.stepIndicators}>
+//                 {ROUTINE_STEPS.map((_, index) => (
+//                   <View
+//                     key={index}
+//                     style={[
+//                       styles.indicator,
+//                       index <= currentStep
+//                         ? styles.indicatorActive
+//                         : styles.indicatorInactive,
+//                     ]}
+//                   />
+//                 ))}
+//               </View>
+//             </View>
+//           </ScrollView>
+
+//           {/* Bottom Action */}
+//           <View style={styles.modalFooter}>
+//             <TouchableOpacity
+//               style={styles.nextButton}
+//               onPress={isLastStep ? onComplete : onNextStep}
+//             >
+//               <LinearGradient
+//                 colors={["#ff6b9d", "#c44569"]}
+//                 start={{ x: 0, y: 0 }}
+//                 end={{ x: 1, y: 0 }}
+//                 style={styles.nextButtonGradient}
+//               >
+//                 <Text style={styles.nextButtonText}>
+//                   {isLastStep ? "Complete Routine" : "Next Step"}
+//                 </Text>
+//               </LinearGradient>
+//             </TouchableOpacity>
+//           </View>
+//         </SafeAreaView>
+//       </LinearGradient>
+//     </Modal>
+//   );
+// };
 
 export default function App() {
   const { authenticatedFetch } = useAuthenticatedFetch();
   const [products, setProducts] = useState([]);
+  const [blogs, setBlogs] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [blogsLoading, setBlogsLoading] = useState(true);
+  const [cartCount, setCartCount] = useState(0);
+  const [addingToCart, setAddingToCart] = useState(new Set());
+  const [routineModalVisible, setRoutineModalVisible] = useState(false);
+  const [currentRoutineStep, setCurrentRoutineStep] = useState(0);
+  const router = useRouter();
+
+  useFocusEffect(
+    useCallback(() => {
+      loadCartCount();
+    }, [])
+  );
 
   const loadProducts = async () => {
     try {
@@ -149,11 +384,128 @@ export default function App() {
     }
   };
 
+  const loadBlogs = async () => {
+    try {
+      setBlogsLoading(true);
+      const blogs_ = await fetchBlogs(authenticatedFetch);
+      setBlogs(blogs_);
+      console.log("[v0] Loaded blogs:", blogs_.length);
+    } catch (error) {
+      console.error("[v0] Failed to load blogs:", error);
+    } finally {
+      setBlogsLoading(false);
+    }
+  };
+
+  const loadCartCount = async () => {
+    try {
+      const result = await fetchCartItemsCount(authenticatedFetch);
+      if (result.success) {
+        setCartCount(result.count);
+      }
+    } catch (error) {
+      console.error("[v0] Failed to load cart count:", error);
+    }
+  };
+
+  const handleProductPress = (product) => {
+    // Extract product ID from Shopify GID
+    const productId = product.id.split("/").pop();
+    router.push(`/products/${productId}`);
+  };
+
+  const handleBlogPress = (blog) => {
+    console.log("Open blog:", blog.title);
+    // TODO: Navigate to blog detail page
+  };
+
+  const handleAddToWishlist = (product) => {
+    console.log("Add to wishlist:", product.title);
+    // TODO: Implement wishlist functionality
+  };
+
+  const handleAddToCart = async (product) => {
+    const firstVariant = product.variants?.[0];
+    if (!firstVariant) {
+      console.error("No variant available for product:", product.title);
+      return;
+    }
+
+    const productId = product.id.split("/").pop();
+    const variantId = firstVariant.id.split("/").pop();
+
+    setAddingToCart((prev) => new Set([...prev, product.id]));
+
+    try {
+      const cartItem = {
+        shopifyProductId: productId,
+        shopifyVariantId: variantId,
+        productTitle: product.title,
+        price: Number.parseInt(firstVariant.price),
+        quantity: 1,
+        addedAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+
+      const result = await addToCart(authenticatedFetch, cartItem);
+
+      if (result.success) {
+        setCartCount((prev) => prev + 1);
+        console.log("Added to cart:", product.title);
+      } else {
+        console.error("Failed to add to cart:", result.error);
+      }
+    } catch (error) {
+      console.error("Error adding to cart:", error);
+    } finally {
+      setAddingToCart((prev) => {
+        const newSet = new Set(prev);
+        newSet.delete(product.id);
+        return newSet;
+      });
+    }
+  };
+
+  const handleViewAllProducts = () => {
+    router.push("/shop");
+  };
+
+  const handleStartQuiz = () => {
+    console.log("Start quiz pressed");
+    router.push("/screens/quiz");
+    // TODO: Navigate to quiz page
+  };
+
+  const handleContinueRoutine = () => {
+    setRoutineModalVisible(true);
+    setCurrentRoutineStep(0);
+  };
+
+  const handleNextStep = () => {
+    if (currentRoutineStep < ROUTINE_STEPS.length - 1) {
+      setCurrentRoutineStep(currentRoutineStep + 1);
+    }
+  };
+
+  const handleCompleteRoutine = () => {
+    setRoutineModalVisible(false);
+    setCurrentRoutineStep(0);
+    // You can add completion logic here (e.g., update progress, show success message)
+    console.log("[v0] Routine completed!");
+  };
+
+  const handleCloseModal = () => {
+    setRoutineModalVisible(false);
+  };
+
   useEffect(() => {
     loadProducts();
+    loadBlogs();
+    loadCartCount();
   }, []);
+
   return (
-    <ScreenWrapper>
+    <ScreenWrapper cartItemCount={cartCount}>
       <SafeAreaView style={styles.container}>
         <StatusBar barStyle="dark-content" backgroundColor={COLORS.white} />
 
@@ -198,7 +550,7 @@ export default function App() {
             <View style={styles.trackersContent}>
               <View style={styles.trackerItem}>
                 <View style={styles.trackerIcon}>
-                  <Text style={styles.trackerIconText}>↓</Text>
+                  <Text style={styles.trackerIconText}>🔆</Text>
                 </View>
                 <View>
                   <Text style={styles.trackerLabel}>IPL Sessions</Text>
@@ -218,13 +570,15 @@ export default function App() {
             </View>
           </LinearGradient>
 
+          {/* Affiliate Marketing Banner */}
+
           {/* Daily Routine */}
           <View style={styles.routineSection}>
             <View style={styles.routineHeader}>
               <Text style={styles.routineTitle}>Daily Routine</Text>
-              <View style={styles.routineToggle}>
+              {/* <View style={styles.routineToggle}>
                 <Text style={styles.routineToggleText}>Evening</Text>
-              </View>
+              </View> */}
             </View>
 
             <View style={styles.routineCard}>
@@ -240,7 +594,10 @@ export default function App() {
                     </Text>
                   </View>
                 </View>
-                <TouchableOpacity style={styles.continueButton}>
+                <TouchableOpacity
+                  style={styles.continueButton}
+                  onPress={handleContinueRoutine}
+                >
                   <Text style={styles.continueButtonText}>Continue</Text>
                 </TouchableOpacity>
               </View>
@@ -254,114 +611,49 @@ export default function App() {
             </View>
           </View>
 
-          {/* Featured Products Section */}
-          <View style={styles.section}>
-            <View style={styles.sectionHeader}>
-              <Text style={styles.sectionTitle}>Featured Products</Text>
-              <TouchableOpacity style={styles.viewAllButton}>
-                <Text style={styles.viewAllText}>View All</Text>
-              </TouchableOpacity>
-            </View>
+          <WelnessSection />
 
-            <View style={styles.productsGrid}>
-              <ProductCard
-                title="Hydrating Serum"
-                subtitle="Hyaluronic Acid Complex"
-                price="$34.99"
-                rating={4.5}
-                isNew={true}
-                imageUrl="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-yGC7Efy35Vu0JbQhY7hYO3uVRStrsl.png"
-              />
-              <View style={styles.productRow}>
-                <ProductCard
-                  title="Daily Moisturizer"
-                  subtitle=""
-                  price="$29.99"
-                  rating={4.0}
-                  imageUrl="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-yGC7Efy35Vu0JbQhY7hYO3uVRStrsl.png"
-                />
-                <ProductCard
-                  title="Gentle Cleanser"
-                  subtitle=""
-                  price="$24.99"
-                  rating={4.7}
-                  imageUrl="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-yGC7Efy35Vu0JbQhY7hYO3uVRStrsl.png"
-                />
-              </View>
-            </View>
-          </View>
+          {/* Trending Products Section - Now using separate component */}
+          <TrendingSection
+            products={products}
+            onProductPress={handleProductPress}
+            onAddToCart={handleAddToCart}
+            addingToCart={addingToCart}
+          />
 
-          {/* Trending Products Horizontal Banner */}
-          <View style={styles.section}>
-            <View style={styles.sectionHeader}>
-              <Text style={styles.sectionTitle}>Trending Now</Text>
-              <TouchableOpacity>
-                <Text style={styles.viewAllText}>See More</Text>
-              </TouchableOpacity>
-            </View>
+          {/* Mom's Journal Blog Section - Now using separate component */}
+          <BlogsSection
+            blogs={blogs}
+            blogsLoading={blogsLoading}
+            onBlogPress={handleBlogPress}
+          />
 
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              style={styles.horizontalScroll}
-            >
-              <HorizontalProductCard
-                title="Vitamin C Brightening Serum"
-                subtitle="Radiance Boost"
-                price="$42.99"
-                rating={4.8}
-                imageUrl="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-yGC7Efy35Vu0JbQhY7hYO3uVRStrsl.png"
-              />
-              <HorizontalProductCard
-                title="Retinol Night Cream"
-                subtitle="Anti-Aging Formula"
-                price="$56.99"
-                rating={4.6}
-                imageUrl="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-yGC7Efy35Vu0JbQhY7hYO3uVRStrsl.png"
-              />
-              <HorizontalProductCard
-                title="Niacinamide Toner"
-                subtitle="Pore Minimizer"
-                price="$28.99"
-                rating={4.4}
-                imageUrl="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-yGC7Efy35Vu0JbQhY7hYO3uVRStrsl.png"
-              />
-              <HorizontalProductCard
-                title="SPF 50 Sunscreen"
-                subtitle="Daily Protection"
-                price="$32.99"
-                rating={4.9}
-                imageUrl="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-yGC7Efy35Vu0JbQhY7hYO3uVRStrsl.png"
-              />
-            </ScrollView>
-          </View>
+          {/* Discover Your Perfect Routine Section - Now using separate component */}
+          <QuizSection onStartQuiz={handleStartQuiz} />
 
-          {/* Discover Your Perfect Routine Section */}
-          <LinearGradient
-            colors={[COLORS.darkBlue, COLORS.mediumPink]}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={[styles.discoverSection, styles.quizSectionEnhanced]}
-          >
-            <View style={styles.quizIconContainer}>
-              <Text style={styles.quizIcon}>✨</Text>
-            </View>
-            <Text style={styles.discoverTitle}>
-              Discover Your Perfect Routine
-            </Text>
-            <Text style={styles.discoverSubtitle}>
-              Take our 2-min skin quiz and get personalized product
-              recommendations tailored just for you
-            </Text>
-            <TouchableOpacity style={styles.startQuizButton}>
-              <Text style={styles.startQuizText}>Start Quiz</Text>
-              <Text style={styles.quizArrow}>→</Text>
-            </TouchableOpacity>
-          </LinearGradient>
+
+          <AboutSection onExploreStory={() => router.push("/screens/aboutus")} />
+
+          {/* A Little About MomDaughts  Brands */}
+
+          {/* <AffiliateBanner
+            router={router}
+            earnings={0}
+            referrals={0}
+            sales={0}
+          /> */}
 
           {/* Bottom spacing for better scrolling experience */}
           <View style={styles.bottomSpacing} />
         </ScrollView>
+
+        <RoutineModal
+          visible={routineModalVisible}
+          onClose={handleCloseModal}
+          currentStep={currentRoutineStep}
+          onNextStep={handleNextStep}
+          onComplete={handleCompleteRoutine}
+        />
       </SafeAreaView>
     </ScreenWrapper>
   );
@@ -380,45 +672,8 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: 20,
   },
-  discoverSection: {
-    borderRadius: 16,
-    padding: 24,
-    marginBottom: 24,
-  },
-  discoverTitle: {
-    fontSize: 24,
-    fontWeight: "bold",
-    color: COLORS.white,
-    marginBottom: 8,
-  },
-  discoverSubtitle: {
-    fontSize: 16,
-    color: COLORS.white,
-    opacity: 0.9,
-    marginBottom: 20,
-    lineHeight: 22,
-  },
-  startQuizButton: {
-    backgroundColor: COLORS.white,
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 8,
-    alignSelf: "flex-start",
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  startQuizText: {
-    color: COLORS.darkBlue,
-    fontWeight: "600",
-    fontSize: 16,
-  },
-  quizArrow: {
-    marginLeft: 8,
-    fontSize: 16,
-    color: COLORS.darkBlue,
-  },
   section: {
-    marginBottom: 24,
+    marginBottom: 32,
   },
   sectionHeader: {
     flexDirection: "row",
@@ -456,94 +711,95 @@ const styles = StyleSheet.create({
   },
   productCard: {
     backgroundColor: COLORS.white,
-    borderRadius: 12,
-    padding: 16,
+    borderRadius: 16,
+    padding: 20,
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 3,
-    flex: 1,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    elevation: 4,
   },
   productImageContainer: {
     position: "relative",
-    backgroundColor: COLORS.lightPink,
-    borderRadius: 8,
-    height: 120,
-    marginBottom: 12,
+    backgroundColor: COLORS.cream,
+    borderRadius: 12,
+    height: 140,
+    marginBottom: 16,
   },
   productImage: {
     width: "100%",
     height: "100%",
-    borderRadius: 8,
+    borderRadius: 12,
   },
   heartButton: {
     position: "absolute",
-    top: 8,
-    right: 8,
-    backgroundColor: COLORS.white,
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+    top: 12,
+    right: 12,
+    backgroundColor: "rgba(255,255,255,0.9)",
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     justifyContent: "center",
     alignItems: "center",
-  },
-  heartButtonSmall: {
-    position: "absolute",
-    top: 6,
-    right: 6,
-    backgroundColor: COLORS.white,
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    justifyContent: "center",
-    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
   },
   heartIcon: {
-    fontSize: 16,
-    color: COLORS.mediumGray,
+    fontSize: 18,
+    color: COLORS.mediumPink,
   },
   newBadge: {
     position: "absolute",
-    top: 8,
-    left: 8,
+    top: 12,
+    left: 12,
     backgroundColor: COLORS.lavender,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 16,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
   },
   newBadgeText: {
-    fontSize: 10,
-    fontWeight: "600",
+    fontSize: 11,
+    fontWeight: "700",
     color: COLORS.darkBlue,
+    letterSpacing: 0.5,
   },
   productInfo: {
     flex: 1,
   },
   productTitle: {
-    fontSize: 16,
-    fontWeight: "bold",
+    fontSize: 18,
+    fontWeight: "700",
     color: COLORS.almostBlack,
-    marginBottom: 4,
+    marginBottom: 6,
+    lineHeight: 24,
   },
   productSubtitle: {
     fontSize: 14,
     color: COLORS.mediumGray,
-    marginBottom: 8,
+    marginBottom: 12,
   },
   starContainer: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 12,
+    marginBottom: 16,
   },
   star: {
     color: "#FFD700",
-    fontSize: 14,
+    fontSize: 16,
   },
   ratingText: {
-    marginLeft: 4,
+    marginLeft: 6,
     fontSize: 14,
     color: COLORS.mediumGray,
+    fontWeight: "500",
   },
   productFooter: {
     flexDirection: "row",
@@ -551,15 +807,20 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   productPrice: {
-    fontSize: 18,
-    fontWeight: "bold",
+    fontSize: 20,
+    fontWeight: "800",
     color: COLORS.almostBlack,
   },
   addButton: {
     backgroundColor: COLORS.darkBlue,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 6,
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 8,
+    shadowColor: COLORS.darkBlue,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 2,
   },
   addButtonText: {
     color: COLORS.white,
@@ -590,7 +851,7 @@ const styles = StyleSheet.create({
   trackersSection: {
     borderRadius: 16,
     padding: 20,
-    marginBottom: 24,
+    marginBottom: 32,
   },
   trackersHeader: {
     flexDirection: "row",
@@ -616,7 +877,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: "rgba(255,255,255,0.2)",
+    backgroundColor: "rgba(255, 255, 255, 0.2)",
     justifyContent: "center",
     alignItems: "center",
     marginRight: 12,
@@ -641,7 +902,7 @@ const styles = StyleSheet.create({
     opacity: 0.6,
   },
   routineSection: {
-    marginBottom: 24,
+    marginBottom: 32,
   },
   routineHeader: {
     flexDirection: "row",
@@ -709,14 +970,14 @@ const styles = StyleSheet.create({
   },
   continueButton: {
     backgroundColor: COLORS.darkBlue,
-    paddingHorizontal: 20,
-    paddingVertical: 10,
+    paddingHorizontal: 18,
+    paddingVertical: 8,
     borderRadius: 8,
   },
   continueButtonText: {
     color: COLORS.white,
     fontWeight: "600",
-    fontSize: 14,
+    fontSize: 13,
   },
   routineSteps: {
     flexDirection: "row",
@@ -756,75 +1017,543 @@ const styles = StyleSheet.create({
   stepTextIncomplete: {
     color: COLORS.mediumGray,
   },
-  horizontalScroll: {
-    paddingLeft: 0,
-  },
-  horizontalProductCard: {
-    backgroundColor: COLORS.white,
-    borderRadius: 12,
-    padding: 12,
-    marginRight: 16,
-    width: 160,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 3,
-  },
-  horizontalProductImageContainer: {
-    position: "relative",
-    backgroundColor: COLORS.lightPink,
-    borderRadius: 8,
-    height: 100,
-    marginBottom: 8,
-  },
-  horizontalProductImage: {
-    width: "100%",
-    height: "100%",
-    borderRadius: 8,
-  },
-  horizontalProductInfo: {
-    flex: 1,
-  },
-  horizontalProductTitle: {
-    fontSize: 14,
-    fontWeight: "bold",
-    color: COLORS.almostBlack,
-    marginBottom: 2,
-    lineHeight: 18,
-  },
-  horizontalProductSubtitle: {
-    fontSize: 12,
-    color: COLORS.mediumGray,
-    marginBottom: 8,
-  },
-  horizontalProductFooter: {
-    marginTop: 4,
-  },
-  horizontalProductPrice: {
-    fontSize: 16,
-    fontWeight: "bold",
-    color: COLORS.almostBlack,
-    marginTop: 4,
-  },
-  quizSectionEnhanced: {
-    alignItems: "center",
-    textAlign: "center",
-  },
-  quizIconContainer: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    backgroundColor: "rgba(255,255,255,0.2)",
-    justifyContent: "center",
-    alignItems: "center",
-    marginBottom: 16,
-  },
-  quizIcon: {
-    fontSize: 24,
-    color: COLORS.white,
-  },
   bottomSpacing: {
     height: 40,
+  },
+  loadingContainer: {
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 50,
+    backgroundColor: COLORS.cream,
+    borderRadius: 16,
+  },
+  loadingText: {
+    marginTop: 16,
+    fontSize: 15,
+    color: COLORS.mediumGray,
+    fontWeight: "500",
+  },
+  emptyContainer: {
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 50,
+    backgroundColor: COLORS.cream,
+    borderRadius: 16,
+  },
+  emptyText: {
+    fontSize: 16,
+    color: COLORS.mediumGray,
+    fontWeight: "500",
+  },
+
+  // Featured Products Carousel Styles - Updated
+  featuredCarouselSection: {
+    backgroundColor: COLORS.cream,
+    borderRadius: 24,
+    padding: 32,
+    marginBottom: 60,
+    marginHorizontal: -20,
+    marginLeft: -20,
+    marginRight: -20,
+    paddingHorizontal: 32,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.08,
+    shadowRadius: 16,
+    elevation: 6,
+  },
+  featuredCarouselHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+    marginBottom: 32,
+  },
+  featuredCarouselTitleContainer: {
+    flex: 1,
+  },
+  featuredCarouselBadge: {
+    alignSelf: "flex-start",
+    backgroundColor: COLORS.darkBlue,
+    paddingHorizontal: 18,
+    paddingVertical: 10,
+    borderRadius: 25,
+    marginBottom: 16,
+  },
+  featuredCarouselBadgeText: {
+    fontSize: 13,
+    fontWeight: "800",
+    color: COLORS.white,
+    letterSpacing: 1,
+  },
+  featuredCarouselTitle: {
+    fontSize: 36,
+    fontWeight: "900",
+    color: COLORS.almostBlack,
+    lineHeight: 42,
+    marginBottom: 8,
+  },
+  featuredCarouselSubtitle: {
+    fontSize: 18,
+    color: COLORS.mediumGray,
+    lineHeight: 24,
+    fontWeight: "400",
+  },
+  featuredCarouselViewAll: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: COLORS.white,
+    paddingHorizontal: 24,
+    paddingVertical: 14,
+    borderRadius: 25,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  featuredCarouselViewAllText: {
+    fontSize: 15,
+    fontWeight: "700",
+    color: COLORS.darkBlue,
+    marginRight: 8,
+  },
+  featuredCarouselArrow: {
+    fontSize: 16,
+    color: COLORS.darkBlue,
+    fontWeight: "700",
+  },
+  carouselLoadingContainer: {
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 80,
+  },
+  carouselLoadingText: {
+    marginTop: 16,
+    fontSize: 18,
+    color: COLORS.mediumGray,
+    fontWeight: "500",
+  },
+  carouselEmptyContainer: {
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 80,
+  },
+  carouselEmptyText: {
+    fontSize: 18,
+    color: COLORS.mediumGray,
+    fontWeight: "500",
+  },
+  carouselContainer: {
+    width: "100%",
+  },
+  carouselScrollView: {
+    width: "100%",
+  },
+  carouselSlide: {
+    width: screenWidth - 60,
+    paddingHorizontal: 10,
+  },
+  carouselProductCard: {
+    width: "100%",
+  },
+  carouselProductContent: {
+    backgroundColor: COLORS.white,
+    borderRadius: 20,
+    flexDirection: "column",
+    overflow: "hidden",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 12 },
+    shadowOpacity: 0.12,
+    shadowRadius: 20,
+    elevation: 12,
+    borderWidth: 1,
+    borderColor: "rgba(235, 159, 193, 0.06)",
+  },
+  carouselImageContainer: {
+    position: "relative",
+    width: "100%",
+    height: 240,
+    backgroundColor: COLORS.cream,
+  },
+  carouselProductImage: {
+    width: "100%",
+    height: "100%",
+  },
+  carouselBadge: {
+    position: "absolute",
+    top: 16,
+    left: 16,
+    backgroundColor: COLORS.darkBlue,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 12,
+  },
+  carouselBadgeText: {
+    fontSize: 10,
+    fontWeight: "800",
+    color: COLORS.white,
+    letterSpacing: 0.5,
+  },
+  carouselProductInfo: {
+    padding: 20,
+    justifyContent: "space-between",
+  },
+  carouselProductTitle: {
+    fontSize: 18,
+    fontWeight: "700",
+    color: COLORS.almostBlack,
+    lineHeight: 24,
+    marginBottom: 8,
+  },
+  carouselProductSubtitle: {
+    fontSize: 14,
+    color: COLORS.mediumGray,
+    lineHeight: 20,
+    marginBottom: 12,
+    fontWeight: "400",
+  },
+  carouselRatingContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 16,
+  },
+  carouselStarContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  carouselReviewCount: {
+    fontSize: 12,
+    color: COLORS.mediumGray,
+    fontWeight: "500",
+  },
+  carouselFooter: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  carouselPrice: {
+    fontSize: 20,
+    fontWeight: "800",
+    color: COLORS.darkBlue,
+  },
+  carouselShopButton: {
+    backgroundColor: COLORS.deepBlue,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 18,
+    flexDirection: "row",
+    alignItems: "center",
+    shadowColor: COLORS.deepBlue,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.25,
+    shadowRadius: 6,
+    elevation: 4,
+  },
+  carouselShopButtonText: {
+    color: COLORS.white,
+    fontWeight: "600",
+    fontSize: 13,
+    marginRight: 6,
+  },
+  carouselShopArrow: {
+    color: COLORS.white,
+    fontSize: 13,
+    fontWeight: "600",
+  },
+  paginationContainer: {
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    paddingTop: 20,
+  },
+  paginationBox: {
+    height: 8,
+    borderRadius: 2,
+    marginHorizontal: 6,
+  },
+  paginationBoxActive: {
+    backgroundColor: COLORS.darkBlue,
+    width: 32,
+    shadowColor: COLORS.darkBlue,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  paginationBoxInactive: {
+    backgroundColor: COLORS.mediumGray,
+    width: 16,
+    opacity: 0.4,
+  },
+  // Modal Styles
+  modalContainer: {
+    flex: 1,
+  },
+  modalSafeArea: {
+    flex: 1,
+  },
+  modalHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingHorizontal: 20,
+    paddingVertical: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: "rgba(255, 255, 255, 0.1)",
+  },
+  closeButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: "rgba(255, 255, 255, 0.1)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  closeButtonText: {
+    color: "#fff",
+    fontSize: 18,
+    fontWeight: "bold",
+  },
+  modalTitle: {
+    color: "#fff",
+    fontSize: 18,
+    fontWeight: "600",
+  },
+  stepCounter: {
+    backgroundColor: "rgba(255, 107, 157, 0.2)",
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 15,
+  },
+  stepCounterText: {
+    color: "#ff6b9d",
+    fontSize: 14,
+    fontWeight: "600",
+  },
+  progressContainer: {
+    paddingHorizontal: 20,
+    paddingVertical: 15,
+  },
+  progressBar: {
+    height: 4,
+    backgroundColor: "rgba(255, 255, 255, 0.1)",
+    borderRadius: 2,
+    overflow: "hidden",
+  },
+  progressFill: {
+    height: "100%",
+    backgroundColor: "#ff6b9d",
+    borderRadius: 2,
+  },
+  modalContent: {
+    flex: 1,
+    paddingHorizontal: 20,
+  },
+  stepContainer: {
+    alignItems: "center",
+    paddingVertical: 40,
+  },
+  stepIconContainer: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: "rgba(255, 255, 255, 0.1)",
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 30,
+  },
+  stepIcon: {
+    fontSize: 50,
+  },
+  stepTitle: {
+    color: "#fff",
+    fontSize: 32,
+    fontWeight: "bold",
+    marginBottom: 15,
+    textAlign: "center",
+  },
+  stepDescription: {
+    color: "rgba(255, 255, 255, 0.8)",
+    fontSize: 16,
+    textAlign: "center",
+    lineHeight: 24,
+    marginBottom: 30,
+    paddingHorizontal: 20,
+  },
+  tipContainer: {
+    backgroundColor: "rgba(255, 107, 157, 0.1)",
+    borderRadius: 15,
+    padding: 20,
+    marginBottom: 40,
+    borderWidth: 1,
+    borderColor: "rgba(255, 107, 157, 0.2)",
+  },
+  tipLabel: {
+    color: "#ff6b9d",
+    fontSize: 14,
+    fontWeight: "600",
+    marginBottom: 8,
+  },
+  tipText: {
+    color: "rgba(255, 255, 255, 0.9)",
+    fontSize: 14,
+    lineHeight: 20,
+  },
+  stepIndicators: {
+    flexDirection: "row",
+    justifyContent: "center",
+    gap: 8,
+  },
+  indicator: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+  },
+  indicatorActive: {
+    backgroundColor: "#ff6b9d",
+  },
+  indicatorInactive: {
+    backgroundColor: "rgba(255, 255, 255, 0.3)",
+  },
+  modalFooter: {
+    paddingHorizontal: 20,
+    paddingBottom: 30,
+    paddingTop: 20,
+  },
+  nextButton: {
+    borderRadius: 25,
+    overflow: "hidden",
+  },
+  nextButtonGradient: {
+    paddingVertical: 18,
+    alignItems: "center",
+  },
+  nextButtonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "600",
+  },
+  // Affiliate Banner Styles
+  affiliateBanner: {
+    borderRadius: 16,
+    marginBottom: 32,
+    overflow: "hidden",
+    elevation: 8,
+    shadowColor: "#667eea",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+  },
+  affiliateBannerGradient: {
+    padding: 20,
+  },
+  affiliateBannerContent: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 16,
+  },
+  affiliateBannerLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+    flex: 1,
+  },
+  affiliateIconContainer: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    backgroundColor: "rgba(255, 255, 255, 0.2)",
+    alignItems: "center",
+    justifyContent: "center",
+    marginRight: 16,
+    borderWidth: 1,
+    borderColor: "rgba(255, 255, 255, 0.3)",
+  },
+  affiliateIcon: {
+    fontSize: 26,
+  },
+  affiliateTextContainer: {
+    flex: 1,
+  },
+  affiliateBannerTitle: {
+    fontSize: 20,
+    fontWeight: "700",
+    color: "#ffffff",
+    marginBottom: 4,
+  },
+  affiliateBannerSubtitle: {
+    fontSize: 14,
+    color: "#ffffff",
+    fontWeight: "600",
+    opacity: 0.9,
+  },
+  affiliateBannerRight: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+  },
+  affiliateEarningsContainer: {
+    alignItems: "center",
+  },
+  affiliateEarningsText: {
+    fontSize: 18,
+    fontWeight: "700",
+    color: "#ffffff",
+  },
+  affiliateEarningsLabel: {
+    fontSize: 12,
+    color: "#ffffff",
+    opacity: 0.8,
+    fontWeight: "500",
+  },
+  affiliateArrow: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: "rgba(255, 255, 255, 0.25)",
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 1,
+    borderColor: "rgba(255, 255, 255, 0.3)",
+  },
+  affiliateArrowText: {
+    fontSize: 18,
+    color: "#ffffff",
+    fontWeight: "700",
+  },
+  affiliateBannerStats: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingTop: 16,
+    borderTopWidth: 1,
+    borderTopColor: "rgba(255, 255, 255, 0.25)",
+  },
+  affiliateStatItem: {
+    alignItems: "center",
+    flex: 1,
+  },
+  affiliateStatNumber: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: "#ffffff",
+  },
+  affiliateStatLabel: {
+    fontSize: 12,
+    color: "#ffffff",
+    opacity: 0.8,
+    fontWeight: "500",
+    marginTop: 2,
+  },
+  affiliateStatDivider: {
+    width: 1,
+    height: 30,
+    backgroundColor: "rgba(255, 255, 255, 0.25)",
+  },
+  affiliateStatHighlight: {
+    fontSize: 14,
+    fontWeight: "700",
+    color: "#ffffff",
   },
 });
