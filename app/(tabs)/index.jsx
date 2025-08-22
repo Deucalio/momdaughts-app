@@ -361,7 +361,7 @@ export default function App() {
   const [routineModalVisible, setRoutineModalVisible] = useState(false);
   const [currentRoutineStep, setCurrentRoutineStep] = useState(0);
   const router = useRouter();
-  console.log("user.metaData:", user.metaData)
+  console.log("user.metaData:", user.metaData);
 
   useFocusEffect(
     useCallback(() => {
@@ -544,7 +544,13 @@ export default function App() {
             completedSessions={3}
             totalSessions={6}
             onViewAllPress={() => console.log("hqhq")}
-            onTrackerPress={() => router.push("/screens/ipl")}
+            onTrackerPress={() => {
+              if (user.metaData.ipl_onboarding_completed) {
+                router.push("/screens/ipl/dashboard");
+              } else {
+                router.push("/screens/ipl/onboard");
+              }
+            }}
           />
 
           {/* <LinearGradient

@@ -229,8 +229,7 @@ export const fetchDevices = async (authenticatedFetch) => {
 };
 
 export const createIPLProfile = async (authenticatedFetch, data) => {
-  const { onboardingData, newUserMetaData } = data;
-  console.log("Creating IPL profile with data:", onboardingData);
+  const { onboardingData } = data;
   try {
     const response = await authenticatedFetch(
       `${BACKEND_URL}/ipl/create-profile`,
@@ -252,6 +251,26 @@ export const createIPLProfile = async (authenticatedFetch, data) => {
     return {
       success: false,
       error: "Failed to create IPL profile",
+      details: error.message,
+    };
+  }
+};
+
+export const fetchIPLProfile = async (authenticatedFetch) => {
+  try {
+    const response = await authenticatedFetch(`${BACKEND_URL}/ipl/profile`);
+    if (response.ok) {
+      const data = await response.json();
+      return {
+        success: true,
+        iplProfile: data.iplProfile,
+      };
+    }
+  } catch (error) {
+    console.error("Failed to fetch IPL profile:", error);
+    return {
+      success: false,
+      error: "Failed to fetch IPL profile",
       details: error.message,
     };
   }
