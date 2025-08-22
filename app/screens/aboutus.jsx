@@ -5,11 +5,32 @@ import {
   ScrollView,
   StyleSheet,
   Dimensions,
+  TouchableOpacity,
+  SafeAreaView,
 } from "react-native";
+import { useRouter } from 'expo-router';
+// Alternative imports if not using Expo Router:
+// import { useNavigation } from '@react-navigation/native';
+import { Ionicons } from "@expo/vector-icons";
 
 const { width, height } = Dimensions.get("window");
 
 export default function AboutUsPage() {
+  const router = useRouter();
+  // Alternative for React Navigation:
+  // const navigation = useNavigation();
+
+  const handleBackPress = () => {
+    // For Expo Router:
+    router.back();
+    
+    // Alternative for React Navigation:
+    // navigation.goBack();
+    
+    // Alternative for simple navigation:
+    // navigation.navigate('Home'); // specify your previous screen
+  };
+
   return (
     <View style={styles.container}>
       {/* Fixed Header Image */}
@@ -20,6 +41,18 @@ export default function AboutUsPage() {
         style={styles.headerImage}
         resizeMode="cover"
       />
+
+      {/* Back Button - Positioned over the image */}
+      <SafeAreaView style={styles.backButtonContainer}>
+        <TouchableOpacity 
+          style={styles.backButton}
+          onPress={handleBackPress}
+          activeOpacity={0.7}
+        >
+                         <Ionicons name="arrow-back" size={14} color={"000000"} />
+
+        </TouchableOpacity>
+      </SafeAreaView>
 
       {/* Absolutely Positioned Scrollable Card */}
       <View style={styles.cardContainer}>
@@ -117,6 +150,40 @@ const styles = StyleSheet.create({
     left: 0,
     zIndex: 1,
   },
+  // Back Button Styles
+  backButtonContainer: {
+    position: "absolute",
+    top: 30,
+    left: 0,
+    right: 0,
+    zIndex: 10,
+    paddingHorizontal: 20,
+    paddingTop: 10,
+  },
+  backButton: {
+    width: 32,
+    height: 32,
+    borderRadius: 22,
+    backgroundColor: "rgba(255, 255, 255, 0.9)",
+    alignItems: "center",
+    justifyContent: "center",
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 4,
+    borderWidth: 1,
+    borderColor: "rgba(255, 255, 255, 0.3)",
+  },
+  backButtonText: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#1a1a1a",
+    marginLeft: -2, // Slight adjustment for visual centering
+  },
   cardContainer: {
     position: "absolute",
     top: height * 0.3,
@@ -187,7 +254,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     borderColor: "#e0e0e0",
-
     borderRadius: 16,
   },
   bannerText: {

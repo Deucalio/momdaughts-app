@@ -10,6 +10,7 @@ interface User {
   email: string;
   firstName: string;
   lastName: string;
+  metaData?: any;
 }
 
 interface UserState {
@@ -38,6 +39,7 @@ interface UserState {
   setHasHydrated: (value: boolean) => void;
   fetchWithAuth: (url: string, options?: RequestInit) => Promise<Response>;
   logInWithGoogle: (googleUser: any) => void;
+  syncUserMetaData: (userId: any, newMetaData: any) => Promise<void>;
   tokens: any;
 }
 
@@ -55,6 +57,33 @@ export const useAuthStore = create(
       _hasHydrated: false,
       authMethod: null,
       tokens: null,
+      syncUserMetaData: async (userId: any, metaData: any) => {
+        try {
+          const response = await fetch(`${BACKEND_URL}/sync/user`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ userId, metaData }),
+          })
+          console.log("body:", JSON.stringify({ userId, metaData }));
+          console.log("syncUserMetaData response status:", response);
+          if (response.ok) {
+            const data = await response.json();
+            set({
+              isLoggedIn: true,
+              user: get().user
+                ? ({
+                    ...get().user,
+                    metaData: data.metaData,
+                  } as User)
+                : null,
+            });
+          }
+        } catch (error) {
+          console.error("Failed to sync user meta data:", error);
+        }
+      },
       logInWithGoogle: (googleUser: any) => {},
       setAuthData: async (authData: any) => {
         const discovery = {
@@ -170,13 +199,14 @@ export const useAuthStore = create(
         lastName: string
       ) => {
         try {
-          const response = await fetch(`${BASE_URL}/signup`, {
+          const response = await fetch(`${BACKEND_URL}/signup`, {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
             },
             body: JSON.stringify({ email, password, firstName, lastName }),
           });
+          console.log("Signup response status:", response);
 
           if (!response.ok) {
             const errorData = await response.json();

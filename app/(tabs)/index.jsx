@@ -21,7 +21,7 @@ import {
   fetchCartItemsCount,
   fetchArticles,
 } from "../utils/actions";
-import { useAuthenticatedFetch } from "../utils/authStore";
+import { useAuthenticatedFetch, useAuthStore } from "../utils/authStore";
 import { useEffect, useState, useCallback } from "react";
 import { useRouter, useFocusEffect } from "expo-router";
 import ScreenWrapper from "../../components/ScreenWrapper";
@@ -32,6 +32,7 @@ import AffiliateBanner from "../../components/AffiliateBanner";
 import WelnessSection from "../../components/WelnessSection";
 import RoutineModal_ from "../../components/RoutineModal";
 import AboutSection from "../../components/AboutSection";
+import IPLSessionsTrackerSection from "../../components/IPLSessionsTrackerSection";
 
 const COLORS = {
   lightPink: "#f5b8d0",
@@ -51,10 +52,6 @@ const COLORS = {
 };
 
 // Sample routine steps - you can move this to a separate data file
-
-
-
-
 
 // Simulated blog API
 const fetchBlogs = async (authenticatedFetch) => {
@@ -214,7 +211,6 @@ const RoutineModal = ({
   );
 };
 
-
 const { width: screenWidth } = Dimensions.get("window");
 
 const ROUTINE_STEPS = [
@@ -354,6 +350,8 @@ const ROUTINE_STEPS = [
 
 export default function App() {
   const { authenticatedFetch } = useAuthenticatedFetch();
+  const { user } = useAuthStore();
+
   const [products, setProducts] = useState([]);
   const [blogs, setBlogs] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -363,6 +361,7 @@ export default function App() {
   const [routineModalVisible, setRoutineModalVisible] = useState(false);
   const [currentRoutineStep, setCurrentRoutineStep] = useState(0);
   const router = useRouter();
+  console.log("user.metaData:", user.metaData)
 
   useFocusEffect(
     useCallback(() => {
@@ -535,7 +534,20 @@ export default function App() {
           </View>
 
           {/* Your Trackers */}
-          <LinearGradient
+          {/* <IPLProgressTrackerSection
+            completedSessions={3}
+            totalSessions={6}
+            nextSessionInWeeks={2}
+          /> */}
+
+          <IPLSessionsTrackerSection
+            completedSessions={3}
+            totalSessions={6}
+            onViewAllPress={() => console.log("hqhq")}
+            onTrackerPress={() => router.push("/screens/ipl")}
+          />
+
+          {/* <LinearGradient
             colors={[COLORS.darkBlue, COLORS.mediumPink]}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
@@ -553,7 +565,7 @@ export default function App() {
                   <Text style={styles.trackerIconText}>🔆</Text>
                 </View>
                 <View>
-                  <Text style={styles.trackerLabel}>IPL Sessions</Text>
+                  <Text onPress={() => router.push("/screens/ipl")} style={styles.trackerLabel}>IPL Sessions</Text>
                   <Text style={styles.trackerValue}>3 of 6 completed</Text>
                 </View>
               </View>
@@ -568,7 +580,7 @@ export default function App() {
                 </View>
               </View>
             </View>
-          </LinearGradient>
+          </LinearGradient> */}
 
           {/* Affiliate Marketing Banner */}
 
@@ -631,8 +643,9 @@ export default function App() {
           {/* Discover Your Perfect Routine Section - Now using separate component */}
           <QuizSection onStartQuiz={handleStartQuiz} />
 
-
-          <AboutSection onExploreStory={() => router.push("/screens/aboutus")} />
+          <AboutSection
+            onExploreStory={() => router.push("/screens/aboutus")}
+          />
 
           {/* A Little About MomDaughts  Brands */}
 

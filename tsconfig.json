@@ -14,5 +14,5 @@
     ".expo/types/**/*.ts",
     "expo-env.d.ts",
     "nativewind-env.d.ts"
-, "app/utils/auth.js", "components/WelnessSection.jsx", "app/screens/quiz.jsx"  ]
+, "app/utils/auth.js", "components/WelnessSection.jsx", "app/screens/quiz.jsx", "app/screens/ipl.jsx"  ]
 }

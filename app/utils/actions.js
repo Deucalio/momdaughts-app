@@ -212,3 +212,47 @@ export const fetchArticles = async (authenticatedFetch) => {
     return [];
   }
 };
+
+export const fetchDevices = async (authenticatedFetch) => {
+  try {
+    const response = await authenticatedFetch(
+      `${BACKEND_URL}/collections/630364766500`
+    );
+    if (response.ok) {
+      const data = await response.json();
+      return data.collection;
+    }
+  } catch (error) {
+    console.error("Failed to fetch devices:", error);
+    return [];
+  }
+};
+
+export const createIPLProfile = async (authenticatedFetch, data) => {
+  const { onboardingData, newUserMetaData } = data;
+  console.log("Creating IPL profile with data:", onboardingData);
+  try {
+    const response = await authenticatedFetch(
+      `${BACKEND_URL}/ipl/create-profile`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(onboardingData),
+      }
+    );
+
+    if (response.ok) {
+      const data = await response.json();
+      return {
+        success: true,
+      };
+    }
+  } catch (error) {
+    console.error("Failed to create IPL profile:", error);
+    return {
+      success: false,
+      error: "Failed to create IPL profile",
+      details: error.message,
+    };
+  }
+};
