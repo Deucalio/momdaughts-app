@@ -14,7 +14,9 @@ import {
 import { useAuthenticatedFetch, useAuthStore } from "../../utils/authStore";
 const { width, height } = Dimensions.get("window");
 import { useRouter } from "expo-router";
-import { fetchIPLProfile } from "../../utils/actions";
+import { fetchIPLProfile, fetchProducts } from "../../utils/actions";
+
+const BACKEND_URL = "http://192.168.18.5:3000";
 
 // Scaling functions
 const scale = (size) => (width / 375) * size; // Base width: iPhone 11
@@ -31,60 +33,75 @@ const mockSessionData = [
   { month: "Jun", sessions: 9 },
 ];
 
-const mockSessionHistory = [
-  {
-    id: 1,
-    date: "Aug 14",
-    area: "Face",
-    intensity: 3,
-    duration: "12 min",
-    notes: "Felt comfortable",
-  },
-  {
-    id: 2,
-    date: "Aug 7",
-    area: "Legs",
-    intensity: 2,
-    duration: "18 min",
-    notes: "",
-  },
-  {
-    id: 3,
-    date: "Jul 31",
-    area: "Face",
-    intensity: 3,
-    duration: "10 min",
-    notes: "Slight redness",
-  },
-  {
-    id: 4,
-    date: "Jul 24",
-    area: "Arms",
-    intensity: 2,
-    duration: "15 min",
-    notes: "",
-  },
-];
-
 const IPLSessionTracker = () => {
   const [activeTab, setActiveTab] = useState("tracker");
   const { authenticatedFetch } = useAuthenticatedFetch();
   const router = useRouter();
   const { user, syncUserMetaData } = useAuthStore();
 
+  // New state for API data
+  const [iplProfile, setIplProfile] = useState(null);
+  const [productData, setProductData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
   const [isSessionActive, setIsSessionActive] = useState(false);
   const [sessionTimer, setSessionTimer] = useState(0);
   const [currentSession, setCurrentSession] = useState(null);
-  const [sessionHistory, setSessionHistory] = useState(mockSessionHistory);
+  const [sessionHistory, setSessionHistory] = useState([]);
   const [showHistory, setShowHistory] = useState(false);
 
+  // Fetch IPL profile and product data
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+
+        // Fetch IPL profile
+        const profileResponse = await fetchIPLProfile(authenticatedFetch);
+        console.log("profileResponse:", profileResponse);
+        if (profileResponse?.iplProfile) {
+          setIplProfile(profileResponse.iplProfile);
+          setSessionHistory(profileResponse.iplProfile.sessions || []);
+
+          // Extract device ID from the profile to fetch product data
+          const deviceId = profileResponse.iplProfile.device;
+          if (deviceId) {
+            // Extract the product ID from the Shopify GID
+            const productId = deviceId.replace("gid://shopify/Product/", "");
+            // const productResponse = await fetchProducts(authenticatedFetch, productId);
+
+            const response = await authenticatedFetch(
+              `${BACKEND_URL}/products?productId=${productId}`
+            );
+            if (!response.ok) {
+              throw new Error(
+                `Failed to fetch product data: ${response.status} ${response.statusText}`
+              );
+            }
+            const productResponse = await response.json();
+
+            if (productResponse?.product) {
+              setProductData(productResponse.product);
+            }
+          }
+        }
+      } catch (err) {
+        console.error("Error fetching IPL data:", err);
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (user) {
+      fetchData();
+    }
+  }, []);
+
   // Check if user has completed onboarding, redirect if not
-  // useEffect(() => {
-  //   if (!user?.metaData?.ipl_onboarding_completed) {
-  //     // Redirect to onboarding screen
-  //     router.push('/ipl-onboarding');
-  //   }
-  // }, [user?.metaData?.ipl_onboarding_completed]);
+
 
   useEffect(() => {
     let interval = null;
@@ -133,6 +150,22 @@ const IPLSessionTracker = () => {
     setActiveTab("tracker");
   };
 
+  // Helper function to get treatment areas from profile
+  const getTreatmentAreas = () => {
+    if (!iplProfile?.treatmentAreas) return [];
+    return Object.keys(iplProfile.treatmentAreas).filter(
+      (area) => iplProfile.treatmentAreas[area]
+    );
+  };
+
+  // Helper function to format treatment areas for display
+  const formatTreatmentAreas = () => {
+    const areas = getTreatmentAreas();
+    return areas
+      .map((area) => area.charAt(0).toUpperCase() + area.slice(1))
+      .join(", ");
+  };
+
   const renderChart = () => {
     const maxSessions = Math.max(...mockSessionData.map((d) => d.sessions));
 
@@ -165,19 +198,19 @@ const IPLSessionTracker = () => {
       {/* Personalized Header */}
       <View style={styles.welcomeHeader}>
         <Text style={styles.welcomeText}>
-          Hi {user?.firstName || 'there'} 👋, here's your IPL progress
+          Hi {user?.firstName || "there"} 👋, here's your IPL progress
         </Text>
         <View style={styles.deviceInfo}>
           <Image
             source={{
               uri:
-                user?.metaData?.ipl_device?.images?.[0]?.originalSrc ||
+                productData?.images?.[0]?.url ||
                 "https://via.placeholder.com/50",
             }}
             style={styles.deviceIcon}
           />
           <Text style={styles.deviceText}>
-            {user?.metaData?.ipl_device?.title || "IPL Device"}
+            {productData?.title || "IPL Device"}
           </Text>
         </View>
       </View>
@@ -186,13 +219,18 @@ const IPLSessionTracker = () => {
       <View style={styles.statsGrid}>
         <View style={styles.statCard}>
           <Text style={styles.statIcon}>🔥</Text>
-          <Text style={styles.statValue}>24</Text>
+          <Text style={styles.statValue}>
+            {iplProfile?.sessions?.length || 0}
+          </Text>
           <Text style={styles.statLabel}>Total Sessions</Text>
         </View>
 
         <View style={styles.statCard}>
           <Text style={styles.statIcon}>📅</Text>
-          <Text style={styles.statValue}>Weekly</Text>
+          <Text style={styles.statValue}>
+            {iplProfile?.currentPhase?.charAt(0).toUpperCase() +
+              iplProfile?.currentPhase?.slice(1) || "Weekly"}
+          </Text>
           <Text style={styles.statLabel}>Current Phase</Text>
         </View>
 
@@ -205,11 +243,38 @@ const IPLSessionTracker = () => {
         <View style={styles.statCard}>
           <Text style={styles.statIcon}>🎯</Text>
           <Text style={styles.statValue}>
-            {user?.metaData?.ipl_treatment_areas?.join(', ') || "Face, Legs"}
+            {formatTreatmentAreas() || "Face, Legs"}
           </Text>
           <Text style={styles.statLabel}>Treatment Areas</Text>
         </View>
       </View>
+
+      {/* Profile Info Card */}
+      {iplProfile && (
+        <View style={styles.profileInfoCard}>
+          <Text style={styles.profileInfoTitle}>Your Profile</Text>
+          <View style={styles.profileInfoRow}>
+            <Text style={styles.profileInfoLabel}>Skin Tone:</Text>
+            <Text style={styles.profileInfoValue}>
+              {iplProfile.skinTone.charAt(0).toUpperCase() +
+                iplProfile.skinTone.slice(1)}
+            </Text>
+          </View>
+          <View style={styles.profileInfoRow}>
+            <Text style={styles.profileInfoLabel}>Hair Type:</Text>
+            <Text style={styles.profileInfoValue}>
+              {iplProfile.hairType.charAt(0).toUpperCase() +
+                iplProfile.hairType.slice(1)}
+            </Text>
+          </View>
+          <View style={styles.profileInfoRow}>
+            <Text style={styles.profileInfoLabel}>Start Date:</Text>
+            <Text style={styles.profileInfoValue}>
+              {new Date(iplProfile.startDate).toLocaleDateString()}
+            </Text>
+          </View>
+        </View>
+      )}
 
       {/* Next Session Block */}
       <View style={styles.nextSessionBlock}>
@@ -259,30 +324,48 @@ const IPLSessionTracker = () => {
       {showHistory && (
         <View style={styles.historySection}>
           <Text style={styles.sectionTitle}>Recent Sessions</Text>
-          {sessionHistory.map((session) => (
-            <View key={session.id} style={styles.historyItem}>
-              <View style={styles.historyDate}>
-                <Text style={styles.historyDateText}>{session.date}</Text>
+          {sessionHistory.length > 0 ? (
+            sessionHistory.map((session) => (
+              <View key={session.id} style={styles.historyItem}>
+                <View style={styles.historyDate}>
+                  <Text style={styles.historyDateText}>
+                    {new Date(session.date).toLocaleDateString("en-US", {
+                      month: "short",
+                      day: "numeric",
+                    })}
+                  </Text>
+                </View>
+                <View style={styles.historyDetails}>
+                  <Text style={styles.historyArea}>
+                    {session.bodyArea || session.area}
+                  </Text>
+                  <Text style={styles.historyIntensity}>
+                    Intensity {session.intensityLevel || session.intensity}
+                  </Text>
+                  <Text style={styles.historyDuration}>{session.duration}</Text>
+                  {session.notes && (
+                    <Text style={styles.historyNotes}>{session.notes}</Text>
+                  )}
+                </View>
               </View>
-              <View style={styles.historyDetails}>
-                <Text style={styles.historyArea}>{session.area}</Text>
-                <Text style={styles.historyIntensity}>
-                  Intensity {session.intensity}
-                </Text>
-                <Text style={styles.historyDuration}>{session.duration}</Text>
-                {session.notes && (
-                  <Text style={styles.historyNotes}>{session.notes}</Text>
-                )}
-              </View>
+            ))
+          ) : (
+            <View style={styles.emptyState}>
+              <Text style={styles.emptyStateText}>
+                No sessions recorded yet
+              </Text>
+              <Text style={styles.emptyStateSubtext}>
+                Start logging your IPL sessions to track your progress
+              </Text>
             </View>
-          ))}
+          )}
         </View>
       )}
 
       {/* Settings Button */}
-      <TouchableOpacity 
+      <TouchableOpacity
         style={styles.settingsButton}
-        onPress={() => router.push('/ipl-settings')}
+        onPress={() => router.push("/ipl-settings")}
       >
         <Text style={styles.settingsButtonText}>⚙️ Edit IPL Details</Text>
       </TouchableOpacity>
@@ -319,6 +402,8 @@ const IPLSessionTracker = () => {
       );
     }
 
+    const treatmentAreas = getTreatmentAreas();
+
     return (
       <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
         {/* Header */}
@@ -338,11 +423,22 @@ const IPLSessionTracker = () => {
           <Text style={styles.sectionTitle}>Progress</Text>
           <View style={styles.progressCard}>
             <Text style={styles.progressText}>
-              You've completed 6/12 recommended sessions
+              You've completed {iplProfile?.sessions?.length || 0}/12
+              recommended sessions
             </Text>
             <View style={styles.progressBarContainer}>
               <View style={styles.progressBar}>
-                <View style={[styles.progressFill, { width: "50%" }]} />
+                <View
+                  style={[
+                    styles.progressFill,
+                    {
+                      width: `${Math.min(
+                        ((iplProfile?.sessions?.length || 0) / 12) * 100,
+                        100
+                      )}%`,
+                    },
+                  ]}
+                />
               </View>
             </View>
           </View>
@@ -352,56 +448,70 @@ const IPLSessionTracker = () => {
         <View style={styles.sessionCardsSection}>
           <Text style={styles.sectionTitle}>Quick Start Sessions</Text>
 
-          <TouchableOpacity
-            style={styles.sessionCard}
-            onPress={() =>
-              startSession({ area: "Face", intensity: 3, notes: "" })
-            }
-          >
-            <View style={styles.sessionCardContent}>
-              <Text style={styles.sessionCardTitle}>Face Treatment</Text>
-              <Text style={styles.sessionCardSubtitle}>
-                Intensity Level 3 • 10-15 minutes
-              </Text>
-            </View>
-            <View style={styles.playButton}>
-              <Text style={styles.playButtonText}>▶</Text>
-            </View>
-          </TouchableOpacity>
+          {treatmentAreas.map((area) => (
+            <TouchableOpacity
+              key={area}
+              style={styles.sessionCard}
+              onPress={() =>
+                startSession({
+                  area: area.charAt(0).toUpperCase() + area.slice(1),
+                  intensity: 3,
+                  notes: "",
+                })
+              }
+            >
+              <View style={styles.sessionCardContent}>
+                <Text style={styles.sessionCardTitle}>
+                  {area.charAt(0).toUpperCase() + area.slice(1)} Treatment
+                </Text>
+                <Text style={styles.sessionCardSubtitle}>
+                  Intensity Level 3 • 10-15 minutes
+                </Text>
+              </View>
+              <View style={styles.playButton}>
+                <Text style={styles.playButtonText}>▶</Text>
+              </View>
+            </TouchableOpacity>
+          ))}
 
-          <TouchableOpacity
-            style={styles.sessionCard}
-            onPress={() =>
-              startSession({ area: "Legs", intensity: 2, notes: "" })
-            }
-          >
-            <View style={styles.sessionCardContent}>
-              <Text style={styles.sessionCardTitle}>Legs Treatment</Text>
-              <Text style={styles.sessionCardSubtitle}>
-                Intensity Level 2 • 15-20 minutes
-              </Text>
-            </View>
-            <View style={styles.playButton}>
-              <Text style={styles.playButtonText}>▶</Text>
-            </View>
-          </TouchableOpacity>
+          {/* Fallback session cards if no treatment areas */}
+          {treatmentAreas.length === 0 && (
+            <>
+              <TouchableOpacity
+                style={styles.sessionCard}
+                onPress={() =>
+                  startSession({ area: "Face", intensity: 3, notes: "" })
+                }
+              >
+                <View style={styles.sessionCardContent}>
+                  <Text style={styles.sessionCardTitle}>Face Treatment</Text>
+                  <Text style={styles.sessionCardSubtitle}>
+                    Intensity Level 3 • 10-15 minutes
+                  </Text>
+                </View>
+                <View style={styles.playButton}>
+                  <Text style={styles.playButtonText}>▶</Text>
+                </View>
+              </TouchableOpacity>
 
-          <TouchableOpacity
-            style={styles.sessionCard}
-            onPress={() =>
-              startSession({ area: "Arms", intensity: 2, notes: "" })
-            }
-          >
-            <View style={styles.sessionCardContent}>
-              <Text style={styles.sessionCardTitle}>Arms Treatment</Text>
-              <Text style={styles.sessionCardSubtitle}>
-                Intensity Level 2 • 12-18 minutes
-              </Text>
-            </View>
-            <View style={styles.playButton}>
-              <Text style={styles.playButtonText}>▶</Text>
-            </View>
-          </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.sessionCard}
+                onPress={() =>
+                  startSession({ area: "Legs", intensity: 2, notes: "" })
+                }
+              >
+                <View style={styles.sessionCardContent}>
+                  <Text style={styles.sessionCardTitle}>Legs Treatment</Text>
+                  <Text style={styles.sessionCardSubtitle}>
+                    Intensity Level 2 • 15-20 minutes
+                  </Text>
+                </View>
+                <View style={styles.playButton}>
+                  <Text style={styles.playButtonText}>▶</Text>
+                </View>
+              </TouchableOpacity>
+            </>
+          )}
         </View>
 
         {/* Custom Session Button */}
@@ -414,8 +524,36 @@ const IPLSessionTracker = () => {
     );
   };
 
+  // Loading state
+  if (loading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <Text style={styles.loadingText}>Loading your IPL profile...</Text>
+      </View>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <View style={styles.loadingContainer}>
+        <Text style={styles.errorText}>Error loading profile: {error}</Text>
+        <TouchableOpacity
+          style={styles.retryButton}
+          onPress={() => {
+            setError(null);
+            setLoading(true);
+            // Trigger useEffect to refetch
+          }}
+        >
+          <Text style={styles.retryButtonText}>Retry</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
   // Return early if user hasn't completed onboarding
-  if (!user?.metaData?.ipl_onboarding_completed) {
+  if (!iplProfile) {
     return (
       <View style={styles.loadingContainer}>
         <Text style={styles.loadingText}>Redirecting to onboarding...</Text>
@@ -442,6 +580,23 @@ const styles = StyleSheet.create({
   loadingText: {
     fontSize: 16,
     color: "#666",
+  },
+  errorText: {
+    fontSize: 16,
+    color: "#DC2626",
+    textAlign: "center",
+    marginBottom: 20,
+  },
+  retryButton: {
+    backgroundColor: "#2c2a6b",
+    borderRadius: 8,
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+  },
+  retryButtonText: {
+    color: "#FFFFFF",
+    fontSize: 16,
+    fontWeight: "600",
   },
   header: {
     flexDirection: "row",
@@ -518,6 +673,37 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#666",
     textAlign: "center",
+  },
+  profileInfoCard: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 16,
+    padding: 20,
+    marginBottom: 20,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 3,
+  },
+  profileInfoTitle: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#333",
+    marginBottom: 15,
+  },
+  profileInfoRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 8,
+  },
+  profileInfoLabel: {
+    fontSize: 14,
+    color: "#666",
+  },
+  profileInfoValue: {
+    fontSize: 14,
+    color: "#333",
+    fontWeight: "500",
   },
   progressSection: {
     marginBottom: 30,
@@ -630,6 +816,7 @@ const styles = StyleSheet.create({
     width: 30,
     height: 30,
     marginRight: 8,
+    borderRadius: 4,
   },
   deviceText: {
     fontSize: 14,
@@ -729,6 +916,22 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: "#999",
     fontStyle: "italic",
+  },
+  emptyState: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 12,
+    padding: 24,
+    alignItems: "center",
+  },
+  emptyStateText: {
+    fontSize: 16,
+    color: "#666",
+    marginBottom: 8,
+  },
+  emptyStateSubtext: {
+    fontSize: 14,
+    color: "#999",
+    textAlign: "center",
   },
   settingsButton: {
     backgroundColor: "#F7FAFC",
@@ -852,4 +1055,5 @@ const styles = StyleSheet.create({
   },
 });
 
-export default IPLSessionTracker;
+
+export default IPLSessionTracker
