@@ -3,16 +3,16 @@ import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import {
-  Image,
-  Pressable,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View
+    Image,
+    Pressable,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View
 } from "react-native";
 import { logOut, useAuthenticatedFetch } from "../app/utils/authStore";
 
-const BACKEND_URL = "http://192.168.18.5:3000";
+const BACKEND_URL = "http://192.168.100.192:3000";
 
 const Header = ({cartItemCount_}) => {
   const [showProfileMenu, setShowProfileMenu] = useState(false);

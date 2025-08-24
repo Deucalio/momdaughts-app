@@ -5,24 +5,24 @@ import { LinearGradient } from "expo-linear-gradient";
 import { router, useFocusEffect } from "expo-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
-  Dimensions,
-  FlatList,
-  Image,
-  Platform,
-  RefreshControl,
-  ScrollView,
-  StatusBar,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
+    Dimensions,
+    FlatList,
+    Image,
+    Platform,
+    RefreshControl,
+    ScrollView,
+    StatusBar,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
 } from "react-native";
 import CartToast from "../../components/CartToast";
 import ScreenWrapper from "../../components/ScreenWrapper";
 import { addToCart, fetchCartItemsCount } from "../utils/actions";
 import { useAuthenticatedFetch, useAuthStore } from "../utils/authStore";
 
-const BACKEND_URL = "http://192.168.18.5:3000";
+const BACKEND_URL = "http://192.168.100.192:3000";
 const { width, height } = Dimensions.get("window");
 
 // New purple gradient theme colors

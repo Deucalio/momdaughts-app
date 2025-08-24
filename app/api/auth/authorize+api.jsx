@@ -1,9 +1,9 @@
 import {
-  APP_SCHEME,
-  BASE_URL,
-  GOOGLE_AUTH_URL,
-  GOOGLE_CLIENT_ID,
-  GOOGLE_REDIRECT_URI,
+    APP_SCHEME,
+    BASE_URL,
+    GOOGLE_AUTH_URL,
+    GOOGLE_CLIENT_ID,
+    GOOGLE_REDIRECT_URI,
 } from "../../../constants";
 
 export async function GET(request) {
@@ -36,7 +36,7 @@ export async function GET(request) {
     platform = "mobile";
   } else {
     return Response.json({ message: "Invalid redirect URI" }, { status: 400 });
-    // redirectUri = "exp://192.168.18.5:8081";
+    // redirectUri = "exp://192.168.100.192:8081";
     // url.searchParams.set("redirectUri", redirectUri);
     // platform = "mobile";
   }

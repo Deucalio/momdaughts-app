@@ -224,7 +224,7 @@ export default function App() {
           </View>
           <Image
             source={{
-              uri: "https://sdmntpreastus.oaiusercontent.com/files/00000000-3ca4-61f9-bdf2-851120c653e8/raw?se=2025-08-19T13%3A46%3A53Z&sp=r&sv=2024-08-04&sr=b&scid=471d00a3-d44e-55cf-8a42-19c964efc626&skoid=5c72dd08-68ae-4091-b4e1-40ccec0693ae&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2025-08-18T20%3A29%3A55Z&ske=2025-08-19T20%3A29%3A55Z&sks=b&skv=2024-08-04&sig=480CQMqXDdm9IS07LoGEX4qBWr0Cu/GrXH1nEQBO6a0%3D",
+              uri: "https://i.ibb.co/HfXDSzQs/freepik-the-style-is-modern-and-it-is-a-detailed-illustrat-77238.png",
             }}
             style={styles.backgroundImage}
             resizeMode="cover"

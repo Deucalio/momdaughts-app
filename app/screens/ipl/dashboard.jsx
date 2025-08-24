@@ -1,28 +1,20 @@
-"use client";
-
-import { useState, useEffect } from "react";
+import { useRouter } from "expo-router";
+import { useEffect, useState } from "react";
 import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  ScrollView,
-  Dimensions,
-  PixelRatio,
-  Image,
+    Dimensions,
+    Image,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
 } from "react-native";
+import AddSessionSection from "../../../components/AddSessionSection";
+import { createIPLSession, fetchIPLProfile } from "../../utils/actions";
 import { useAuthenticatedFetch, useAuthStore } from "../../utils/authStore";
 const { width, height } = Dimensions.get("window");
-import { useRouter } from "expo-router";
-import { fetchIPLProfile, fetchProducts } from "../../utils/actions";
 
-const BACKEND_URL = "http://192.168.18.5:3000";
-
-// Scaling functions
-const scale = (size) => (width / 375) * size; // Base width: iPhone 11
-const verticalScale = (size) => (height / 812) * size;
-const moderateScale = (size, factor = 0.5) =>
-  size + (scale(size) - size) * factor;
+const BACKEND_URL = "http://192.168.100.192:3000";
 
 const mockSessionData = [
   { month: "Jan", sessions: 4 },
@@ -51,7 +43,6 @@ const IPLSessionTracker = () => {
   const [sessionHistory, setSessionHistory] = useState([]);
   const [showHistory, setShowHistory] = useState(false);
 
-  // Fetch IPL profile and product data
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -60,7 +51,6 @@ const IPLSessionTracker = () => {
 
         // Fetch IPL profile
         const profileResponse = await fetchIPLProfile(authenticatedFetch);
-        console.log("profileResponse:", profileResponse);
         if (profileResponse?.iplProfile) {
           setIplProfile(profileResponse.iplProfile);
           setSessionHistory(profileResponse.iplProfile.sessions || []);
@@ -68,10 +58,7 @@ const IPLSessionTracker = () => {
           // Extract device ID from the profile to fetch product data
           const deviceId = profileResponse.iplProfile.device;
           if (deviceId) {
-            // Extract the product ID from the Shopify GID
             const productId = deviceId.replace("gid://shopify/Product/", "");
-            // const productResponse = await fetchProducts(authenticatedFetch, productId);
-
             const response = await authenticatedFetch(
               `${BACKEND_URL}/products?productId=${productId}`
             );
@@ -98,10 +85,7 @@ const IPLSessionTracker = () => {
     if (user) {
       fetchData();
     }
-  }, []);
-
-  // Check if user has completed onboarding, redirect if not
-
+  }, [user]);
 
   useEffect(() => {
     let interval = null;
@@ -129,28 +113,31 @@ const IPLSessionTracker = () => {
     setSessionTimer(0);
   };
 
-  const stopSession = () => {
+  const stopSession = async () => {
     if (currentSession) {
       const newSession = {
-        id: sessionHistory.length + 1,
-        date: new Date().toLocaleDateString("en-US", {
-          month: "short",
-          day: "numeric",
-        }),
-        area: currentSession.area,
-        intensity: currentSession.intensity,
-        duration: formatTime(sessionTimer),
-        notes: currentSession.notes || "",
+        userId: user.id,
+        date: new Date(),
+        bodyArea: currentSession.area,
+        intensityLevel: currentSession.intensity,
+        metaData: {
+          duration: formatTime(sessionTimer),
+          notes: currentSession.notes || "",
+        },
+        profileId: iplProfile.id,
       };
+
       setSessionHistory([newSession, ...sessionHistory]);
+      setIsSessionActive(false);
+      setSessionTimer(0);
+      setCurrentSession(null);
+      setActiveTab("tracker");
+      const newSes = await createIPLSession(authenticatedFetch, newSession);
+
+      console.log("newSession Added:", newSession);
     }
-    setIsSessionActive(false);
-    setSessionTimer(0);
-    setCurrentSession(null);
-    setActiveTab("tracker");
   };
 
-  // Helper function to get treatment areas from profile
   const getTreatmentAreas = () => {
     if (!iplProfile?.treatmentAreas) return [];
     return Object.keys(iplProfile.treatmentAreas).filter(
@@ -158,7 +145,6 @@ const IPLSessionTracker = () => {
     );
   };
 
-  // Helper function to format treatment areas for display
   const formatTreatmentAreas = () => {
     const areas = getTreatmentAreas();
     return areas
@@ -220,7 +206,7 @@ const IPLSessionTracker = () => {
         <View style={styles.statCard}>
           <Text style={styles.statIcon}>🔥</Text>
           <Text style={styles.statValue}>
-            {iplProfile?.sessions?.length || 0}
+            {sessionHistory.length || 0}
           </Text>
           <Text style={styles.statLabel}>Total Sessions</Text>
         </View>
@@ -310,15 +296,6 @@ const IPLSessionTracker = () => {
       {renderChart()}
 
       {/* Session History Toggle */}
-      <TouchableOpacity
-        style={styles.historyToggle}
-        onPress={() => setShowHistory(!showHistory)}
-      >
-        <Text style={styles.historyToggleText}>
-          {showHistory ? "Hide" : "Show"} Session History
-        </Text>
-        <Text style={styles.historyToggleIcon}>{showHistory ? "▲" : "▼"}</Text>
-      </TouchableOpacity>
 
       {/* Session History */}
       {showHistory && (
@@ -372,159 +349,7 @@ const IPLSessionTracker = () => {
     </ScrollView>
   );
 
-  const renderAddSessionPage = () => {
-    if (isSessionActive) {
-      return (
-        <View style={styles.sessionActiveContainer}>
-          <View style={styles.sessionHeader}>
-            <Text style={styles.sessionTitle}>Session in Progress</Text>
-            <Text style={styles.sessionArea}>{currentSession?.area}</Text>
-          </View>
-
-          <View style={styles.timerContainer}>
-            <Text style={styles.timerText}>{formatTime(sessionTimer)}</Text>
-            <Text style={styles.timerLabel}>Session Duration</Text>
-          </View>
-
-          <View style={styles.sessionDetails}>
-            <Text style={styles.sessionDetailText}>
-              Intensity: Level {currentSession?.intensity}
-            </Text>
-            <Text style={styles.sessionDetailText}>
-              Area: {currentSession?.area}
-            </Text>
-          </View>
-
-          <TouchableOpacity style={styles.stopButton} onPress={stopSession}>
-            <Text style={styles.stopButtonText}>Stop Session</Text>
-          </TouchableOpacity>
-        </View>
-      );
-    }
-
-    const treatmentAreas = getTreatmentAreas();
-
-    return (
-      <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-        {/* Header */}
-        <View style={styles.header}>
-          <TouchableOpacity
-            style={styles.backButton}
-            onPress={() => setActiveTab("tracker")}
-          >
-            <Text style={styles.backButtonText}>←</Text>
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>Add Session</Text>
-          <View style={styles.menuButton} />
-        </View>
-
-        {/* Progress Bar */}
-        <View style={styles.progressSection}>
-          <Text style={styles.sectionTitle}>Progress</Text>
-          <View style={styles.progressCard}>
-            <Text style={styles.progressText}>
-              You've completed {iplProfile?.sessions?.length || 0}/12
-              recommended sessions
-            </Text>
-            <View style={styles.progressBarContainer}>
-              <View style={styles.progressBar}>
-                <View
-                  style={[
-                    styles.progressFill,
-                    {
-                      width: `${Math.min(
-                        ((iplProfile?.sessions?.length || 0) / 12) * 100,
-                        100
-                      )}%`,
-                    },
-                  ]}
-                />
-              </View>
-            </View>
-          </View>
-        </View>
-
-        {/* Session Cards */}
-        <View style={styles.sessionCardsSection}>
-          <Text style={styles.sectionTitle}>Quick Start Sessions</Text>
-
-          {treatmentAreas.map((area) => (
-            <TouchableOpacity
-              key={area}
-              style={styles.sessionCard}
-              onPress={() =>
-                startSession({
-                  area: area.charAt(0).toUpperCase() + area.slice(1),
-                  intensity: 3,
-                  notes: "",
-                })
-              }
-            >
-              <View style={styles.sessionCardContent}>
-                <Text style={styles.sessionCardTitle}>
-                  {area.charAt(0).toUpperCase() + area.slice(1)} Treatment
-                </Text>
-                <Text style={styles.sessionCardSubtitle}>
-                  Intensity Level 3 • 10-15 minutes
-                </Text>
-              </View>
-              <View style={styles.playButton}>
-                <Text style={styles.playButtonText}>▶</Text>
-              </View>
-            </TouchableOpacity>
-          ))}
-
-          {/* Fallback session cards if no treatment areas */}
-          {treatmentAreas.length === 0 && (
-            <>
-              <TouchableOpacity
-                style={styles.sessionCard}
-                onPress={() =>
-                  startSession({ area: "Face", intensity: 3, notes: "" })
-                }
-              >
-                <View style={styles.sessionCardContent}>
-                  <Text style={styles.sessionCardTitle}>Face Treatment</Text>
-                  <Text style={styles.sessionCardSubtitle}>
-                    Intensity Level 3 • 10-15 minutes
-                  </Text>
-                </View>
-                <View style={styles.playButton}>
-                  <Text style={styles.playButtonText}>▶</Text>
-                </View>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={styles.sessionCard}
-                onPress={() =>
-                  startSession({ area: "Legs", intensity: 2, notes: "" })
-                }
-              >
-                <View style={styles.sessionCardContent}>
-                  <Text style={styles.sessionCardTitle}>Legs Treatment</Text>
-                  <Text style={styles.sessionCardSubtitle}>
-                    Intensity Level 2 • 15-20 minutes
-                  </Text>
-                </View>
-                <View style={styles.playButton}>
-                  <Text style={styles.playButtonText}>▶</Text>
-                </View>
-              </TouchableOpacity>
-            </>
-          )}
-        </View>
-
-        {/* Custom Session Button */}
-        <TouchableOpacity style={styles.customSessionButton}>
-          <Text style={styles.customSessionButtonText}>
-            + Create Custom Session
-          </Text>
-        </TouchableOpacity>
-      </ScrollView>
-    );
-  };
-
-  // Loading state
+  // Loading / Error / Redirecting UI
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
@@ -533,7 +358,6 @@ const IPLSessionTracker = () => {
     );
   }
 
-  // Error state
   if (error) {
     return (
       <View style={styles.loadingContainer}>
@@ -543,7 +367,6 @@ const IPLSessionTracker = () => {
           onPress={() => {
             setError(null);
             setLoading(true);
-            // Trigger useEffect to refetch
           }}
         >
           <Text style={styles.retryButtonText}>Retry</Text>
@@ -552,7 +375,6 @@ const IPLSessionTracker = () => {
     );
   }
 
-  // Return early if user hasn't completed onboarding
   if (!iplProfile) {
     return (
       <View style={styles.loadingContainer}>
@@ -561,7 +383,21 @@ const IPLSessionTracker = () => {
     );
   }
 
-  return activeTab === "tracker" ? renderTrackerPage() : renderAddSessionPage();
+  return activeTab === "tracker" ? (
+    renderTrackerPage()
+  ) : (
+    <AddSessionSection
+      isSessionActive={isSessionActive}
+      currentSession={currentSession}
+      sessionTimer={sessionTimer}
+      formatTime={formatTime}
+      stopSession={stopSession}
+      startSession={startSession}
+      getTreatmentAreas={getTreatmentAreas}
+      iplProfile={iplProfile}
+      setActiveTab={setActiveTab}
+    />
+  );
 };
 
 const styles = StyleSheet.create({
@@ -597,48 +433,6 @@ const styles = StyleSheet.create({
     color: "#FFFFFF",
     fontSize: 16,
     fontWeight: "600",
-  },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingVertical: 20,
-    paddingTop: 40,
-  },
-  backButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: "#FFFFFF",
-    alignItems: "center",
-    justifyContent: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  backButtonText: {
-    fontSize: 18,
-    color: "#333",
-  },
-  headerTitle: {
-    fontSize: 20,
-    fontWeight: "600",
-    color: "#333",
-  },
-  menuButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: "#FFFFFF",
-    alignItems: "center",
-    justifyContent: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
   },
   statsGrid: {
     flexDirection: "row",
@@ -944,116 +738,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: "#666",
   },
-  sessionActiveContainer: {
-    flex: 1,
-    backgroundColor: "#2c2a6b",
-    justifyContent: "center",
-    alignItems: "center",
-    paddingHorizontal: 40,
-  },
-  sessionHeader: {
-    alignItems: "center",
-    marginBottom: 60,
-  },
-  sessionTitle: {
-    fontSize: 24,
-    fontWeight: "600",
-    color: "#FFFFFF",
-    marginBottom: 8,
-  },
-  sessionArea: {
-    fontSize: 18,
-    color: "#E2E8F0",
-  },
-  timerContainer: {
-    alignItems: "center",
-    marginBottom: 60,
-  },
-  timerText: {
-    fontSize: 72,
-    fontWeight: "300",
-    color: "#FFFFFF",
-    marginBottom: 8,
-  },
-  timerLabel: {
-    fontSize: 16,
-    color: "#E2E8F0",
-  },
-  sessionDetails: {
-    alignItems: "center",
-    marginBottom: 60,
-  },
-  sessionDetailText: {
-    fontSize: 16,
-    color: "#E2E8F0",
-    marginBottom: 8,
-  },
-  stopButton: {
-    backgroundColor: "#FFFFFF",
-    borderRadius: 50,
-    paddingVertical: 16,
-    paddingHorizontal: 48,
-  },
-  stopButtonText: {
-    fontSize: 18,
-    fontWeight: "600",
-    color: "#2c2a6b",
-  },
-  sessionCardsSection: {
-    marginBottom: 20,
-  },
-  sessionCard: {
-    flexDirection: "row",
-    backgroundColor: "#FFFFFF",
-    borderRadius: 16,
-    padding: 20,
-    marginBottom: 12,
-    alignItems: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 4,
-  },
-  sessionCardContent: {
-    flex: 1,
-  },
-  sessionCardTitle: {
-    fontSize: 18,
-    fontWeight: "600",
-    color: "#333",
-    marginBottom: 4,
-  },
-  sessionCardSubtitle: {
-    fontSize: 14,
-    color: "#666",
-  },
-  playButton: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    backgroundColor: "#2c2a6b",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  playButtonText: {
-    fontSize: 20,
-    color: "#FFFFFF",
-    marginLeft: 2,
-  },
-  customSessionButton: {
-    backgroundColor: "#F7FAFC",
-    borderRadius: 12,
-    padding: 16,
-    alignItems: "center",
-    marginBottom: 40,
-  },
-  customSessionButtonText: {
-    fontSize: 16,
-    fontWeight: "500",
-    color: "#2c2a6b",
-  },
 });
 
-
-export default IPLSessionTracker
+export default IPLSessionTracker;

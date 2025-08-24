@@ -1,4 +1,4 @@
-const BACKEND_URL = "http://192.168.18.5:3000";
+const BACKEND_URL = "http://192.168.100.192:3000";
 export const fetchCartItemsCount = async (authenticatedFetch) => {
   try {
     const res = await authenticatedFetch(`${BACKEND_URL}/cart-items-count`);
@@ -213,6 +213,22 @@ export const fetchArticles = async (authenticatedFetch) => {
   }
 };
 
+export const fetchArticle = async (authenticatedFetch, id) => {
+  try {
+    const response = await authenticatedFetch(
+      `${BACKEND_URL}/article?articleId=${id}`
+    );
+    if (!response.ok) {
+      throw new Error(`Failed to fetch articles: ${response.status}`);
+    }
+    const data = await response.json();
+    return data
+  } catch (error) {
+    console.error("Error fetching article:", error);
+    return [];
+  }
+};
+
 export const fetchDevices = async (authenticatedFetch) => {
   try {
     const response = await authenticatedFetch(
@@ -271,6 +287,33 @@ export const fetchIPLProfile = async (authenticatedFetch) => {
     return {
       success: false,
       error: "Failed to fetch IPL profile",
+      details: error.message,
+    };
+  }
+};
+
+export const createIPLSession = async (authenticatedFetch, data) => {
+  try {
+    const response = await authenticatedFetch(
+      `${BACKEND_URL}/ipl/create-session`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      }
+    );
+
+    if (response.ok) {
+      const data = await response.json();
+      return {
+        success: true,
+      };
+    }
+  } catch (error) {
+    console.error("Failed to create IPL session:", error);
+    return {
+      success: false,
+      error: "Failed to create IPL session",
       details: error.message,
     };
   }

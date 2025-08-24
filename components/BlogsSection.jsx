@@ -172,11 +172,11 @@ const styles = StyleSheet.create({
     fontWeight: "400",
   },
   blogViewAll: {
-    backgroundColor: COLORS.mediumPink,
+    backgroundColor: COLORS.deepBlue,
     paddingHorizontal: 18,
     paddingVertical: 10,
     borderRadius: 14,
-    shadowColor: COLORS.mediumPink,
+    shadowColor: COLORS.deepBlue,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.15,
     shadowRadius: 6,
@@ -193,12 +193,13 @@ const styles = StyleSheet.create({
   blogScrollContainer: {
     paddingHorizontal: 20,
     paddingRight: 40,
+    marginLeft: -10,
   },
   blogCard: {
     backgroundColor: COLORS.white,
     borderRadius: 16,
     width: 280,
-    marginRight: 16,
+    marginRight: 18,
     overflow: "hidden",
   },
   blogImageContainer: {
@@ -251,7 +252,8 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "600",
     color: COLORS.darkBlue,
-    textDecorationLine: "underline",
+    // textDecorationLine: "underline",
+    display: "none"
   },
   blogLoadingContainer: {
     alignItems: "center",
