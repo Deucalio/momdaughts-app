@@ -25,7 +25,7 @@ import WishlistToast from "../../components/WishlistToast";
 import { addToCart, addToWishlist, fetchCartItemsCount, removeFromWishlist } from "../utils/actions";
 import { useAuthenticatedFetch } from "../utils/authStore";
 const { width, height } = Dimensions.get("window");
-const BACKEND_URL = "http://192.168.100.3:3000";
+const BACKEND_URL = "http://192.168.18.5:3000";
 const CONTAINER_WIDTH = width - 32;
 
 const ProductDetailPage = () => {

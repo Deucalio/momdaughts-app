@@ -59,19 +59,7 @@ export default function TabLayout() {
           ),
         }}
       />
-      <Tabs.Screen
-        name="tracker"
-        options={{
-          title: "Tracker",
-          tabBarIcon: ({ color, size, focused }) => (
-            <Ionicons
-              name="calendar"
-              size={focused ? size + 2 : size}
-              color={color}
-            />
-          ),
-        }}
-      />
+   
       <Tabs.Screen
         name="shop"
         options={{

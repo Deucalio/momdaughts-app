@@ -17,7 +17,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { logOut } from "../utils/auth";
 import { useAuthenticatedFetch, useAuthStore } from "../utils/authStore";
 
-const BACKEND_URL = "http://192.168.100.3:3000";
+const BACKEND_URL = "http://192.168.18.5:3000";
 const { width } = Dimensions.get("window");
 
 // Color palette matching the cart design

@@ -1,465 +1,394 @@
-import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Dimensions } from "react-native"
-import { LinearGradient } from "expo-linear-gradient"
-import { Ionicons } from "@expo/vector-icons"
-import { SafeAreaView } from "react-native-safe-area-context"
+import {
+  View,
+  Text,
+  Image,
+  ScrollView,
+  TouchableOpacity,
+  StyleSheet,
+  Dimensions,
+} from "react-native";
 
-const { width } = Dimensions.get("window")
+const { width } = Dimensions.get("window");
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { LinearGradient } from "expo-linear-gradient";
 
-export default function WellnessPage() {
-  const wellnessMetrics = [
+import ScreenWrapper from "../../components/ScreenWrapper";
+const COLORS = {
+  lightPink: "#f5b8d0",
+  lavender: "#e2c6df",
+  mediumPink: "#eb9fc1",
+  darkBlue: "#2b2b6b",
+  deepBlue: "#2c2a6b",
+  almostBlack: "#040707",
+  white: "#ffffff",
+  // Additional utility colors
+  lightGray: "#f8f9fa",
+  mediumGray: "#6c757d",
+  border: "#e9ecef",
+  success: "#28a745",
+  danger: "#dc3545",
+};
+const WellnessScreen = () => {
+  const insets = useSafeAreaInsets();
+  const menstrualReliefExercises = [
     {
-      title: "Daily Steps",
-      value: "8,432",
-      goal: "10,000",
-      progress: 84,
-      icon: "walk",
-      colors: ["#3b82f6", "#06b6d4"],
+      id: 1,
+      title: "Period pain \n relief",
+      image: "https://i.ibb.co/kF3J0B7/image.png",
+      gradientColors: [COLORS.lightPink, COLORS.mediumPink, COLORS.lavender],
     },
     {
-      title: "Heart Rate",
-      value: "72 bpm",
-      status: "Normal",
-      icon: "heart",
-      colors: ["#ef4444", "#ec4899"],
+      id: 2,
+      title: "Foot massage \n relieve",
+      image:
+        "https://i.ibb.co/4RdHb48m/0c9f2cb4-987c-489c-ab88-f9d7b7acff67-removalai-preview.png",
+    gradientColors: ["#ffd78a", "#f4762d"]
     },
-    {
-      title: "Sleep Quality",
-      value: "7.5h",
-      status: "Good",
-      icon: "moon",
-      colors: ["#6366f1", "#8b5cf6"],
-    },
-    {
-      title: "Water Intake",
-      value: "6/8",
-      goal: "8 glasses",
-      progress: 75,
-      icon: "water",
-      colors: ["#06b6d4", "#3b82f6"],
-    },
-  ]
+    // {
+    //   id: 3,
+    //   title: "Breathing exercises",
+    //   image: require("../public/woman-doing-breathing-exercises-for-cramp-relief.png"),
+    // },
+  ];
 
-  const wellnessPrograms = [
+  const programs = [
     {
-      title: "Cycle Sync Workouts",
-      description: "Workouts tailored to your menstrual cycle phase",
-      duration: "15-30 min",
-      difficulty: "Beginner",
-      icon: "fitness",
-      colors: ["#ec4899", "#f43f5e"],
+      id: 1,
+      title: "Kegel exercises",
+      subtitle: "Day 1",
+      image:
+        "https://i.ibb.co/h1s0Qj6y/top-view-bouquet-carnation-flowers-violet-copy-space-background.jpg",
     },
-    {
-      title: "Mindful Moments",
-      description: "Daily meditation and mindfulness exercises",
-      duration: "5-15 min",
-      difficulty: "All Levels",
-      icon: "leaf",
-      colors: ["#8b5cf6", "#7c3aed"],
-    },
-    {
-      title: "Nutrition Guidance",
-      description: "Personalized meal plans for hormonal health",
-      duration: "Daily",
-      difficulty: "Easy",
-      icon: "nutrition",
-      colors: ["#10b981", "#059669"],
-    },
-  ]
+  ];
 
-  const healthInsights = [
+  const soundscapes = [
     {
-      title: "Cycle Phase Impact",
-      description:
-        "Your energy levels are naturally higher during the follicular phase. Perfect time for high-intensity workouts!",
-      type: "Cycle Insight",
+      id: 1,
+      title: "Forest Adventure",
+      image: "https://i.ibb.co/sdXj0P5y/16526.jpg",
+      backgroundColor: "#10b981",
     },
     {
-      title: "Sleep Pattern",
-      description: "You've been getting consistent 7+ hours of sleep. Great job maintaining healthy sleep hygiene!",
-      type: "Sleep Health",
+      id: 2,
+      title: "Forest Rain",
+      image: "https://i.ibb.co/sdXj0P5y/16526.jpg",
+      backgroundColor: "#2563eb",
     },
     {
-      title: "Hydration Reminder",
-      description: "You're 2 glasses away from your daily water goal. Stay hydrated for better energy levels!",
-      type: "Hydration",
+      id: 3,
+      title: "Peaceful Night",
+      image: "https://i.ibb.co/sdXj0P5y/16526.jpg",
+      backgroundColor: "#8b5cf6",
     },
-  ]
+  ];
 
-  const quickActions = [
-    { icon: "thermometer", label: "Log Temperature" },
-    { icon: "heart", label: "Record Mood" },
-    { icon: "water", label: "Add Water" },
-    { icon: "moon", label: "Log Sleep" },
-  ]
+  const PlayButton = ({ size = 48 }) => (
+    <View style={[styles.playButton, { width: size, height: size }]}>
+      <View style={styles.playTriangle} />
+    </View>
+  );
 
   return (
-    <SafeAreaView style={styles.container}>
-      <ScrollView showsVerticalScrollIndicator={false}>
-        {/* Header */}
-        <LinearGradient colors={["#ecfdf5", "#d1fae5", "#a7f3d0"]} style={styles.heroSection}>
-          <View style={styles.heroContent}>
-            <Text style={styles.heroTitle}>Wellness Hub</Text>
-            <Text style={styles.heroSubtitle}>
-              Your comprehensive health and wellness dashboard. Track your progress, discover insights, and build
-              healthy habits.
-            </Text>
-          </View>
-        </LinearGradient>
-
-        {/* Today's Metrics */}
+    <ScreenWrapper cartItemCount={0}>
+      <ScrollView
+        style={[
+          styles.container,
+          {
+            paddingTop: insets.top + 5,
+          },
+        ]}
+        showsVerticalScrollIndicator={false}
+      >
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Today's Metrics</Text>
-          <View style={styles.metricsGrid}>
-            {wellnessMetrics.map((metric, index) => (
-              <View key={index} style={styles.metricCard}>
-                <View style={styles.metricHeader}>
-                  <LinearGradient colors={metric.colors} style={styles.metricIcon}>
-                    <Ionicons name={metric.icon} size={20} color="white" />
-                  </LinearGradient>
-                  <View style={styles.metricInfo}>
-                    <Text style={styles.metricTitle}>{metric.title}</Text>
-                    <Text style={styles.metricValue}>{metric.value}</Text>
-                  </View>
+          <Text style={styles.sectionTitle}>Menstrual cramps relief</Text>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            style={styles.horizontalScroll}
+          >
+            {menstrualReliefExercises.map((exercise) => (
+              <TouchableOpacity key={exercise.id} style={styles.exerciseCard}>
+                <LinearGradient
+                  colors={exercise.gradientColors}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                  style={styles.exerciseOverlay}
+                />
+
+                <Image
+                  source={{ uri: exercise.image }}
+                  style={styles.exerciseImage}
+                />
+                <View style={styles.exerciseContent}>
+                  <Text style={styles.exerciseTitle}>{exercise.title}</Text>
+                  <PlayButton size={32} />
                 </View>
-
-                {metric.progress && (
-                  <View style={styles.progressContainer}>
-                    <View style={styles.progressHeader}>
-                      <Text style={styles.progressLabel}>Goal: {metric.goal}</Text>
-                      <Text style={styles.progressPercent}>{metric.progress}%</Text>
-                    </View>
-                    <View style={styles.progressBar}>
-                      <View style={[styles.progressFill, { width: `${metric.progress}%` }]} />
-                    </View>
-                  </View>
-                )}
-
-                {metric.status && (
-                  <View style={styles.statusBadge}>
-                    <Text style={styles.statusText}>{metric.status}</Text>
-                  </View>
-                )}
-              </View>
-            ))}
-          </View>
-        </View>
-
-        {/* Wellness Programs */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Recommended Programs</Text>
-          <View style={styles.programsList}>
-            {wellnessPrograms.map((program, index) => (
-              <View key={index} style={styles.programCard}>
-                <View style={styles.programContent}>
-                  <LinearGradient colors={program.colors} style={styles.programIcon}>
-                    <Ionicons name={program.icon} size={24} color="white" />
-                  </LinearGradient>
-                  <View style={styles.programInfo}>
-                    <Text style={styles.programTitle}>{program.title}</Text>
-                    <Text style={styles.programDescription}>{program.description}</Text>
-                    <View style={styles.programTags}>
-                      <View style={styles.programTag}>
-                        <Text style={styles.programTagText}>{program.duration}</Text>
-                      </View>
-                      <View style={styles.programTag}>
-                        <Text style={styles.programTagText}>{program.difficulty}</Text>
-                      </View>
-                    </View>
-                  </View>
-                  <TouchableOpacity style={styles.startButton}>
-                    <Text style={styles.startButtonText}>Start</Text>
-                  </TouchableOpacity>
-                </View>
-              </View>
-            ))}
-          </View>
-        </View>
-
-        {/* Health Insights */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Health Insights</Text>
-          <View style={styles.insightsList}>
-            {healthInsights.map((insight, index) => (
-              <LinearGradient key={index} colors={["#eff6ff", "#f3e8ff"]} style={styles.insightCard}>
-                <View style={styles.insightContent}>
-                  <View style={styles.insightDot} />
-                  <View style={styles.insightText}>
-                    <View style={styles.insightHeader}>
-                      <Text style={styles.insightTitle}>{insight.title}</Text>
-                      <View style={styles.insightTypeBadge}>
-                        <Text style={styles.insightTypeText}>{insight.type}</Text>
-                      </View>
-                    </View>
-                    <Text style={styles.insightDescription}>{insight.description}</Text>
-                  </View>
-                </View>
-              </LinearGradient>
-            ))}
-          </View>
-        </View>
-
-        {/* Quick Actions */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Quick Actions</Text>
-          <View style={styles.actionsGrid}>
-            {quickActions.map((action, index) => (
-              <TouchableOpacity key={index} style={styles.actionCard}>
-                <Ionicons name={action.icon} size={20} color="#6b7280" />
-                <Text style={styles.actionLabel}>{action.label}</Text>
               </TouchableOpacity>
             ))}
-          </View>
+          </ScrollView>
+        </View>
+
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Programs for you</Text>
+          {programs.map((program) => (
+            <TouchableOpacity key={program.id} style={styles.programCard}>
+              <Image
+                source={{ uri: program.image }}
+                style={styles.programImage}
+              />
+              <View style={styles.programOverlay} />
+              <View style={styles.programContent}>
+                <Text style={styles.programTitle}>{program.title}</Text>
+                <TouchableOpacity style={styles.programButton}>
+                  <View style={styles.playTriangleSmall} />
+                  <Text style={styles.programButtonText}>
+                    {program.subtitle}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </TouchableOpacity>
+          ))}
+        </View>
+
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Soundscapes</Text>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            style={styles.horizontalScroll}
+          >
+            {soundscapes.map((soundscape) => (
+              <TouchableOpacity
+                key={soundscape.id}
+                style={styles.soundscapeItem}
+              >
+                <View
+                  style={[
+                    styles.soundscapeCircle,
+                    { backgroundColor: soundscape.backgroundColor },
+                  ]}
+                >
+                  <Image
+                    source={{ uri: soundscape.image }}
+                    style={styles.soundscapeImage}
+                  />
+                  <View style={styles.soundscapePlayButton}>
+                    <PlayButton size={40} />
+                  </View>
+                </View>
+                <Text style={styles.soundscapeTitle}>{soundscape.title}</Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
         </View>
       </ScrollView>
-    </SafeAreaView>
-  )
-}
+    </ScreenWrapper>
+  );
+};
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#ffffff",
-  },
-  heroSection: {
+    backgroundColor: "#f9fafb",
     paddingHorizontal: 16,
-    paddingVertical: 32,
+    paddingTop: 24,
   },
-  heroContent: {
-    alignItems: "center",
-  },
-  heroTitle: {
-    fontSize: 28,
-    fontWeight: "bold",
-    color: "#059669",
-    marginBottom: 8,
-  },
-  heroSubtitle: {
-    fontSize: 16,
-    color: "#6b7280",
-    textAlign: "center",
-    lineHeight: 24,
-  },
-  section: {
-    paddingHorizontal: 16,
-    paddingVertical: 16,
-  },
-  sectionTitle: {
-    fontSize: 20,
-    fontWeight: "bold",
-    color: "#1f2937",
-    marginBottom: 16,
-  },
-  metricsGrid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 12,
-  },
-  metricCard: {
-    width: (width - 44) / 2,
-    backgroundColor: "#ffffff",
-    borderRadius: 16,
-    padding: 16,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  metricHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-    marginBottom: 12,
-  },
-  metricIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 12,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  metricInfo: {
-    flex: 1,
-  },
-  metricTitle: {
-    fontSize: 12,
-    fontWeight: "600",
-    color: "#6b7280",
-    marginBottom: 2,
-  },
-  metricValue: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#1f2937",
-  },
-  progressContainer: {
-    marginBottom: 8,
-  },
-  progressHeader: {
+  header: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginBottom: 4,
-  },
-  progressLabel: {
-    fontSize: 10,
-    color: "#6b7280",
-  },
-  progressPercent: {
-    fontSize: 10,
-    color: "#6b7280",
-  },
-  progressBar: {
-    height: 6,
-    backgroundColor: "#f3f4f6",
-    borderRadius: 3,
-  },
-  progressFill: {
-    height: "100%",
-    backgroundColor: "#ec4899",
-    borderRadius: 3,
-  },
-  statusBadge: {
-    backgroundColor: "#f3f4f6",
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 8,
-    alignSelf: "flex-start",
-  },
-  statusText: {
-    fontSize: 10,
-    color: "#6b7280",
-    fontWeight: "600",
-  },
-  programsList: {
-    gap: 12,
-  },
-  programCard: {
-    backgroundColor: "#ffffff",
-    borderRadius: 16,
-    padding: 20,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  programContent: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    gap: 16,
-  },
-  programIcon: {
-    width: 48,
-    height: 48,
-    borderRadius: 12,
-    justifyContent: "center",
     alignItems: "center",
+    marginBottom: 32,
   },
-  programInfo: {
-    flex: 1,
-    gap: 8,
+  headerTitle: {
+    fontSize: 24,
+    fontWeight: "bold",
+    color: "#111827",
   },
-  programTitle: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: "#1f2937",
-  },
-  programDescription: {
-    fontSize: 14,
-    color: "#6b7280",
-    lineHeight: 20,
-  },
-  programTags: {
-    flexDirection: "row",
-    gap: 8,
-  },
-  programTag: {
-    backgroundColor: "#f3f4f6",
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 8,
-  },
-  programTagText: {
-    fontSize: 10,
-    color: "#6b7280",
-  },
-  startButton: {
-    backgroundColor: "#ec4899",
+  proBadge: {
+    backgroundColor: "#8b5cf6",
     paddingHorizontal: 16,
     paddingVertical: 8,
-    borderRadius: 8,
-  },
-  startButtonText: {
-    color: "white",
-    fontSize: 12,
-    fontWeight: "600",
-  },
-  insightsList: {
-    gap: 12,
-  },
-  insightCard: {
-    borderRadius: 16,
-    padding: 16,
-  },
-  insightContent: {
-    flexDirection: "row",
-    gap: 12,
-  },
-  insightDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: "#8b5cf6",
-    marginTop: 8,
-  },
-  insightText: {
-    flex: 1,
-  },
-  insightHeader: {
+    borderRadius: 20,
     flexDirection: "row",
     alignItems: "center",
-    gap: 8,
-    marginBottom: 4,
   },
-  insightTitle: {
+  proIcon: {
+    color: "white",
     fontSize: 14,
+    fontWeight: "bold",
+    marginRight: 4,
+  },
+  proText: {
+    color: "white",
+    fontSize: 14,
+    fontWeight: "bold",
+  },
+  section: {
+    marginBottom: 32,
+  },
+  sectionTitle: {
+    fontSize: 18,
     fontWeight: "600",
-    color: "#1f2937",
+    color: "#111827",
+    marginBottom: 16,
   },
-  insightTypeBadge: {
-    backgroundColor: "#f3f4f6",
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 6,
+  horizontalScroll: {
+    paddingBottom: 8,
   },
-  insightTypeText: {
-    fontSize: 10,
-    color: "#6b7280",
+  exerciseCard: {
+    width: 280,
+    height: 192,
+    borderRadius: 16,
+    marginRight: 16,
+    overflow: "hidden",
+    position: "relative",
   },
-  insightDescription: {
-    fontSize: 14,
-    color: "#6b7280",
-    lineHeight: 20,
+  exerciseOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    borderRadius: 16,
   },
-  actionsGrid: {
+
+  exerciseImage: {
+    ...StyleSheet.absoluteFillObject,
+    resizeMode: "cover",
+    borderRadius: 16,
+  },
+
+  exerciseContent: {
+    position: "absolute",
+    bottom: 16,
+    // top: 0,
+    left: 16,
+    right: 16,
     flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 12,
+    justifyContent: "space-between",
+    alignItems: "flex-end",
   },
-  actionCard: {
-    width: (width - 44) / 2,
-    height: 80,
-    backgroundColor: "#ffffff",
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: "#e5e7eb",
+  exerciseTitle: {
+    color: "#111827",
+    fontSize: 18,
+    fontWeight: "bold",
+    flex: 1,
+    marginRight: 16,
+  },
+  programCard: {
+    width: "100%",
+    height: 256,
+    borderRadius: 16,
+    marginBottom: 16,
+    overflow: "hidden",
+    position: "relative",
+  },
+  programImage: {
+    position: "absolute",
+    right: 16,
+    top: 16,
+    width: 128,
+    height: 128,
+    resizeMode: "cover",
+  },
+  programOverlay: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: "rgba(139, 92, 246, 0.9)",
+  },
+  programContent: {
+    position: "absolute",
+    bottom: 16,
+    left: 16,
+    right: 16,
+  },
+  programTitle: {
+    color: "white",
+    fontSize: 24,
+    fontWeight: "bold",
+    marginBottom: 16,
+    maxWidth: 200,
+  },
+  programButton: {
+    backgroundColor: "white",
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 24,
+    flexDirection: "row",
+    alignItems: "center",
+    alignSelf: "flex-start",
+  },
+  programButtonText: {
+    color: "#111827",
+    fontSize: 16,
+    fontWeight: "600",
+    marginLeft: 8,
+  },
+  soundscapeItem: {
+    alignItems: "center",
+    marginRight: 16,
+    width: 120,
+  },
+  soundscapeCircle: {
+    width: 112,
+    height: 112,
+    borderRadius: 56,
+    overflow: "hidden",
+    position: "relative",
+    marginBottom: 8,
+  },
+  soundscapeImage: {
+    width: "100%",
+    height: "100%",
+    resizeMode: "cover",
+  },
+  soundscapePlayButton: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
     justifyContent: "center",
     alignItems: "center",
-    gap: 8,
   },
-  actionLabel: {
-    fontSize: 12,
-    color: "#6b7280",
+  soundscapeTitle: {
+    color: "#111827",
+    fontSize: 14,
+    fontWeight: "500",
     textAlign: "center",
+    lineHeight: 18,
   },
-})
+  playButton: {
+    backgroundColor: "white",
+    borderRadius: 24,
+    justifyContent: "center",
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  playTriangle: {
+    width: 0,
+    height: 0,
+    borderLeftWidth: 8,
+    borderLeftColor: "#374151",
+    borderTopWidth: 6,
+    borderTopColor: "transparent",
+    borderBottomWidth: 6,
+    borderBottomColor: "transparent",
+    marginLeft: 2,
+  },
+  playTriangleSmall: {
+    width: 0,
+    height: 0,
+    borderLeftWidth: 6,
+    borderLeftColor: "#374151",
+    borderTopWidth: 4,
+    borderTopColor: "transparent",
+    borderBottomWidth: 4,
+    borderBottomColor: "transparent",
+  },
+});
+
+export default WellnessScreen;

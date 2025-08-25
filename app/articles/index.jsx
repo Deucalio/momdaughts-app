@@ -14,7 +14,6 @@ import {
 import { fetchArticles } from "../utils/actions";
 import { useAuthenticatedFetch } from "../utils/authStore";
 import HeaderWithoutCart from "../../components/HeaderWithoutCart"; // Adjust path as needed
-import ScreenWrapper from "../../components/ScreenWrapper";
 
 import { useRouter } from "expo-router";
 const { width } = Dimensions.get("window");
@@ -230,7 +229,7 @@ const Articles = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f8f4f6",
+    backgroundColor: "white",
   },
   loadingContainer: {
     flex: 1,
