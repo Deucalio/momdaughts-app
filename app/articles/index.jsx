@@ -173,7 +173,12 @@ const Articles = () => {
 
       {/* Highlights Section */}
      <View style={styles.section}>
+{/* Highlights Section */}
+<View style={styles.highlightsSection}>
+     <View style={styles.latestPostsHeader}>
+
   <Text style={styles.sectionTitle}>HIGHLIGHTS</Text>
+     </View>
   <FlatList
     data={highlightedArticles}
     renderItem={renderHighlightItem}
@@ -181,7 +186,6 @@ const Articles = () => {
     horizontal
     showsHorizontalScrollIndicator={false}
     contentContainerStyle={styles.highlightsScroll}
-    // Removed snapToInterval, snapToAlignment, decelerationRate, pagination
     pagingEnabled={false}
     bounces={true}
     removeClippedSubviews={false}
@@ -189,8 +193,12 @@ const Articles = () => {
   />
 </View>
 
+</View>
+
       {/* Latest Posts Section Title */}
-      <Text style={styles.sectionTitle}>LATEST POSTS</Text>
+   <View style={styles.latestPostsHeader}>
+  <Text style={styles.sectionTitle}>LATEST POSTS</Text>
+</View>
     </>
   );
 
@@ -267,8 +275,22 @@ const styles = StyleSheet.create({
     color: "#ff69b4",
     textAlign: "center",
     marginBottom: 20,
-    letterSpacing: 1,
+    letterSpacing: 0,
   },
+  highlightsSection: {
+  backgroundColor: "#ffe4ec" , // light pink
+  paddingVertical: 20,
+  marginBottom: 30,
+},
+
+latestPostsHeader: {
+  borderBottomWidth: 1,
+  borderBottomColor: "#ff69b4" + "90", // pink line
+  marginHorizontal: 20,
+  paddingBottom: 4,
+  marginBottom: 20,
+},
+
 highlightsScroll: {
   paddingLeft: (width - (width * 0.8)) / 2,
   paddingRight: (width - (width * 0.8)) / 2,
