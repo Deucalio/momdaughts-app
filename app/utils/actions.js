@@ -1,4 +1,4 @@
-const BACKEND_URL = "http://192.168.100.192:3000";
+const BACKEND_URL = "http://192.168.100.3:3000";
 export const fetchCartItemsCount = async (authenticatedFetch) => {
   try {
     const res = await authenticatedFetch(`${BACKEND_URL}/cart-items-count`);
@@ -196,9 +196,9 @@ export const fetchWishlistItems = async (authenticatedFetch) => {
   }
 };
 
-export const fetchArticles = async (authenticatedFetch) => {
+export const fetchArticles = async (authenticatedFetch, numberOfArticles = 3) => {
   try {
-    const response = await authenticatedFetch(`${BACKEND_URL}/articles`);
+    const response = await authenticatedFetch(`${BACKEND_URL}/articles?numberOfArticles=${numberOfArticles}`);
     if (!response.ok) {
       throw new Error(`Failed to fetch blogs: ${response.status}`);
     }

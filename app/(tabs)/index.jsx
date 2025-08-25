@@ -9,6 +9,7 @@ import {
   StyleSheet,
   SafeAreaView,
   StatusBar,
+  Platform
 } from "react-native";
 import {
   fetchProducts,
@@ -86,6 +87,7 @@ export default function App() {
     }, [])
   );
 
+
   const loadProducts = async () => {
     try {
       setLoading(true);
@@ -132,13 +134,14 @@ export default function App() {
 
   const handleBlogPress = (blog) => {
     console.log("Open blog:", blog.id);
-    router.push(`/article/${blog.id}`);
+    router.push(`/articles/${blog.id}`);
     // TODO: Navigate to blog detail page
   };
 
-  const handleAddToWishlist = (product) => {
-    console.log("Add to wishlist:", product.title);
-    // TODO: Implement wishlist functionality
+  const handleAllArticles = () => {
+    console.log("Open all articles");
+    router.push("/articles");
+    // TODO: Navigate to all articles page
   };
 
   const handleAddToCart = async (product) => {
@@ -202,7 +205,7 @@ export default function App() {
   return (
     <ScreenWrapper cartItemCount={cartCount}>
       <SafeAreaView style={styles.container}>
-        <StatusBar barStyle="dark-content" backgroundColor={COLORS.white} />
+        <StatusBar  barStyle="dark-content" backgroundColor={COLORS.white} />
 
         {/* Header Space - Left empty as requested */}
         <View style={styles.headerSpace} />
@@ -259,6 +262,7 @@ export default function App() {
             blogs={blogs}
             blogsLoading={blogsLoading}
             onBlogPress={handleBlogPress}
+            handleAllArticles={handleAllArticles}
           />
 
 

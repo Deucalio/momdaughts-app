@@ -22,7 +22,7 @@ import ScreenWrapper from "../../components/ScreenWrapper";
 import { addToCart, fetchCartItemsCount } from "../utils/actions";
 import { useAuthenticatedFetch, useAuthStore } from "../utils/authStore";
 
-const BACKEND_URL = "http://192.168.100.192:3000";
+const BACKEND_URL = "http://192.168.100.3:3000";
 const { width, height } = Dimensions.get("window");
 
 // New purple gradient theme colors

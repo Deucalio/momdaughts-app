@@ -4,20 +4,20 @@ import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
 import {
-    Dimensions,
-    Image,
-    RefreshControl,
-    ScrollView,
-    Switch,
-    Text,
-    TouchableOpacity,
-    View
+  Dimensions,
+  Image,
+  RefreshControl,
+  ScrollView,
+  Switch,
+  Text,
+  TouchableOpacity,
+  View
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { logOut } from "../utils/auth";
 import { useAuthenticatedFetch, useAuthStore } from "../utils/authStore";
 
-const BACKEND_URL = "http://192.168.100.192:3000";
+const BACKEND_URL = "http://192.168.100.3:3000";
 const { width } = Dimensions.get("window");
 
 // Color palette matching the cart design

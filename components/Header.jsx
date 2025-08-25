@@ -12,7 +12,6 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { logOut, useAuthenticatedFetch } from "../app/utils/authStore";
 
-
 const Header = ({ cartItemCount }) => {
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const router = useRouter();
@@ -73,12 +72,7 @@ const Header = ({ cartItemCount }) => {
               style={styles.logo}
               resizeMode="contain"
             />
-            <Text
-              onPress={() => {
-                logOut();
-              }}
-              style={styles.logoTitle}
-            >
+            <Text style={styles.logoTitle}>
               <Text
                 style={{
                   color: "#2c2a6b",
@@ -103,7 +97,6 @@ const Header = ({ cartItemCount }) => {
               )}
             </TouchableOpacity>
             {/* Profile Icon with Dropdown */}
-          
           </View>
         </View>
       </View>

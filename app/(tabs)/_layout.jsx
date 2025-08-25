@@ -1,9 +1,20 @@
 import { Tabs } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { TouchableOpacity } from "react-native";
+import { TouchableOpacity, Platform } from "react-native";
+import { useEffect } from "react";
+import * as NavigationBar from "expo-navigation-bar";
+
 export default function TabLayout() {
   const insets = useSafeAreaInsets();
+
+  // Apply navigation bar style when tab layout mounts
+  useEffect(() => {
+    if (Platform.OS === "android") {
+      NavigationBar.setBackgroundColorAsync("#ffffff");
+      NavigationBar.setButtonStyleAsync("dark");
+    }
+  }, []);
 
   return (
     <Tabs

@@ -22,6 +22,7 @@ import { fetchArticle } from "../utils/actions";
 import { useAuthenticatedFetch } from "../utils/authStore";
 const { height: screenHeight, width: screenWidth } = Dimensions.get("window");
 import RenderHtml from "react-native-render-html";
+import HeaderWithoutCart from "../../components/HeaderWithoutCart";
 
 export default function ArticlePage() {
   const { id } = useLocalSearchParams();
@@ -37,6 +38,16 @@ export default function ArticlePage() {
     Linking.openURL(href).catch((err) => {
       Alert.alert("Error", "Failed to open link");
       console.error("Failed to open URL:", err);
+    });
+  };
+
+  // Format date function
+  const formatDate = (dateString) => {
+    const date = new Date(dateString).toISOString().split("T")[0];
+    return new Date(date).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
     });
   };
 
@@ -74,7 +85,7 @@ export default function ArticlePage() {
       color: "#3a3a3a",
     },
     a: {
-      color: "#E91E63", // Pink color to match your theme
+      color: "#df367c", // Pink color to match your theme
       textDecorationLine: "underline",
     },
     strong: {
@@ -111,9 +122,9 @@ export default function ArticlePage() {
   if (loading) {
     return (
       <SafeAreaView style={styles.container}>
-        <StatusBar barStyle="light-content" backgroundColor="#E91E63" />
+        <StatusBar barStyle="light-content" backgroundColor="#2c2a6b" />
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#E91E63" />
+          <ActivityIndicator size="large" color="#2c2a6b" />
         </View>
       </SafeAreaView>
     );
@@ -122,7 +133,7 @@ export default function ArticlePage() {
   if (!article) {
     return (
       <SafeAreaView style={styles.container}>
-        <StatusBar barStyle="light-content" backgroundColor="#E91E63" />
+        <StatusBar barStyle="light-content" backgroundColor="#2c2a6b" />
         <View style={styles.loadingContainer}>
           <Text style={styles.errorText}>Article not found</Text>
         </View>
@@ -132,9 +143,24 @@ export default function ArticlePage() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor="#E91E63" />
+      <StatusBar barStyle="light-content" backgroundColor="#2c2a6b" />
 
-      {/* Header */}
+      {/* Full Header - above the image */}
+      {/* <View style={styles.header}>
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => router.back()}
+        >
+          <Ionicons name="arrow-back" size={22} color="#f8f9fa" />
+          <Text style={styles.backText}>Back</Text>
+        </TouchableOpacity>
+      </View> */}
+          <HeaderWithoutCart 
+        title="Blogs" 
+        onBackPress={() => router.back()}
+        showLogo={true}
+        showBackButton={true}
+      />
 
       <ScrollView
         style={styles.scrollView}
@@ -151,7 +177,11 @@ export default function ArticlePage() {
 
         {/* Content Container */}
         <View style={styles.contentContainer}>
-          <Text style={styles.readTime}>{article.readTime}</Text>
+          {/* Date and Read Time */}
+          <View style={styles.dateTimeContainer}>
+            <Text style={styles.date}>{formatDate(article.createdAt)}</Text>
+            <Text style={styles.readTime}>{article.readTime}</Text>
+          </View>
 
           {/* Article Title */}
           <Text style={styles.title}>{article.title}</Text>
@@ -159,15 +189,8 @@ export default function ArticlePage() {
           {/* Article Summary */}
           <Text style={styles.summary}>{article.summary}</Text>
 
-          {/* Read Time */}
-
           {/* Article Content */}
           <View style={styles.articleContent}>
-            {/* <RenderHTML r
-        contentWidth={width} 
-        source={{ html:   `${article.body}` }} 
-      /> */}
-
             <RenderHtml
               contentWidth={screenWidth - 32} // Account for padding
               source={{ html: article.body }}
@@ -181,8 +204,6 @@ export default function ArticlePage() {
                 selectable: true, // Allow text selection
               }}
             />
-            {/* {<WebView source={{ html: article.body }} />} */}
-            {/* <WebView source={{ uri: 'https://reactnative.dev/' }} style={{ flex: 1 }} /> */}
           </View>
         </View>
       </ScrollView>
@@ -193,7 +214,7 @@ export default function ArticlePage() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#E91E63",
+    backgroundColor: "#2c2a6b",
   },
   loadingContainer: {
     flex: 1,
@@ -205,21 +226,39 @@ const styles = StyleSheet.create({
     fontSize: 18,
     color: "#666",
   },
+  transparentHeader: {
+    position: "absolute",
+    top: StatusBar.currentHeight || 44, // Adjust for status bar height
+    left: 0,
+    right: 0,
+    zIndex: 1000,
+    paddingHorizontal: 20,
+    paddingVertical: 15,
+    backgroundColor: "transparent",
+  },
   header: {
     flexDirection: "row",
-    justifyContent: "space-between",
+    justifyContent: "flex-start",
     alignItems: "center",
     paddingHorizontal: 20,
     paddingVertical: 15,
+    backgroundColor: "#2c2a6b",
   },
   backButton: {
     flexDirection: "row",
     alignItems: "center",
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 20,
+    // backgroundColor: "rgba(248, 249, 250, 0.15)", // Light semi-transparent background
+    transform: "translateY(8px)",
+    alignSelf: "flex-start",
   },
   backText: {
-    color: "white",
+    color: "#f8f9fa", // Light gray color for better contrast
     fontSize: 16,
     marginLeft: 8,
+    fontWeight: "600",
   },
   headerRight: {
     flexDirection: "row",
@@ -236,7 +275,7 @@ const styles = StyleSheet.create({
   },
   imageContainer: {
     width: "100%",
-    backgroundColor: "#E91E63",
+    backgroundColor: "#2c2a6b",
     justifyContent: "center",
     alignItems: "center",
   },
@@ -254,6 +293,18 @@ const styles = StyleSheet.create({
     paddingTop: 30,
     paddingHorizontal: 20,
     minHeight: 500,
+  },
+  dateTimeContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 20,
+  },
+  date: {
+    fontSize: 14,
+    color: "#666",
+    fontWeight: "600", // Semi-bold
+    flex: 1,
   },
   tabContainer: {
     flexDirection: "row",
@@ -322,7 +373,7 @@ const styles = StyleSheet.create({
   readTime: {
     fontSize: 14,
     color: "#999",
-    marginBottom: 20,
+    textAlign: "right",
   },
   articleContent: {
     paddingBottom: 50,

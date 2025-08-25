@@ -16,7 +16,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useAuthenticatedFetch, useAuthStore } from "../utils/authStore";
 
-const BACKEND_URL = "http://192.168.100.192:3000";
+const BACKEND_URL = "http://192.168.100.3:3000";
 const { width, height } = Dimensions.get("window");
 
 // Updated color palette - more modern and clean

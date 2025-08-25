@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 import {
   View,
   Text,
@@ -7,12 +7,12 @@ import {
   Image,
   StyleSheet,
   ActivityIndicator,
-} from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
+} from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
 
 const COLORS = {
   lightPink: "#f5b8d0",
-  
+
   lavender: "#e2c6df",
   mediumPink: "#eb9fc1",
   darkBlue: "#2b2b6b",
@@ -81,7 +81,12 @@ const BlogCard = ({ blog, onPress }) => {
   );
 };
 
-const BlogsSection = ({ blogs, blogsLoading, onBlogPress }) => {
+const BlogsSection = ({
+  blogs,
+  blogsLoading,
+  onBlogPress,
+  handleAllArticles,
+}) => {
   return (
     <View style={styles.blogSection}>
       <View style={styles.blogHeader}>
@@ -94,7 +99,10 @@ const BlogsSection = ({ blogs, blogsLoading, onBlogPress }) => {
             Expert tips and stories from real mothers
           </Text>
         </View>
-        <TouchableOpacity style={styles.blogViewAll}>
+        <TouchableOpacity
+          onPress={() => handleAllArticles()}
+          style={styles.blogViewAll}
+        >
           <Text style={styles.blogViewAllText}>View All</Text>
         </TouchableOpacity>
       </View>
@@ -253,7 +261,7 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: COLORS.darkBlue,
     // textDecorationLine: "underline",
-    display: "none"
+    display: "none",
   },
   blogLoadingContainer: {
     alignItems: "center",
