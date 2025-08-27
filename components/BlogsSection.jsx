@@ -206,8 +206,8 @@ const styles = StyleSheet.create({
   blogCard: {
     backgroundColor: COLORS.white,
     borderRadius: 16,
-    width: 280,
-    marginRight: 18,
+    width: 270,
+    marginRight: 10,
     overflow: "hidden",
   },
   blogImageContainer: {

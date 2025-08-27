@@ -1,31 +1,27 @@
 "use client";
 
-import { Ionicons } from "@expo/vector-icons";
-import { LinearGradient } from "expo-linear-gradient";
-import { router, useFocusEffect } from "expo-router";
-import { useCallback, useEffect, useRef, useState } from "react";
 import {
-    Dimensions,
-    FlatList,
-    Image,
-    Platform,
-    RefreshControl,
-    ScrollView,
-    StatusBar,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  StyleSheet,
+  Text,
+  View,
+  ScrollView,
+  TextInput,
+  TouchableOpacity,
+  Image,
+  FlatList,
+  SafeAreaView,
+  Dimensions,
 } from "react-native";
-import CartToast from "../../components/CartToast";
-import ScreenWrapper from "../../components/ScreenWrapper";
-import { addToCart, fetchCartItemsCount } from "../utils/actions";
+import { StatusBar } from "expo-status-bar";
+import { Ionicons } from "@expo/vector-icons";
+import { useState, useEffect } from "react";
+import { logOut } from "../utils/auth";
 import { useAuthenticatedFetch, useAuthStore } from "../utils/authStore";
+import ScreenWrapper from "../../components/ScreenWrapper";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-const BACKEND_URL = "http://192.168.18.5:3000";
-const { width, height } = Dimensions.get("window");
+const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
 
-// New purple gradient theme colors
 const COLORS = {
   darkest: "#21152B",
   dark: "#2C103A",
@@ -34,166 +30,98 @@ const COLORS = {
   lightest: "#4E3366",
   white: "#ffffff",
   buttonColor: "#2c2a6b",
+  accent: "#6C5CE7",
+  success: "#00B894",
+  warning: "#FDCB6E",
+  error: "#E17055",
+  gray: "#636e72",
+  lightGray: "#ddd",
 };
 
-export default function ShopPage() {
-  const [searchQuery, setSearchQuery] = useState("");
+const BACKEND_URL = "http://192.168.100.3:3000";
+
+const categories = [
+  {
+    id: "2",
+    title: "Menstrual Collection",
+    imageUrl: "https://i.ibb.co/DfJhZQr5/image.png",
+    color: "#E5F5E5",
+  },
+  {
+    id: "3",
+    title: "IPL Laser Hair Removal",
+    imageUrl: "https://i.ibb.co/YBNh9319/image.png",
+    color: "#F0E5FF",
+  },
+  {
+    id: "4",
+    title: "Skin Serums",
+    imageUrl: "https://i.ibb.co/QFvp5VXw/image.png",
+    color: "#FFF5E5",
+  },
+  {
+    id: "5",
+    title: "Skin Care",
+    imageUrl: "https://i.ibb.co/jP5cS5J0/image.png",
+    color: "#E5F5E5",
+  },
+];
+
+const assignRandomCategory = () => {
+  const categoryTitles = ["Best Selling"];
+  return categoryTitles[Math.floor(Math.random() * categoryTitles.length)];
+};
+
+const bannerData = [
+  {
+    id: 1,
+    title: "First Purchase",
+    subtitle: "Enjoy a Special Offer!",
+    buttonText: "Shop Now",
+    colors: [COLORS.medium, COLORS.lightest],
+    discount: "$200",
+    image:
+      "https://momdaughts.com/cdn/shop/files/banne_2_mob.jpg?v=1748096411&width=400%20400w,%20//momdaughts.com/cdn/shop/files/banne_2_mob.jpg?v=1748096411&width=600%20600w,%20//momdaughts.com/cdn/shop/files/banne_2_mob.jpg?v=1748096411&width=800%20800w,%20//momdaughts.com/cdn/shop/files/banne_2_mob.jpg?v=1748096411&width=1000%201000w",
+  },
+  {
+    id: 2,
+    title: "Wellness Sale",
+    subtitle: "Up to 50% Off!",
+    buttonText: "Explore",
+    colors: [COLORS.dark, COLORS.light],
+    discount: "50%",
+    image:
+      "https://momdaughts.com/cdn/shop/files/banner_3_mob.jpg?v=1748096411&width=400%20400w,%20//momdaughts.com/cdn/shop/files/banner_3_mob.jpg?v=1748096411&width=600%20600w,%20//momdaughts.com/cdn/shop/files/banner_3_mob.jpg?v=1748096411&width=800%20800w,%20//momdaughts.com/cdn/shop/files/banner_3_mob.jpg?v=1748096411&width=1000%201000w",
+  },
+  {
+    id: 3,
+    title: "New Arrivals",
+    subtitle: "Fresh Products Daily",
+    buttonText: "Discover",
+    colors: [COLORS.darkest, COLORS.medium],
+    discount: "NEW",
+    image:
+      "https://momdaughts.com/cdn/shop/files/banner_1_mob.jpg?v=1748096411&width=400%20400w,%20//momdaughts.com/cdn/shop/files/banner_1_mob.jpg?v=1748096411&width=600%20600w,%20//momdaughts.com/cdn/shop/files/banner_1_mob.jpg?v=1748096411&width=800%20800w,%20//momdaughts.com/cdn/shop/files/banner_1_mob.jpg?v=1748096411&width=1000%201000w",
+  },
+];
+
+export default function App() {
   const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
+  const [filteredProducts, setFilteredProducts] = useState([]);
+  const [productSearchQuery, setProductSearchQuery] = useState("");
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [currentBannerIndex, setCurrentBannerIndex] = useState(0);
+  const [refreshing, setRefreshing] = useState(false);
   const { authenticatedFetch } = useAuthenticatedFetch();
-  const [cartItemCount, setCartItemCount] = useState(0);
-  const [addToCartToast, setAddToCartToast] = useState({
-    clickCount: 0,
-    showToast: false,
-    selectedProduct: {
-      name: "",
-      image: "",
-    },
-  });
-
-  const { user } = useAuthStore();
-
-  const storeCartItemsCount = async () => {
-    const count = await fetchCartItemsCount(authenticatedFetch);
-    if (count.success) {
-      setCartItemCount(count.count);
-      return;
-    }
-    throw new Error("Failed to fetch cart items count");
-  };
-
-  // Banner auto-slide
-  const bannerScrollRef = useRef(null);
-  const bannerTimer = useRef(null);
-
-  const bannerData = [
-    {
-      id: 1,
-      title: "First Purchase",
-      subtitle: "Enjoy a Special Offer!",
-      buttonText: "Shop Now",
-      colors: [COLORS.medium, COLORS.lightest],
-      discount: "$200",
-      image:
-        "https://momdaughts.com/cdn/shop/files/banne_2_mob.jpg?v=1748096411&width=400%20400w,%20//momdaughts.com/cdn/shop/files/banne_2_mob.jpg?v=1748096411&width=600%20600w,%20//momdaughts.com/cdn/shop/files/banne_2_mob.jpg?v=1748096411&width=800%20800w,%20//momdaughts.com/cdn/shop/files/banne_2_mob.jpg?v=1748096411&width=1000%201000w",
-    },
-    {
-      id: 2,
-      title: "Wellness Sale",
-      subtitle: "Up to 50% Off!",
-      buttonText: "Explore",
-      colors: [COLORS.dark, COLORS.light],
-      discount: "50%",
-      image:
-        "https://momdaughts.com/cdn/shop/files/banner_3_mob.jpg?v=1748096411&width=400%20400w,%20//momdaughts.com/cdn/shop/files/banner_3_mob.jpg?v=1748096411&width=600%20600w,%20//momdaughts.com/cdn/shop/files/banner_3_mob.jpg?v=1748096411&width=800%20800w,%20//momdaughts.com/cdn/shop/files/banner_3_mob.jpg?v=1748096411&width=1000%201000w",
-    },
-    {
-      id: 3,
-      title: "New Arrivals",
-      subtitle: "Fresh Products Daily",
-      buttonText: "Discover",
-      colors: [COLORS.darkest, COLORS.medium],
-      discount: "NEW",
-      image:
-        "https://momdaughts.com/cdn/shop/files/banner_1_mob.jpg?v=1748096411&width=400%20400w,%20//momdaughts.com/cdn/shop/files/banner_1_mob.jpg?v=1748096411&width=600%20600w,%20//momdaughts.com/cdn/shop/files/banner_1_mob.jpg?v=1748096411&width=800%20800w,%20//momdaughts.com/cdn/shop/files/banner_1_mob.jpg?v=1748096411&width=1000%201000w",
-    },
-  ];
-
-  // Auto-slide banner
-  useEffect(() => {
-    bannerTimer.current = setInterval(() => {
-      setCurrentBannerIndex((prevIndex) => {
-        const nextIndex = (prevIndex + 1) % bannerData.length;
-        bannerScrollRef.current?.scrollTo({
-          x: nextIndex * width,
-          animated: true,
-        });
-        return nextIndex;
-      });
-    }, 3000);
-
-    return () => {
-      if (bannerTimer.current) {
-        clearInterval(bannerTimer.current);
-      }
-    };
-  }, []);
-
-  const inferCategoryFromTitle = (title) => {
-    const titleLower = title.toLowerCase();
-    if (
-      titleLower.includes("pad") ||
-      titleLower.includes("menstrual") ||
-      titleLower.includes("cup")
-    )
-      return "menstrual";
-    if (
-      titleLower.includes("wellness") ||
-      titleLower.includes("tea") ||
-      titleLower.includes("relief")
-    )
-      return "wellness";
-    if (titleLower.includes("supplement") || titleLower.includes("vitamin"))
-      return "supplements";
-    if (
-      titleLower.includes("wash") ||
-      titleLower.includes("cream") ||
-      titleLower.includes("skincare")
-    )
-      return "skincare";
-    return "wellness";
-  };
-
-  const getUniqueCategories = (products) => {
-    const categories = new Set();
-    products.forEach((product) => {
-      const category = inferCategoryFromTitle(product.title);
-      categories.add(category);
-    });
-    return Array.from(categories).map((cat) => ({
-      id: cat,
-      label: cat.charAt(0).toUpperCase() + cat.slice(1),
-      icon: getCategoryIcon(cat),
-    }));
-  };
-
-  const getCategoryIcon = (category) => {
-    const icons = {
-      menstrual: "flower-outline",
-      wellness: "leaf-outline",
-      supplements: "medical-outline",
-      skincare: "sparkles-outline",
-    };
-    return icons[category] || "grid-outline";
-  };
-
-  const hasDiscount = (variants) => {
-    return variants?.some(
-      (variant) =>
-        variant.compareAtPrice &&
-        Number.parseFloat(variant.compareAtPrice) >
-          Number.parseFloat(variant.price)
-    );
-  };
-
-  const getProductBadge = (product) => {
-    if (hasDiscount(product.variants))
-      return { text: "Sale", color: COLORS.light };
-    if (product.tags?.includes("new"))
-      return { text: "New", color: COLORS.medium };
-    if (product.tags?.includes("bestseller"))
-      return { text: "Best", color: COLORS.darkest };
-    return null;
-  };
+  const insets = useSafeAreaInsets();
 
   const fetchProducts = async (isRefresh = false) => {
     try {
       if (!isRefresh) setLoading(true);
       setError(null);
-      const response = await authenticatedFetch(`${BACKEND_URL}/products`);
+      const response = await authenticatedFetch(
+        `${BACKEND_URL}/products?numberOfProducts=100`
+      );
       if (!response.ok) {
         throw new Error(`Failed to fetch products: ${response.status}`);
       }
@@ -201,7 +129,12 @@ export default function ShopPage() {
       if (!data || !Array.isArray(data.products)) {
         throw new Error("Invalid response format");
       }
-      setProducts(data.products || []);
+      const productsWithCategories = (data.products || []).map((product) => ({
+        ...product,
+        assignedCategory: assignRandomCategory(),
+      }));
+      setProducts(productsWithCategories);
+      setFilteredProducts(productsWithCategories);
     } catch (error) {
       console.error("Error fetching products:", error);
       setError(error.message || "Failed to load products");
@@ -211,710 +144,465 @@ export default function ShopPage() {
     }
   };
 
+  const handleProductSearch = (query) => {
+    setProductSearchQuery(query);
+    if (query.trim() === "") {
+      setFilteredProducts(products);
+    } else {
+      const filtered = products.filter((product) =>
+        product.title.toLowerCase().includes(query.toLowerCase())
+      );
+      setFilteredProducts(filtered);
+    }
+  };
+
   useEffect(() => {
     fetchProducts();
-    storeCartItemsCount();
   }, []);
 
-  useFocusEffect(
-    useCallback(() => {
-      storeCartItemsCount();
-      setAddToCartToast({
-        clickCount: 0,
-        showToast: false,
-        selectedProduct: {
-          name: "",
-          image: "",
-        },
-      });
-    }, [])
+  const renderCategoryItem = ({ item }) => (
+    <View style={styles.categoryItemContainer}>
+      <TouchableOpacity
+        style={[styles.categoryCard, { backgroundColor: item.color }]}
+      >
+        <Image source={{ uri: item.imageUrl }} style={styles.categoryImage} />
+      </TouchableOpacity>
+      <Text style={styles.categoryTitle}>{item.title}</Text>
+    </View>
   );
-  const handleRefresh = async () => {
-    setRefreshing(true);
-    await fetchProducts(true);
-  };
 
-  const transformedProducts = products.map((product) => {
-    const firstVariant = product.variants?.[0];
-    const price = firstVariant?.price || "0.00";
-    const compareAtPrice = firstVariant?.compareAtPrice || null;
-    return {
-      id: product.id.split("/").pop(),
-      name: product.title,
-      price: `Rs. ${price}`,
-      originalPrice:
-        compareAtPrice && compareAtPrice > price
-          ? `Rs. ${compareAtPrice}`
-          : null,
-      category: inferCategoryFromTitle(product.title),
-      rating: 4.2 + Math.random() * 0.6,
-      reviews: Math.floor(Math.random() * 150) + 25,
-      badge: getProductBadge(product),
-      inStock:
-        product.variants?.some(
-          (variant) => variant.availableForSale !== false
-        ) ?? true,
-      image: product.images?.[0]?.originalSrc || null,
-      description: product.description,
-      handle: product.handle,
-      variants: product.variants,
-      tags: product.tags || [],
-    };
-  });
-
-  const filteredProducts = transformedProducts.filter((product) => {
-    const matchesSearch = product.name
-      .toLowerCase()
-      .includes(searchQuery.toLowerCase());
-    return matchesSearch;
-  });
-
-  const uniqueCategories = getUniqueCategories(products);
-
-  const renderBanner = ({ item }) => {
-    if (item.image) {
-      return (
-        <TouchableOpacity
-          style={{
-            width: width - 40,
-            height: height * 0.22, // Takes 22% of screen height (more than 20% as requested)
-            borderRadius: 20,
-            marginHorizontal: 20,
-            overflow: "hidden", // Ensures image respects border radius
-            elevation: 5, // Android shadow
-            shadowColor: "#000", // iOS shadow
-            shadowOffset: {
-              width: 0,
-              height: 2,
-            },
-            shadowOpacity: 0.25,
-            shadowRadius: 3.84,
-          }}
-          onPress={() => {
-          }}
-        >
-          <Image
-            source={{
-              uri: item.image,
-            }}
-            style={{
-              width: "100%",
-              height: "100%",
-              borderRadius: 20,
-            }}
-            resizeMode="cover" // Ensures image covers the entire area
-          />
-        </TouchableOpacity>
-      );
-    }
-    <LinearGradient
-      colors={item.colors}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 1, y: 1 }}
-      style={{
-        width: width - 40,
-        height: height * 0.22,
-        borderRadius: 20,
-        padding: 24,
-        flexDirection: "row",
-        alignItems: "center",
-        justifyContent: "space-between",
-        marginHorizontal: 20,
-      }}
-    >
-      <View style={{ flex: 1 }}>
-        <Text
-          style={{
-            color: COLORS.white,
-            fontSize: 20,
-            fontWeight: "bold",
-            marginBottom: 6,
-          }}
-        >
-          {item.title}
-        </Text>
-        <Text
-          style={{
-            color: COLORS.white,
-            fontSize: 16,
-            marginBottom: 20,
-          }}
-        >
-          {item.subtitle}
-        </Text>
-        <TouchableOpacity
-          style={{
-            backgroundColor: COLORS.white,
-            borderRadius: 20,
-            paddingHorizontal: 20,
-            paddingVertical: 10,
-            flexDirection: "row",
-            alignItems: "center",
-            alignSelf: "flex-start",
-          }}
-        >
-          <Text
-            style={{
-              color: COLORS.medium,
-              fontSize: 14,
-              fontWeight: "600",
-              marginRight: 8,
-            }}
-          >
-            {item.buttonText}
-          </Text>
-          <Ionicons name="arrow-forward" size={16} color={COLORS.medium} />
-        </TouchableOpacity>
-      </View>
-      <View style={{ position: "relative" }}>
+  const renderProductItem = ({ item }) => (
+    <View style={styles.productCard}>
+      <View style={styles.productImageContainer}>
         <Image
           source={{
-            uri: "https://via.placeholder.com/90x90/4E3366/white?text=Offer",
+            uri:
+              item.images?.[0]?.originalSrc ||
+              "/placeholder.svg?height=200&width=200",
           }}
-          style={{ width: 80, height: 80, borderRadius: 40 }}
+          style={styles.productImage}
         />
-        <View
-          style={{
-            position: "absolute",
-            top: -10,
-            right: -10,
-            backgroundColor: "#4CAF50",
-            borderRadius: 12,
-            paddingHorizontal: 8,
-            paddingVertical: 4,
-          }}
-        >
-          <Text
-            style={{ color: COLORS.white, fontSize: 12, fontWeight: "bold" }}
-          >
-            {item.discount}
-          </Text>
-        </View>
       </View>
-    </LinearGradient>;
-  };
-
-  const renderProduct = ({ item, index }) => {
-
-    const discountPercentage = item.originalPrice
-      ? Math.round(
-          ((Number.parseFloat(item.originalPrice.replace("Rs. ", "")) -
-            Number.parseFloat(item.price.replace("Rs. ", ""))) /
-            Number.parseFloat(item.originalPrice.replace("Rs. ", ""))) *
-            100
-        )
-      : 0;
-
-    return (
-      <TouchableOpacity
-        style={{
-          width: (width - 48) / 2,
-          marginRight: index % 2 === 0 ? 8 : 0,
-          marginLeft: index % 2 === 1 ? 8 : 0,
-          backgroundColor: COLORS.white,
-          borderRadius: 16,
-          marginBottom: 16,
-          shadowColor: "#000",
-          shadowOffset: { width: 0, height: 2 },
-          shadowOpacity: 0.1,
-          shadowRadius: 4,
-          elevation: 3,
-        }}
-        onPress={() => router.push(`/products/${item.id}`)}
-        activeOpacity={0.95}
-      >
-        <View style={{ position: "relative" }}>
-          <Image
-            source={{
-              uri:
-                item.image ||
-                `https://via.placeholder.com/300x200/4E3366/white?text=Product`,
-            }}
-            style={{
-              width: "100%",
-              height: 120,
-              borderTopLeftRadius: 16,
-              borderTopRightRadius: 16,
-              backgroundColor: COLORS.lightest,
-            }}
-            resizeMode="cover"
-          />
-
-          {item.badge && (
-            <View
-              style={{
-                position: "absolute",
-                top: 8,
-                left: 8,
-                backgroundColor: item.badge.color,
-                paddingHorizontal: 8,
-                paddingVertical: 4,
-                borderRadius: 10,
-              }}
-            >
-              <Text
-                style={{
-                  color: COLORS.white,
-                  fontSize: 10,
-                  fontWeight: "bold",
-                }}
-              >
-                {item.badge.text}
-              </Text>
-            </View>
-          )}
-
-          {discountPercentage > 0 && (
-            <View
-              style={{
-                position: "absolute",
-                top: 8,
-                right: 8,
-                backgroundColor: "#4CAF50",
-                paddingHorizontal: 6,
-                paddingVertical: 3,
-                borderRadius: 8,
-              }}
-            >
-              <Text
-                style={{
-                  color: COLORS.white,
-                  fontSize: 10,
-                  fontWeight: "bold",
-                }}
-              >
-                -{discountPercentage}%
-              </Text>
-            </View>
-          )}
-          {/* 
-          <TouchableOpacity
-            style={{
-              position: "absolute",
-              bottom: 8,
-              right: 8,
-              backgroundColor: "rgba(255,255,255,0.9)",
-              borderRadius: 12,
-              padding: 6,
-            }}
-            onPress={() => handleWishlistToggle(item.id)}
-          >
-            <Ionicons
-              name={isWishlisted ? "heart" : "heart-outline"}
-              size={16}
-              color={isWishlisted ? COLORS.light : "#666"}
-            />
-          </TouchableOpacity> */}
+      <View style={styles.productInfo}>
+        <Text style={styles.productName} numberOfLines={2}>
+          {item.title}
+        </Text>
+        <View style={styles.ratingContainer}>
+          <Ionicons name="star" size={14} color="#FFD700" />
+          <Text style={styles.ratingText}>4.8 (104)</Text>
         </View>
+        <Text style={styles.productPrice}>
+          Rs. {item.variants?.[0]?.price || "0.00"}
+        </Text>
+        <TouchableOpacity style={styles.addToCartButton}>
+          <Text style={styles.addToCartText}>Add to Cart</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
 
-        <View style={{ padding: 12 }}>
-          <Text
-            style={{
-              fontSize: 14,
-              fontWeight: "600",
-              color: COLORS.darkest,
-              marginBottom: 6,
-            }}
-            numberOfLines={2}
-          >
-            {item.name}
-          </Text>
+  const renderGridProductItem = ({ item }) => (
+    <View style={styles.gridProductCard}>
+      <View style={styles.gridProductImageContainer}>
+        <Image
+          source={{
+            uri:
+              item.images?.[0]?.originalSrc ||
+              "/placeholder.svg?height=200&width=200",
+          }}
+          style={styles.gridProductImage}
+        />
+      </View>
+      <View style={styles.gridProductInfo}>
+        <Text style={styles.gridProductName} numberOfLines={2}>
+          {item.title}
+        </Text>
+        <View style={styles.ratingContainer}>
+          <Ionicons name="star" size={12} color="#FFD700" />
+          <Text style={styles.gridRatingText}>4.8 (104)</Text>
+        </View>
+        <Text style={styles.gridProductPrice}>
+          Rs. {item.variants?.[0]?.price || "0.00"}
+        </Text>
+        <TouchableOpacity style={styles.gridAddToCartButton}>
+          <Text style={styles.gridAddToCartText}>Add to Cart</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
 
-          <View
-            style={{
-              flexDirection: "row",
-              alignItems: "center",
-              marginBottom: 8,
-            }}
-          >
-            <Ionicons name="star" size={12} color={COLORS.light} />
-            <Text style={{ fontSize: 12, color: "#666", marginLeft: 4 }}>
-              {item.rating.toFixed(1)} ({item.reviews})
-            </Text>
-          </View>
-
-          <View
-            style={{
-              flexDirection: "row",
-              alignItems: "center",
-              marginBottom: 10,
-            }}
-          >
-            <Text
-              style={{
-                fontSize: 16,
-                fontWeight: "bold",
-                color: COLORS.darkest,
-              }}
-            >
-              {item.price}
-            </Text>
-            {item.originalPrice && (
-              <Text
-                style={{
-                  fontSize: 12,
-                  color: "#999",
-                  textDecorationLine: "line-through",
-                  marginLeft: 8,
-                }}
-              >
-                {item.originalPrice}
-              </Text>
-            )}
-          </View>
-
-          <TouchableOpacity
-            onPress={() => handleAddToCart(item)}
-            style={{
-              backgroundColor: item.inStock ? COLORS.buttonColor : "#ccc",
-              borderRadius: 8,
-              paddingVertical: 8,
-              alignItems: "center",
-            }}
-            disabled={!item.inStock}
-            activeOpacity={0.8}
-          >
-            <Text
-              style={{
-                color: item.inStock ? COLORS.white : "#666",
-                fontSize: 12,
-                fontWeight: "600",
-              }}
-            >
-              {item.inStock ? "Add to Cart" : "Out of Stock"}
-            </Text>
+  const renderBannerItem = ({ item }) => (
+    <View style={styles.bannerCard}>
+      <Image source={{ uri: item.image }} style={styles.bannerImage} />
+      <View style={styles.bannerOverlay}>
+        <View style={styles.bannerContent}>
+          <Text style={styles.bannerTitle}>{item.title}</Text>
+          <Text style={styles.bannerSubtitle}>{item.subtitle}</Text>
+          <TouchableOpacity style={styles.bannerButton}>
+            <Text style={styles.bannerButtonText}>{item.buttonText}</Text>
           </TouchableOpacity>
         </View>
-      </TouchableOpacity>
-    );
-  };
-
-  const handleAddToCart = async (item) => {
-    // console.log("item:", item);
-
-    //     model CartItem {
-    //   id               String   @id @default(cuid())
-    //   userId           String
-    //   shopifyProductId String
-    //   shopifyVariantId String
-    //   productTitle     String
-    //   price            Float
-    //   quantity         Int      @default(1)
-    //   addedAt          DateTime @default(now())
-    //   updatedAt        DateTime @updatedAt
-
-    //   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-    //   @@unique([userId, shopifyVariantId])
-    //   @@map("cart_items")
-    // }
-
-    const cartItem = {
-      userId: user.id,
-      shopifyProductId: item.id,
-      shopifyVariantId: item.variants[0].id.split("/").slice(-1)[0],
-      productTitle: item.name,
-      price: parseInt(item.price.replace("Rs.", "").trim()),
-      quantity: 1,
-      addedAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
-
-    try {
-      setCartItemCount(cartItemCount + 1);
-      setAddToCartToast({
-        clickCount: addToCartToast.clickCount + 1,
-        showToast: true,
-        selectedProduct: {
-          name: item.name,
-          image: item.image,
-        },
-      });
-      // const res = await authenticatedFetch(`${BACKEND_URL}/add-to-cart`, {
-      //   method: "POST",
-      //   headers: {
-      //     "Content-Type": "application/json",
-      //   },
-      //   body: JSON.stringify({ cartData: cartItem }),
-      // });
-      // const data = await res.json();
-      const addToCartAction = await addToCart(authenticatedFetch, cartItem);
-    } catch (e) {
-      setCartItemCount(cartItemCount - 1);
-      console.log("Error Occured: ", error);
-    } finally {
-      storeCartItemsCount();
-    }
-  };
+        <View style={styles.bannerBadge}>
+          <Text style={styles.bannerBadgeText}>{item.discount}</Text>
+        </View>
+      </View>
+    </View>
+  );
 
   return (
-    <ScreenWrapper cartItemCount={cartItemCount}>
-      <View
-        style={{
-          flex: 1,
-          backgroundColor: "#ffffff",
-          paddingTop: Platform.OS === "android" ? StatusBar.currentHeight : 0,
-        }}
+    <ScreenWrapper cartItemCount={0}>
+      <SafeAreaView
+        style={[
+          styles.container,
+          {
+            paddingTop: insets.top + 2,
+          },
+        ]}
       >
+        <StatusBar style="dark" />
         <ScrollView
+          style={styles.scrollView}
           showsVerticalScrollIndicator={false}
-          refreshControl={
-            <RefreshControl
-              refreshing={refreshing}
-              onRefresh={handleRefresh}
-              colors={[COLORS.light]}
-            />
-          }
         >
-          {/* Header */}
-          {/* <Header cartItemCount_={cartItemCount} /> */}
+          {/* Header with Search */}
 
-          {/* Auto-sliding Banner */}
-          <View style={{ marginBottom: 24, marginTop: 12 }}>
-            <ScrollView
-              ref={bannerScrollRef}
+          {/* Banners */}
+          <View style={styles.bannerSection}>
+            <FlatList
+              data={bannerData}
+              renderItem={renderBannerItem}
+              keyExtractor={(item) => item.id.toString()}
               horizontal
               pagingEnabled
               showsHorizontalScrollIndicator={false}
-              onMomentumScrollEnd={(event) => {
-                const index = Math.round(
-                  event.nativeEvent.contentOffset.x / width
-                );
-                setCurrentBannerIndex(index);
-              }}
-            >
-              {bannerData.map((banner) => (
-                <View key={banner.id} style={{ width }}>
-                  {renderBanner({ item: banner })}
-                </View>
-              ))}
-            </ScrollView>
-
-            {/* Banner Indicators */}
-            <View
-              style={{
-                flexDirection: "row",
-                justifyContent: "center",
-                marginTop: 16,
-              }}
-            >
-              {bannerData.map((_, index) => (
-                <View
-                  key={index}
-                  style={{
-                    width: 8,
-                    height: 8,
-                    borderRadius: 4,
-                    backgroundColor:
-                      currentBannerIndex === index ? COLORS.light : "#ddd",
-                    marginHorizontal: 4,
-                  }}
-                />
-              ))}
-            </View>
+              contentContainerStyle={styles.bannerContainer}
+            />
           </View>
 
-          {/* Categories Section */}
-          {uniqueCategories.length > 0 && (
-            <View style={{ paddingHorizontal: 20, marginBottom: 24 }}>
-              <View
-                style={{
-                  flexDirection: "row",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  marginBottom: 16,
-                }}
-              >
-                <Text
-                  style={{
-                    fontSize: 18,
-                    fontWeight: "600",
-                    color: COLORS.darkest,
-                  }}
-                >
-                  Categories
-                </Text>
-                <TouchableOpacity>
-                  <Text style={{ fontSize: 14, color: COLORS.light }}>
-                    See All
-                  </Text>
-                </TouchableOpacity>
-              </View>
+          {/* Categories Grid */}
+          <View style={styles.section}>
+            <FlatList
+              data={categories}
+              renderItem={renderCategoryItem}
+              keyExtractor={(item) => item.id}
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.categoriesContainer}
+            />
+          </View>
 
-              <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                {uniqueCategories.map((category) => (
-                  <TouchableOpacity
-                    key={category.id}
-                    style={{
-                      alignItems: "center",
-                      marginRight: 20,
-                      width: 70,
-                    }}
-                  >
-                    <View
-                      style={{
-                        width: 50,
-                        height: 50,
-                        borderRadius: 25,
-                        backgroundColor: "#ff8fab",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        marginBottom: 8,
-                      }}
-                    >
-                      <Ionicons
-                        name={category.icon}
-                        size={22}
-                        color={COLORS.white}
-                      />
-                    </View>
-                    <Text
-                      style={{
-                        fontSize: 12,
-                        color: COLORS.darkest,
-                        textAlign: "center",
-                      }}
-                    >
-                      {category.label}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
-              </ScrollView>
-            </View>
-          )}
+          {/* Best Selling */}
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Best Selling</Text>
+            <FlatList
+              data={products.filter(
+                (p) => p.assignedCategory === "Best Selling"
+              )}
+              renderItem={renderProductItem}
+              keyExtractor={(item) => item.id}
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.productsContainer}
+            />
+          </View>
 
-          {/* Search Bar */}
-          <View style={{ paddingHorizontal: 20, marginBottom: 20 }}>
-            <View
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                backgroundColor: COLORS.white,
-                borderRadius: 25,
-                paddingHorizontal: 16,
-                paddingVertical: 12,
-                shadowColor: "#000",
-                shadowOffset: { width: 0, height: 2 },
-                shadowOpacity: 0.1,
-                shadowRadius: 4,
-                elevation: 3,
-              }}
-            >
-              <Ionicons name="search" size={18} color="#999" />
-              <TextInput
-                style={{
-                  flex: 1,
-                  marginLeft: 12,
-                  fontSize: 16,
-                  color: COLORS.darkest,
-                }}
-                placeholder="Search products..."
-                placeholderTextColor="#999"
-                value={searchQuery}
-                onChangeText={setSearchQuery}
+          {/* All Products Section */}
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>All Products</Text>
+
+            {/* Search Bar for Products */}
+            <View style={styles.productSearchContainer}>
+              <Ionicons
+                name="search"
+                size={20}
+                color="#999"
+                style={styles.searchIcon}
               />
-              <TouchableOpacity>
-                <Ionicons name="mic-outline" size={18} color="#999" />
+              <TextInput
+                style={styles.productSearchInput}
+                placeholder="Search all products"
+                placeholderTextColor="#999"
+                value={productSearchQuery}
+                onChangeText={handleProductSearch}
+              />
+              <TouchableOpacity style={styles.filterButton}>
+                <Ionicons name="options" size={20} color="#333" />
               </TouchableOpacity>
             </View>
-          </View>
 
-          {/* Products Section */}
-          <View style={{ paddingHorizontal: 20, paddingBottom: 40 }}>
-            <View
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                justifyContent: "space-between",
-                marginBottom: 20,
-              }}
-            >
-              <Text
-                style={{
-                  fontSize: 18,
-                  fontWeight: "600",
-                  color: COLORS.darkest,
-                }}
-              >
-                Products
-              </Text>
-              <Text style={{ fontSize: 14, color: "#666" }}>
-                {filteredProducts.length} items
-              </Text>
-            </View>
-
-            {loading ? (
-              <View
-                style={{
-                  flexDirection: "row",
-                  flexWrap: "wrap",
-                  justifyContent: "space-between",
-                }}
-              >
-                {Array.from({ length: 6 }).map((_, index) => (
-                  <View
-                    key={index}
-                    style={{
-                      width: (width - 48) / 2,
-                      backgroundColor: COLORS.white,
-                      borderRadius: 16,
-                      marginBottom: 16,
-                      padding: 12,
-                    }}
-                  >
-                    <View
-                      style={{
-                        height: 120,
-                        backgroundColor: COLORS.lightest,
-                        borderRadius: 12,
-                        marginBottom: 12,
-                      }}
-                    />
-                    <View
-                      style={{
-                        height: 14,
-                        backgroundColor: "#2c2a6b",
-                        borderRadius: 4,
-                        marginBottom: 8,
-                      }}
-                    />
-                    <View
-                      style={{
-                        height: 12,
-                        backgroundColor: "#2c2a6b",
-                        borderRadius: 4,
-                        width: "60%",
-                      }}
-                    />
-                  </View>
-                ))}
-              </View>
-            ) : (
-              <FlatList
-                data={filteredProducts}
-                renderItem={renderProduct}
-                keyExtractor={(item) => item.id.toString()}
-                numColumns={2}
-                scrollEnabled={false}
-                showsVerticalScrollIndicator={false}
-              />
-            )}
+            {/* Products Grid */}
+            <FlatList
+              data={filteredProducts}
+              renderItem={renderGridProductItem}
+              keyExtractor={(item) => item.id}
+              numColumns={2}
+              columnWrapperStyle={styles.gridRow}
+              scrollEnabled={false}
+              contentContainerStyle={styles.gridContainer}
+            />
           </View>
         </ScrollView>
-        {/* Toast Notification */}
-        <CartToast
-          isVisible={addToCartToast.showToast}
-          onClose={() => {
-            setAddToCartToast((prev) => ({
-              ...prev,
-              showToast: false,
-            }));
-          }}
-          productName={addToCartToast.selectedProduct.name}
-          productImage={addToCartToast.selectedProduct.image}
-          clickCount={addToCartToast.clickCount}
-        />
-      </View>
+      </SafeAreaView>
     </ScreenWrapper>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#fff",
+  },
+  scrollView: {
+    flex: 1,
+    // paddingTop: 10,
+  },
+  bannerSection: {
+    height: screenHeight * 0.4,
+    marginBottom: 20,
+  },
+  bannerContainer: {
+    paddingHorizontal: 20,
+  },
+  bannerCard: {
+    width: screenWidth - 40,
+    height: screenHeight * 0.4,
+    marginRight: 32,
+    borderRadius: 16,
+    overflow: "hidden",
+    position: "relative",
+  },
+  bannerImage: {
+    width: "100%",
+    height: "100%",
+    resizeMode: "cover",
+  },
+  bannerOverlay: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: "rgba(0,0,0,0.1)",
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-end",
+    padding: 20,
+  },
+  bannerContent: {
+    flex: 1,
+  },
+  bannerTitle: {
+    fontSize: 24,
+    fontWeight: "bold",
+    color: "#fff",
+    marginBottom: 8,
+  },
+  bannerSubtitle: {
+    fontSize: 16,
+    color: "#fff",
+    marginBottom: 16,
+    opacity: 0.9,
+  },
+  bannerButton: {
+    backgroundColor: "#fff",
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 20,
+    alignSelf: "flex-start",
+  },
+  bannerButtonText: {
+    color: "#333",
+    fontWeight: "600",
+    fontSize: 14,
+  },
+  bannerBadge: {
+    backgroundColor: "#FF6B6B",
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
+    alignSelf: "flex-start",
+  },
+  bannerBadgeText: {
+    color: "#fff",
+    fontSize: 12,
+    fontWeight: "bold",
+  },
+  section: {
+    paddingHorizontal: 20,
+    marginBottom: 30,
+  },
+  sectionTitle: {
+    fontSize: 17,
+    fontWeight: "bold",
+    color: "#333",
+    marginBottom: 15,
+  },
+  categoriesContainer: {
+    paddingRight: 20,
+  },
+  categoryItemContainer: {
+    alignItems: "center",
+    marginRight: 6,
+  },
+  categoryCard: {
+    width: 90,
+    height: 90,
+    borderRadius: 12,
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 8,
+  },
+  categoryImage: {
+    width: "100%",
+    height: "100%",
+    borderRadius: 12,
+  },
+  categoryTitle: {
+    fontSize: 11,
+    fontWeight: "600",
+    color: "#333",
+    textAlign: "center",
+    maxWidth: 100,
+  },
+  productsContainer: {
+    paddingRight: 20,
+  },
+  productCard: {
+    width: 180,
+    backgroundColor: "#fff",
+    marginRight: 15,
+  },
+  productImageContainer: {
+    width: "100%",
+    height: 140,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  productImage: {
+    width: "90%",
+    height: "90%",
+    borderRadius: 12,
+    resizeMode: "cover",
+  },
+  productInfo: {
+    padding: 12,
+  },
+  productName: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#333",
+    marginBottom: 6,
+    lineHeight: 18,
+  },
+  ratingContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 6,
+  },
+  ratingText: {
+    fontSize: 12,
+    color: "#666",
+    marginLeft: 4,
+  },
+  productPrice: {
+    fontSize: 16,
+    color: "#333",
+    fontWeight: "bold",
+    marginBottom: 10,
+  },
+  addToCartButton: {
+    backgroundColor: "#2c2a6b",
+    paddingVertical: 8,
+    width: "90%",
+    borderRadius: 8,
+    alignItems: "center",
+  },
+  addToCartText: {
+    color: "#fff",
+    fontSize: 13,
+    fontWeight: "600",
+  },
+  // New styles for All Products section
+  productSearchContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#f5f5f5",
+    borderRadius: 12,
+    paddingHorizontal: 15,
+    height: 45,
+    marginBottom: 20,
+  },
+  productSearchInput: {
+    flex: 1,
+    fontSize: 15,
+    color: "#333",
+  },
+  gridContainer: {
+    paddingBottom: 20,
+  },
+  gridRow: {
+    justifyContent: "space-between",
+    marginBottom: 20,
+  },
+  gridProductCard: {
+    width: (screenWidth - 60) / 2,
+    backgroundColor: "#fff",
+    borderRadius: 12,
+    // elevation: 2,
+    // shadowColor: '#000',
+    // shadowOffset: {
+    //   width: 0,
+    //   height: 2,
+    // },
+    // shadowOpacity: 0.1,
+    // shadowRadius: 3.84,
+  },
+  gridProductImageContainer: {
+    width: "100%",
+    height: 120,
+    alignItems: "center",
+    justifyContent: "center",
+    // backgroundColor: "#f8f9fa",
+    borderTopLeftRadius: 12,
+    borderTopRightRadius: 12,
+  },
+  gridProductImage: {
+    width: "100%",
+    height: "100%",
+    borderRadius: 8,
+    resizeMode: "cover",
+  },
+  gridProductInfo: {
+    padding: 12,
+  },
+  gridProductName: {
+    fontSize: 13,
+    fontWeight: "600",
+    color: "#333",
+    marginBottom: 6,
+    lineHeight: 16,
+    minHeight: 32,
+  },
+  gridRatingText: {
+    fontSize: 11,
+    color: "#666",
+    marginLeft: 4,
+  },
+  gridProductPrice: {
+    fontSize: 15,
+    color: "#333",
+    fontWeight: "bold",
+    marginBottom: 10,
+  },
+  gridAddToCartButton: {
+    backgroundColor: "#2c2a6b",
+    paddingVertical: 8,
+    borderRadius: 6,
+    alignItems: "center",
+  },
+  gridAddToCartText: {
+    color: "#fff",
+    fontSize: 12,
+    fontWeight: "600",
+  },
+});

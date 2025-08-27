@@ -49,8 +49,7 @@ export default function AboutUsPage() {
           onPress={handleBackPress}
           activeOpacity={0.7}
         >
-                         <Ionicons name="arrow-back" size={14} color={"000000"} />
-
+          <Ionicons name="arrow-back" size={14} color={"000000"} />
         </TouchableOpacity>
       </SafeAreaView>
 
@@ -131,8 +130,14 @@ export default function AboutUsPage() {
             A world where feminine health and self-care are treated with the
             dignity, innovation, and understanding they truly deserve.
           </Text>
+
+          {/* Additional bottom padding to account for navigation space */}
+          <View style={styles.bottomSpacing} />
         </ScrollView>
       </View>
+
+      {/* Navigation Space Container */}
+      <View style={styles.navigationSpaceContainer} />
     </View>
   );
 }
@@ -189,7 +194,7 @@ const styles = StyleSheet.create({
     top: height * 0.3,
     left: 0,
     right: 0,
-    bottom: 0,
+    bottom: 80, // Reduced bottom to make space for navigation container
     backgroundColor: "#ffffff",
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
@@ -302,5 +307,27 @@ const styles = StyleSheet.create({
     textShadowColor: "rgba(0, 0, 0, 0.5)",
     textShadowOffset: { width: 1, height: 1 },
     textShadowRadius: 3,
+  },
+  // Navigation Space Container
+  navigationSpaceContainer: {
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: 80, // Adjust height as needed for your navigation buttons
+    backgroundColor: "#ffffff",
+    zIndex: 3,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: -2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  // Additional bottom spacing for scroll content
+  bottomSpacing: {
+    height: 40, // Extra space at the bottom of scroll content
   },
 });

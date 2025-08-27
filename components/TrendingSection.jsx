@@ -122,7 +122,6 @@ const TrendingSection = ({ products, onProductPress, onAddToCart, addingToCart }
         contentContainerStyle={styles.trendingScrollContent}
       >
         {products
-          .slice(0, 4)
           .map(
             (product, index) =>
               product && (

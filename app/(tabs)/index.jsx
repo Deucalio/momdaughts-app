@@ -9,7 +9,7 @@ import {
   StyleSheet,
   SafeAreaView,
   StatusBar,
-  Platform
+  Platform,
 } from "react-native";
 import {
   fetchProducts,
@@ -45,6 +45,9 @@ const COLORS = {
   cream: "#faf9f7",
   softGold: "#f4f1ea",
 };
+
+const FEATURED_PRODUCTS =
+  "gid://shopify/Product/7997785407780,gid://shopify/Product/7970555658532,gid://shopify/Product/9403161575716,gid://shopify/Product/10006500344100,gid://shopify/Product/10087709507876,gid://shopify/Product/9937795809572,gid://shopify/Product/8711623639332,gid://shopify/Product/7984806494500";
 
 // Sample routine steps - you can move this to a separate data file
 
@@ -87,11 +90,13 @@ export default function App() {
     }, [])
   );
 
-
   const loadProducts = async () => {
     try {
       setLoading(true);
-      const products_ = await fetchProducts(authenticatedFetch);
+      const products_ = await fetchProducts(
+        authenticatedFetch,
+        `product_ids=${FEATURED_PRODUCTS}`
+      );
       setProducts(products_);
       console.log("[v0] Loaded products:", products_.length);
       return products_;
@@ -197,15 +202,16 @@ export default function App() {
   };
 
   useEffect(() => {
+    loadCartCount();
     loadProducts();
     loadBlogs();
-    loadCartCount();
+    // LoadIPLProfileStats();
   }, []);
 
   return (
     <ScreenWrapper cartItemCount={cartCount}>
       <SafeAreaView style={styles.container}>
-        <StatusBar  barStyle="dark-content" backgroundColor={COLORS.white} />
+        <StatusBar barStyle="dark-content" backgroundColor={COLORS.white} />
 
         {/* Header Space - Left empty as requested */}
         <View style={styles.headerSpace} />
@@ -231,8 +237,6 @@ export default function App() {
               />
             </View>
           </View>
-
-
 
           <IPLSessionsTrackerSection
             completedSessions={3}
@@ -264,8 +268,6 @@ export default function App() {
             onBlogPress={handleBlogPress}
             handleAllArticles={handleAllArticles}
           />
-
-
 
           {/* Discover Your Perfect Routine Section - Now using separate component */}
           <QuizSection onStartQuiz={handleStartQuiz} />

@@ -13,6 +13,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";
 
 import ScreenWrapper from "../../components/ScreenWrapper";
+import { useRouter } from "expo-router";
 const COLORS = {
   lightPink: "#f5b8d0",
   lavender: "#e2c6df",
@@ -30,19 +31,29 @@ const COLORS = {
 };
 const WellnessScreen = () => {
   const insets = useSafeAreaInsets();
+  const router = useRouter();
   const menstrualReliefExercises = [
     {
       id: 1,
       title: "Period pain \n relief",
       image: "https://i.ibb.co/kF3J0B7/image.png",
       gradientColors: [COLORS.lightPink, COLORS.mediumPink, COLORS.lavender],
+      duration: "3 min",
+      poses: [
+        "Supported child's pose",
+        "Supported pigeon pose",
+        "Supported cat pose",
+      ],
+      images: ["", "", ""],
     },
     {
       id: 2,
       title: "Foot massage \n relieve",
-      image:
-        "https://i.ibb.co/4RdHb48m/0c9f2cb4-987c-489c-ab88-f9d7b7acff67-removalai-preview.png",
-    gradientColors: ["#ffd78a", "#f4762d"]
+      image: "https://i.ibb.co/CKVJp6gn/woman-relaxing-spa-min.jpg",
+      gradientColors: ["#333333", "#dd1818"],
+      duration: "3 min",
+      poses: ["Left foot massage", "Right foot massage"],
+      images: ["", "", ""],
     },
     // {
     //   id: 3,
@@ -54,32 +65,33 @@ const WellnessScreen = () => {
   const programs = [
     {
       id: 1,
-      title: "Kegel exercises",
+      title: "Kegel \nexercises",
       subtitle: "Day 1",
       image:
-        "https://i.ibb.co/h1s0Qj6y/top-view-bouquet-carnation-flowers-violet-copy-space-background.jpg",
+        "https://images.pexels.com/photos/2038556/pexels-photo-2038556.jpeg",
     },
   ];
 
   const soundscapes = [
     {
-      id: 1,
-      title: "Forest Adventure",
-      image: "https://i.ibb.co/sdXj0P5y/16526.jpg",
-      backgroundColor: "#10b981",
-    },
-    {
       id: 2,
       title: "Forest Rain",
-      image: "https://i.ibb.co/sdXj0P5y/16526.jpg",
+      image: "https://images.pexels.com/photos/86543/pexels-photo-86543.jpeg",
       backgroundColor: "#2563eb",
     },
-    {
-      id: 3,
-      title: "Peaceful Night",
-      image: "https://i.ibb.co/sdXj0P5y/16526.jpg",
-      backgroundColor: "#8b5cf6",
-    },
+    // {
+    //   id: 2,
+    //   title: "Forest Adventure",
+    //   image: "https://i.ibb.co/sdXj0P5y/16526.jpg",
+    //   backgroundColor: "#10b981",
+    // },
+
+    // {
+    //   id: 3,
+    //   title: "Peaceful Night",
+    //   image: "https://i.ibb.co/sdXj0P5y/16526.jpg",
+    //   backgroundColor: "#8b5cf6",
+    // },
   ];
 
   const PlayButton = ({ size = 48 }) => (
@@ -107,7 +119,11 @@ const WellnessScreen = () => {
             style={styles.horizontalScroll}
           >
             {menstrualReliefExercises.map((exercise) => (
-              <TouchableOpacity key={exercise.id} style={styles.exerciseCard}>
+              <TouchableOpacity
+                onPress={() => router.push("/screens/exercise")}
+                key={exercise.id}
+                style={styles.exerciseCard}
+              >
                 <LinearGradient
                   colors={exercise.gradientColors}
                   start={{ x: 0, y: 0 }}
@@ -132,11 +148,20 @@ const WellnessScreen = () => {
           <Text style={styles.sectionTitle}>Programs for you</Text>
           {programs.map((program) => (
             <TouchableOpacity key={program.id} style={styles.programCard}>
+              {/* Gradient background behind everything */}
+              <LinearGradient
+                colors={["#a855f7", "#8b5cf6", "#7c3aed"]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.programGradient}
+              />
+
+              {/* Program image on top of gradient */}
               <Image
                 source={{ uri: program.image }}
                 style={styles.programImage}
               />
-              <View style={styles.programOverlay} />
+
               <View style={styles.programContent}>
                 <Text style={styles.programTitle}>{program.title}</Text>
                 <TouchableOpacity style={styles.programButton}>
@@ -150,7 +175,14 @@ const WellnessScreen = () => {
           ))}
         </View>
 
-        <View style={styles.section}>
+        <View
+          style={[
+            styles.section,
+            {
+              marginBottom: 47,
+            },
+          ]}
+        >
           <Text style={styles.sectionTitle}>Soundscapes</Text>
           <ScrollView
             horizontal
@@ -189,7 +221,7 @@ const WellnessScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f9fafb",
+    backgroundColor: "white",
     paddingHorizontal: 16,
     paddingTop: 24,
   },
@@ -265,7 +297,7 @@ const styles = StyleSheet.create({
     alignItems: "flex-end",
   },
   exerciseTitle: {
-    color: "#111827",
+    color: "white",
     fontSize: 18,
     fontWeight: "bold",
     flex: 1,
@@ -273,19 +305,27 @@ const styles = StyleSheet.create({
   },
   programCard: {
     width: "100%",
-    height: 256,
+    height: 206,
     borderRadius: 16,
     marginBottom: 16,
     overflow: "hidden",
     position: "relative",
   },
+  programGradient: {
+    ...StyleSheet.absoluteFillObject,
+    borderRadius: 16,
+  },
   programImage: {
     position: "absolute",
-    right: 16,
-    top: 16,
-    width: 128,
-    height: 128,
+    // right: 16,
+    // top: 16,
+    // width: 128,
+    // height: 128,
+    width: "100%",
+    height: "100%",
     resizeMode: "cover",
+    borderRadius: 12,
+    zIndex: 1,
   },
   programOverlay: {
     position: "absolute",
@@ -300,6 +340,7 @@ const styles = StyleSheet.create({
     bottom: 16,
     left: 16,
     right: 16,
+    zIndex: 1,
   },
   programTitle: {
     color: "white",

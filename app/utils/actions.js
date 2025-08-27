@@ -1,4 +1,4 @@
-const BACKEND_URL = "http://192.168.18.5:3000";
+const BACKEND_URL = "http://192.168.100.3:3000";
 export const fetchCartItemsCount = async (authenticatedFetch) => {
   try {
     const res = await authenticatedFetch(`${BACKEND_URL}/cart-items-count`);
@@ -100,9 +100,9 @@ export const addToWishlist = async (authenticatedFetch, body) => {
   }
 };
 
-export const fetchProducts = async (authenticatedFetch) => {
+export const fetchProducts = async (authenticatedFetch, query) => {
   try {
-    const response = await authenticatedFetch(`${BACKEND_URL}/products`);
+    const response = await authenticatedFetch(`${BACKEND_URL}/products?${query}`);
     if (!response.ok) {
       throw new Error(`Failed to fetch products: ${response.status}`);
     }
