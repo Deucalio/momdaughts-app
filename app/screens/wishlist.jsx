@@ -5,7 +5,7 @@ import {
   Animated,
   Dimensions,
   FlatList,
-  Image,
+  
   Platform,
   Pressable,
   SafeAreaView,
@@ -16,6 +16,8 @@ import {
   View,
   TouchableOpacity,
 } from "react-native";
+import { Image } from 'expo-image';
+
 import { Ionicons } from "@expo/vector-icons";
 import { useAuthenticatedFetch } from "../utils/authStore";
 import { useFocusEffect, useRouter } from "expo-router";

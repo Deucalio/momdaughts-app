@@ -1,11 +1,14 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { Image } from 'expo-image';
+import NavigationSpaceContainer from "../../components/NavigationSpaceContainer"
+
 import {
   View,
   Text,
   ScrollView,
-  Image,
+
   TouchableOpacity,
   StyleSheet,
   SafeAreaView,
@@ -207,6 +210,7 @@ export default function ArticlePage() {
           </View>
         </View>
       </ScrollView>
+      <NavigationSpaceContainer/>
     </SafeAreaView>
   );
 }

@@ -6,7 +6,7 @@ import {
     Alert,
     Dimensions,
     FlatList,
-    Image,
+    
     RefreshControl,
     ScrollView,
     Text,
@@ -15,6 +15,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useAuthenticatedFetch, useAuthStore } from "../utils/authStore";
+import { Image } from 'expo-image';
 
 const BACKEND_URL = "http://192.168.100.3:3000";
 const { width, height } = Dimensions.get("window");

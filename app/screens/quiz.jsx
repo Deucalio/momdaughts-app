@@ -6,7 +6,7 @@ import { useRouter } from "expo-router";
 import {
   ActivityIndicator,
   Dimensions,
-  Image,
+  
   SafeAreaView,
   ScrollView,
   StyleSheet,
@@ -15,6 +15,7 @@ import {
   View,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { Image } from 'expo-image';
 
 const { width, height } = Dimensions.get("window");
 
@@ -224,7 +225,7 @@ export default function App() {
           </View>
           <Image
             source={{
-              uri: "https://i.ibb.co/HfXDSzQs/freepik-the-style-is-modern-and-it-is-a-detailed-illustrat-77238.png",
+              uri: "https://i.ibb.co/ymfw2YVx/image.png",
             }}
             style={styles.backgroundImage}
             resizeMode="cover"

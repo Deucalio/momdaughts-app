@@ -3,7 +3,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import {
-    Image,
+
     Pressable,
     StyleSheet,
     Text,
@@ -11,6 +11,7 @@ import {
     View
 } from "react-native";
 import { logOut, useAuthenticatedFetch } from "../app/utils/authStore";
+import { Image } from 'expo-image';
 
 const BACKEND_URL = "http://192.168.100.3:3000";
 

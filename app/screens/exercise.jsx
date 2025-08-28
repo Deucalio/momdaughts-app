@@ -1,4 +1,6 @@
-import { View, Text, Image, ScrollView, TouchableOpacity, StyleSheet, Dimensions } from "react-native"
+
+import { Image } from 'expo-image';
+import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Dimensions } from "react-native"
 import { LinearGradient } from "expo-linear-gradient"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
 import { router } from "expo-router";

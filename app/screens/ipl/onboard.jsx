@@ -8,8 +8,10 @@ import {
   TouchableOpacity,
   ScrollView,
   Dimensions,
-  Image,
+
 } from "react-native";
+import { Image } from 'expo-image';
+
 import { fetchDevices } from "../../utils/actions";
 import { useAuthenticatedFetch, useAuthStore } from "../../utils/authStore";
 const { width, height } = Dimensions.get("window");

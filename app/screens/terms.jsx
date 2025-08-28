@@ -1,11 +1,12 @@
 import {
   View,
   Text,
-  Image,
+  
   ScrollView,
   StyleSheet,
   Dimensions,
 } from "react-native";
+import { Image } from 'expo-image';
 
 const { width, height } = Dimensions.get("window");
 

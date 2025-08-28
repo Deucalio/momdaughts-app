@@ -1,11 +1,12 @@
 import {
   View,
   Text,
-  Image,
+  
   TouchableOpacity,
   StyleSheet,
   Dimensions,
 } from "react-native";
+import { Image } from 'expo-image';
 
 const { width } = Dimensions.get("window");
 

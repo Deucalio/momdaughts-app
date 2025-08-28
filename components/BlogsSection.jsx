@@ -4,11 +4,12 @@ import {
   Text,
   ScrollView,
   TouchableOpacity,
-  Image,
+
   StyleSheet,
   ActivityIndicator,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
+import { Image } from 'expo-image';
 
 const COLORS = {
   lightPink: "#f5b8d0",

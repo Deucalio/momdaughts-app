@@ -8,13 +8,13 @@ import * as NavigationBar from "expo-navigation-bar";
 export default function TabLayout() {
   const insets = useSafeAreaInsets();
 
-  // Apply navigation bar style when tab layout mounts
-  useEffect(() => {
-    if (Platform.OS === "android") {
-      NavigationBar.setBackgroundColorAsync("#ffffff");
-      NavigationBar.setButtonStyleAsync("dark");
-    }
-  }, []);
+  // // Apply navigation bar style when tab layout mounts
+  // useEffect(() => {
+  //   if (Platform.OS === "android") {
+  //     NavigationBar.setBackgroundColorAsync("#21152B");
+  //     NavigationBar.setButtonStyleAsync("dark");
+  //   }
+  // }, []);
 
   return (
     <Tabs

@@ -24,7 +24,7 @@ export default function RootLayout() {
   const setNavigationBarStyle = useCallback(async () => {
     if (Platform.OS === "android") {
       try {
-        await NavigationBar.setBackgroundColorAsync("#ffffff");
+        await NavigationBar.setBackgroundColorAsync("#21152B");
         await NavigationBar.setButtonStyleAsync("dark");
         console.log("Navigation bar style applied");
       } catch (error) {

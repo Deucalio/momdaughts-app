@@ -2,13 +2,15 @@ import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import {
     Dimensions,
-    Image,
+  
     ScrollView,
     StyleSheet,
     Text,
     TouchableOpacity,
     View,
 } from "react-native";
+import { Image } from 'expo-image';
+
 import AddSessionSection from "../../../components/AddSessionSection";
 import { createIPLSession, fetchIPLProfile } from "../../utils/actions";
 import { useAuthenticatedFetch, useAuthStore } from "../../utils/authStore";

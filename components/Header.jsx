@@ -2,7 +2,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import {
-  Image,
+ 
   Pressable,
   StyleSheet,
   Text,
@@ -11,6 +11,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { logOut, useAuthenticatedFetch } from "../app/utils/authStore";
+import { Image } from 'expo-image';
 
 const Header = ({ cartItemCount }) => {
   const [showProfileMenu, setShowProfileMenu] = useState(false);

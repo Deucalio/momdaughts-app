@@ -5,7 +5,7 @@ import {
   View,
   Text,
   FlatList,
-  Image,
+
   TouchableOpacity,
   StyleSheet,
   SafeAreaView,
@@ -14,6 +14,8 @@ import {
 import { fetchArticles } from "../utils/actions";
 import { useAuthenticatedFetch } from "../utils/authStore";
 import HeaderWithoutCart from "../../components/HeaderWithoutCart"; // Adjust path as needed
+import { Image } from 'expo-image';
+import NavigationSpaceContainer from "../../components/NavigationSpaceContainer"
 
 import { useRouter } from "expo-router";
 const { width } = Dimensions.get("window");
@@ -222,11 +224,13 @@ const Articles = () => {
         initialNumToRender={5}
         // Removed getItemLayout as it was causing issues with nested horizontal scroll
       />
+  <NavigationSpaceContainer/>      
     </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
+ 
   container: {
     flex: 1,
     backgroundColor: "white",

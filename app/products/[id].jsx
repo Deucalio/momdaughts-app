@@ -9,7 +9,7 @@ import {
     Dimensions,
     Easing,
     FlatList,
-    Image,
+
     PanResponder,
     SafeAreaView,
     ScrollView,
@@ -19,6 +19,8 @@ import {
     TouchableOpacity,
     View,
 } from "react-native";
+import { Image } from 'expo-image';
+
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import CartToast from "../../components/CartToast";
 import WishlistToast from "../../components/WishlistToast";

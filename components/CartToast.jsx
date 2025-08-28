@@ -5,9 +5,10 @@ import {
   View, 
   Text, 
   Animated, 
-  Image,
+
   PanResponder
 } from "react-native";
+import { Image } from 'expo-image';
 
 const CartToast = ({
   isVisible,

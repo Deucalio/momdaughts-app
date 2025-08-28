@@ -1,4 +1,5 @@
-"use client";
+"use client"
+import { Image } from 'expo-image';
 
 import {
   StyleSheet,
@@ -7,20 +8,19 @@ import {
   ScrollView,
   TextInput,
   TouchableOpacity,
-  Image,
   FlatList,
   SafeAreaView,
   Dimensions,
-} from "react-native";
-import { StatusBar } from "expo-status-bar";
-import { Ionicons } from "@expo/vector-icons";
-import { useState, useEffect } from "react";
+} from "react-native"
+import { StatusBar } from "expo-status-bar"
+import { Ionicons } from "@expo/vector-icons"
+import { useState, useEffect } from "react"
 import { logOut } from "../utils/auth";
 import { useAuthenticatedFetch, useAuthStore } from "../utils/authStore";
-import ScreenWrapper from "../../components/ScreenWrapper";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import ScreenWrapper from "../../components/ScreenWrapper"
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
+const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 
 const COLORS = {
   darkest: "#21152B",
@@ -36,9 +36,9 @@ const COLORS = {
   error: "#E17055",
   gray: "#636e72",
   lightGray: "#ddd",
-};
+}
 
-const BACKEND_URL = "http://192.168.100.3:3000";
+const BACKEND_URL = "http://192.168.100.3:3000"
 
 const categories = [
   {
@@ -64,13 +64,13 @@ const categories = [
     title: "Skin Care",
     imageUrl: "https://i.ibb.co/jP5cS5J0/image.png",
     color: "#E5F5E5",
-  },
-];
+  }
+]
 
 const assignRandomCategory = () => {
-  const categoryTitles = ["Best Selling"];
-  return categoryTitles[Math.floor(Math.random() * categoryTitles.length)];
-};
+  const categoryTitles = ["Best Selling"]
+  return categoryTitles[Math.floor(Math.random() * categoryTitles.length)]
+}
 
 const bannerData = [
   {
@@ -81,7 +81,7 @@ const bannerData = [
     colors: [COLORS.medium, COLORS.lightest],
     discount: "$200",
     image:
-      "https://momdaughts.com/cdn/shop/files/banne_2_mob.jpg?v=1748096411&width=400%20400w,%20//momdaughts.com/cdn/shop/files/banne_2_mob.jpg?v=1748096411&width=600%20600w,%20//momdaughts.com/cdn/shop/files/banne_2_mob.jpg?v=1748096411&width=800%20800w,%20//momdaughts.com/cdn/shop/files/banne_2_mob.jpg?v=1748096411&width=1000%201000w",
+      "https://i.ibb.co/9khSfZ4w/image.png",
   },
   {
     id: 2,
@@ -103,83 +103,75 @@ const bannerData = [
     image:
       "https://momdaughts.com/cdn/shop/files/banner_1_mob.jpg?v=1748096411&width=400%20400w,%20//momdaughts.com/cdn/shop/files/banner_1_mob.jpg?v=1748096411&width=600%20600w,%20//momdaughts.com/cdn/shop/files/banner_1_mob.jpg?v=1748096411&width=800%20800w,%20//momdaughts.com/cdn/shop/files/banner_1_mob.jpg?v=1748096411&width=1000%201000w",
   },
-];
+]
 
 export default function App() {
-  const [products, setProducts] = useState([]);
-  const [filteredProducts, setFilteredProducts] = useState([]);
-  const [productSearchQuery, setProductSearchQuery] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const [refreshing, setRefreshing] = useState(false);
-  const { authenticatedFetch } = useAuthenticatedFetch();
+  const [products, setProducts] = useState([])
+  const [filteredProducts, setFilteredProducts] = useState([])
+  const [productSearchQuery, setProductSearchQuery] = useState("")
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState(null)
+  const [refreshing, setRefreshing] = useState(false)
+  const {authenticatedFetch} = useAuthenticatedFetch();
   const insets = useSafeAreaInsets();
 
   const fetchProducts = async (isRefresh = false) => {
     try {
-      if (!isRefresh) setLoading(true);
-      setError(null);
-      const response = await authenticatedFetch(
-        `${BACKEND_URL}/products?numberOfProducts=100`
-      );
+      if (!isRefresh) setLoading(true)
+      setError(null)
+      const response = await authenticatedFetch(`${BACKEND_URL}/products?numberOfProducts=100`)
       if (!response.ok) {
-        throw new Error(`Failed to fetch products: ${response.status}`);
+        throw new Error(`Failed to fetch products: ${response.status}`)
       }
-      const data = await response.json();
+      const data = await response.json()
       if (!data || !Array.isArray(data.products)) {
-        throw new Error("Invalid response format");
+        throw new Error("Invalid response format")
       }
       const productsWithCategories = (data.products || []).map((product) => ({
         ...product,
         assignedCategory: assignRandomCategory(),
-      }));
-      setProducts(productsWithCategories);
-      setFilteredProducts(productsWithCategories);
+      }))
+      setProducts(productsWithCategories)
+      setFilteredProducts(productsWithCategories)
     } catch (error) {
-      console.error("Error fetching products:", error);
-      setError(error.message || "Failed to load products");
+      console.error("Error fetching products:", error)
+      setError(error.message || "Failed to load products")
     } finally {
-      setLoading(false);
-      if (isRefresh) setRefreshing(false);
+      setLoading(false)
+      if (isRefresh) setRefreshing(false)
     }
-  };
+  }
 
   const handleProductSearch = (query) => {
-    setProductSearchQuery(query);
+    setProductSearchQuery(query)
     if (query.trim() === "") {
-      setFilteredProducts(products);
+      setFilteredProducts(products)
     } else {
-      const filtered = products.filter((product) =>
+      const filtered = products.filter(product =>
         product.title.toLowerCase().includes(query.toLowerCase())
-      );
-      setFilteredProducts(filtered);
+      )
+      setFilteredProducts(filtered)
     }
-  };
+  }
 
   useEffect(() => {
-    fetchProducts();
-  }, []);
+    fetchProducts()
+  }, [])
 
   const renderCategoryItem = ({ item }) => (
     <View style={styles.categoryItemContainer}>
-      <TouchableOpacity
-        style={[styles.categoryCard, { backgroundColor: item.color }]}
-      >
+      <TouchableOpacity style={[styles.categoryCard, { backgroundColor: item.color }]}>
         <Image source={{ uri: item.imageUrl }} style={styles.categoryImage} />
       </TouchableOpacity>
       <Text style={styles.categoryTitle}>{item.title}</Text>
     </View>
-  );
+  )
 
   const renderProductItem = ({ item }) => (
     <View style={styles.productCard}>
       <View style={styles.productImageContainer}>
         <Image
-          source={{
-            uri:
-              item.images?.[0]?.originalSrc ||
-              "/placeholder.svg?height=200&width=200",
-          }}
+          source={{ uri: item.images?.[0]?.originalSrc || "/placeholder.svg?height=200&width=200" }}
           style={styles.productImage}
         />
       </View>
@@ -191,25 +183,19 @@ export default function App() {
           <Ionicons name="star" size={14} color="#FFD700" />
           <Text style={styles.ratingText}>4.8 (104)</Text>
         </View>
-        <Text style={styles.productPrice}>
-          Rs. {item.variants?.[0]?.price || "0.00"}
-        </Text>
+        <Text style={styles.productPrice}>Rs. {item.variants?.[0]?.price || "0.00"}</Text>
         <TouchableOpacity style={styles.addToCartButton}>
           <Text style={styles.addToCartText}>Add to Cart</Text>
         </TouchableOpacity>
       </View>
     </View>
-  );
+  )
 
   const renderGridProductItem = ({ item }) => (
     <View style={styles.gridProductCard}>
       <View style={styles.gridProductImageContainer}>
         <Image
-          source={{
-            uri:
-              item.images?.[0]?.originalSrc ||
-              "/placeholder.svg?height=200&width=200",
-          }}
+          source={{ uri: item.images?.[0]?.originalSrc || "/placeholder.svg?height=200&width=200" }}
           style={styles.gridProductImage}
         />
       </View>
@@ -221,20 +207,18 @@ export default function App() {
           <Ionicons name="star" size={12} color="#FFD700" />
           <Text style={styles.gridRatingText}>4.8 (104)</Text>
         </View>
-        <Text style={styles.gridProductPrice}>
-          Rs. {item.variants?.[0]?.price || "0.00"}
-        </Text>
+        <Text style={styles.gridProductPrice}>Rs. {item.variants?.[0]?.price || "0.00"}</Text>
         <TouchableOpacity style={styles.gridAddToCartButton}>
           <Text style={styles.gridAddToCartText}>Add to Cart</Text>
         </TouchableOpacity>
       </View>
     </View>
-  );
+  )
 
   const renderBannerItem = ({ item }) => (
     <View style={styles.bannerCard}>
       <Image source={{ uri: item.image }} style={styles.bannerImage} />
-      <View style={styles.bannerOverlay}>
+      {/* <View style={styles.bannerOverlay}>
         <View style={styles.bannerContent}>
           <Text style={styles.bannerTitle}>{item.title}</Text>
           <Text style={styles.bannerSubtitle}>{item.subtitle}</Text>
@@ -245,106 +229,91 @@ export default function App() {
         <View style={styles.bannerBadge}>
           <Text style={styles.bannerBadgeText}>{item.discount}</Text>
         </View>
-      </View>
+      </View> */}
     </View>
-  );
+  )
 
   return (
     <ScreenWrapper cartItemCount={0}>
-      <SafeAreaView
-        style={[
-          styles.container,
-          {
-            paddingTop: insets.top + 2,
-          },
-        ]}
-      >
-        <StatusBar style="dark" />
-        <ScrollView
-          style={styles.scrollView}
-          showsVerticalScrollIndicator={false}
-        >
-          {/* Header with Search */}
+    <SafeAreaView style={[styles.container, {
+      paddingTop: insets.top + 2,
+    }]}>
+      {/* <StatusBar style="dark" /> */}
+      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+        {/* Header with Search */}
 
-          {/* Banners */}
-          <View style={styles.bannerSection}>
-            <FlatList
-              data={bannerData}
-              renderItem={renderBannerItem}
-              keyExtractor={(item) => item.id.toString()}
-              horizontal
-              pagingEnabled
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={styles.bannerContainer}
+        {/* Banners */}
+        <View style={styles.bannerSection}>
+          <FlatList
+            data={bannerData}
+            renderItem={renderBannerItem}
+            keyExtractor={(item) => item.id.toString()}
+            horizontal
+            pagingEnabled
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.bannerContainer}
+          />
+        </View>
+
+        {/* Categories Grid */}
+        <View style={styles.section}>
+          <FlatList
+            data={categories}
+            renderItem={renderCategoryItem}
+            keyExtractor={(item) => item.id}
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.categoriesContainer}
+          />
+        </View>
+
+        {/* Best Selling */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Best Selling</Text>
+          <FlatList
+            data={products.filter((p) => p.assignedCategory === "Best Selling")}
+            renderItem={renderProductItem}
+            keyExtractor={(item) => item.id}
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.productsContainer}
+          />
+        </View>
+
+        {/* All Products Section */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>All Products</Text>
+          
+          {/* Search Bar for Products */}
+          <View style={styles.productSearchContainer}>
+            <Ionicons name="search" size={20} color="#999" style={styles.searchIcon} />
+            <TextInput
+              style={styles.productSearchInput}
+              placeholder="Search all products"
+              placeholderTextColor="#999"
+              value={productSearchQuery}
+              onChangeText={handleProductSearch}
             />
+            <TouchableOpacity style={styles.filterButton}>
+              <Ionicons name="options" size={20} color="#333" />
+            </TouchableOpacity>
           </View>
 
-          {/* Categories Grid */}
-          <View style={styles.section}>
-            <FlatList
-              data={categories}
-              renderItem={renderCategoryItem}
-              keyExtractor={(item) => item.id}
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={styles.categoriesContainer}
-            />
-          </View>
-
-          {/* Best Selling */}
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Best Selling</Text>
-            <FlatList
-              data={products.filter(
-                (p) => p.assignedCategory === "Best Selling"
-              )}
-              renderItem={renderProductItem}
-              keyExtractor={(item) => item.id}
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={styles.productsContainer}
-            />
-          </View>
-
-          {/* All Products Section */}
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>All Products</Text>
-
-            {/* Search Bar for Products */}
-            <View style={styles.productSearchContainer}>
-              <Ionicons
-                name="search"
-                size={20}
-                color="#999"
-                style={styles.searchIcon}
-              />
-              <TextInput
-                style={styles.productSearchInput}
-                placeholder="Search all products"
-                placeholderTextColor="#999"
-                value={productSearchQuery}
-                onChangeText={handleProductSearch}
-              />
-              <TouchableOpacity style={styles.filterButton}>
-                <Ionicons name="options" size={20} color="#333" />
-              </TouchableOpacity>
-            </View>
-
-            {/* Products Grid */}
-            <FlatList
-              data={filteredProducts}
-              renderItem={renderGridProductItem}
-              keyExtractor={(item) => item.id}
-              numColumns={2}
-              columnWrapperStyle={styles.gridRow}
-              scrollEnabled={false}
-              contentContainerStyle={styles.gridContainer}
-            />
-          </View>
-        </ScrollView>
-      </SafeAreaView>
+          {/* Products Grid */}
+          <FlatList
+            data={filteredProducts}
+            renderItem={renderGridProductItem}
+            keyExtractor={(item) => item.id}
+            numColumns={2}
+            columnWrapperStyle={styles.gridRow}
+            scrollEnabled={false}
+            contentContainerStyle={styles.gridContainer}
+          />
+        </View>
+      </ScrollView>
+    </SafeAreaView>
     </ScreenWrapper>
-  );
+  )
 }
 
 const styles = StyleSheet.create({
@@ -357,7 +326,7 @@ const styles = StyleSheet.create({
     // paddingTop: 10,
   },
   bannerSection: {
-    height: screenHeight * 0.4,
+    height: screenHeight * 0.3,
     marginBottom: 20,
   },
   bannerContainer: {
@@ -365,27 +334,27 @@ const styles = StyleSheet.create({
   },
   bannerCard: {
     width: screenWidth - 40,
-    height: screenHeight * 0.4,
-    marginRight: 32,
+    height: screenHeight * 0.3,
+    marginRight: 37,
     borderRadius: 16,
-    overflow: "hidden",
-    position: "relative",
+    overflow: 'hidden',
+    position: 'relative',
   },
   bannerImage: {
-    width: "100%",
-    height: "100%",
-    resizeMode: "cover",
+    width: '100%',
+    height: '100%',
+    resizeMode: 'cover',
   },
   bannerOverlay: {
-    position: "absolute",
+    position: 'absolute',
     top: 0,
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: "rgba(0,0,0,0.1)",
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "flex-end",
+    backgroundColor: 'rgba(0,0,0,0.1)',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-end',
     padding: 20,
   },
   bannerContent: {
@@ -393,39 +362,39 @@ const styles = StyleSheet.create({
   },
   bannerTitle: {
     fontSize: 24,
-    fontWeight: "bold",
-    color: "#fff",
+    fontWeight: 'bold',
+    color: '#fff',
     marginBottom: 8,
   },
   bannerSubtitle: {
     fontSize: 16,
-    color: "#fff",
+    color: '#fff',
     marginBottom: 16,
     opacity: 0.9,
   },
   bannerButton: {
-    backgroundColor: "#fff",
+    backgroundColor: '#fff',
     paddingHorizontal: 20,
     paddingVertical: 10,
     borderRadius: 20,
-    alignSelf: "flex-start",
+    alignSelf: 'flex-start',
   },
   bannerButtonText: {
-    color: "#333",
-    fontWeight: "600",
+    color: '#333',
+    fontWeight: '600',
     fontSize: 14,
   },
   bannerBadge: {
-    backgroundColor: "#FF6B6B",
+    backgroundColor: '#FF6B6B',
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 8,
-    alignSelf: "flex-start",
+    alignSelf: 'flex-start',
   },
   bannerBadgeText: {
-    color: "#fff",
+    color: '#fff',
     fontSize: 12,
-    fontWeight: "bold",
+    fontWeight: 'bold',
   },
   section: {
     paddingHorizontal: 20,
@@ -441,7 +410,7 @@ const styles = StyleSheet.create({
     paddingRight: 20,
   },
   categoryItemContainer: {
-    alignItems: "center",
+    alignItems: 'center',
     marginRight: 6,
   },
   categoryCard: {
@@ -469,20 +438,20 @@ const styles = StyleSheet.create({
   },
   productCard: {
     width: 180,
-    backgroundColor: "#fff",
+    backgroundColor: '#fff',
     marginRight: 15,
   },
   productImageContainer: {
-    width: "100%",
+    width: '100%',
     height: 140,
     alignItems: "center",
     justifyContent: "center",
   },
   productImage: {
-    width: "90%",
-    height: "90%",
+    width: '90%',
+    height: '90%',
     borderRadius: 12,
-    resizeMode: "cover",
+    resizeMode: 'cover',
   },
   productInfo: {
     padding: 12,
@@ -495,8 +464,8 @@ const styles = StyleSheet.create({
     lineHeight: 18,
   },
   ratingContainer: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     marginBottom: 6,
   },
   ratingText: {
@@ -515,12 +484,12 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     width: "90%",
     borderRadius: 8,
-    alignItems: "center",
+    alignItems: 'center',
   },
   addToCartText: {
-    color: "#fff",
+    color: '#fff',
     fontSize: 13,
-    fontWeight: "600",
+    fontWeight: '600',
   },
   // New styles for All Products section
   productSearchContainer: {
@@ -541,12 +510,12 @@ const styles = StyleSheet.create({
     paddingBottom: 20,
   },
   gridRow: {
-    justifyContent: "space-between",
+    justifyContent: 'space-between',
     marginBottom: 20,
   },
   gridProductCard: {
     width: (screenWidth - 60) / 2,
-    backgroundColor: "#fff",
+    backgroundColor: '#fff',
     borderRadius: 12,
     // elevation: 2,
     // shadowColor: '#000',
@@ -558,7 +527,7 @@ const styles = StyleSheet.create({
     // shadowRadius: 3.84,
   },
   gridProductImageContainer: {
-    width: "100%",
+    width: '100%',
     height: 120,
     alignItems: "center",
     justifyContent: "center",
@@ -567,10 +536,10 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 12,
   },
   gridProductImage: {
-    width: "100%",
-    height: "100%",
+    width: '100%',
+    height: '100%',
     borderRadius: 8,
-    resizeMode: "cover",
+    resizeMode: 'cover',
   },
   gridProductInfo: {
     padding: 12,
@@ -598,11 +567,11 @@ const styles = StyleSheet.create({
     backgroundColor: "#2c2a6b",
     paddingVertical: 8,
     borderRadius: 6,
-    alignItems: "center",
+    alignItems: 'center',
   },
   gridAddToCartText: {
-    color: "#fff",
+    color: '#fff',
     fontSize: 12,
-    fontWeight: "600",
+    fontWeight: '600',
   },
-});
+})

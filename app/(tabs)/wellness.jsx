@@ -1,12 +1,12 @@
 import {
   View,
   Text,
-  Image,
   ScrollView,
   TouchableOpacity,
   StyleSheet,
   Dimensions,
 } from "react-native";
+import { Image } from 'expo-image';
 
 const { width } = Dimensions.get("window");
 import { useSafeAreaInsets } from "react-native-safe-area-context";

@@ -5,7 +5,7 @@ import {
     Alert,
     Animated,
     FlatList,
-    Image,
+  
     KeyboardAvoidingView,
     Platform,
     Pressable,
@@ -17,6 +17,7 @@ import {
     TextInput,
     View,
 } from "react-native";
+import { Image } from 'expo-image';
 
 // Configure these for your app
 const CART_API = "http://192.168.100.3:3000/cart";

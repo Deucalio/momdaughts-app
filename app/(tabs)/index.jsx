@@ -5,12 +5,13 @@ import {
   Text,
   ScrollView,
   TouchableOpacity,
-  Image,
   StyleSheet,
   SafeAreaView,
   StatusBar,
   Platform,
 } from "react-native";
+import { Image } from 'expo-image';
+
 import {
   fetchProducts,
   addToCart,

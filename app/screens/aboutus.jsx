@@ -1,7 +1,7 @@
 import {
   View,
   Text,
-  Image,
+ 
   ScrollView,
   StyleSheet,
   Dimensions,
@@ -12,6 +12,7 @@ import { useRouter } from 'expo-router';
 // Alternative imports if not using Expo Router:
 // import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from "@expo/vector-icons";
+import { Image } from 'expo-image';
 
 const { width, height } = Dimensions.get("window");
 
@@ -32,7 +33,7 @@ export default function AboutUsPage() {
   };
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView  style={styles.container}>
       {/* Fixed Header Image */}
       <Image
         source={{
@@ -138,7 +139,7 @@ export default function AboutUsPage() {
 
       {/* Navigation Space Container */}
       <View style={styles.navigationSpaceContainer} />
-    </View>
+    </SafeAreaView >
   );
 }
 
@@ -194,18 +195,18 @@ const styles = StyleSheet.create({
     top: height * 0.3,
     left: 0,
     right: 0,
-    bottom: 80, // Reduced bottom to make space for navigation container
+    bottom: 45, // Reduced bottom to make space for navigation container
     backgroundColor: "#ffffff",
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: -4,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 8,
+    // shadowColor: "#000",
+    // shadowOffset: {
+    //   width: 0,
+    //   height: -4,
+    // },
+    // shadowOpacity: 0.1,
+    // shadowRadius: 8,
+    // elevation: 8,
     zIndex: 2,
   },
   scrollView: {
@@ -314,7 +315,7 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    height: 80, // Adjust height as needed for your navigation buttons
+    height: 40, // Adjust height as needed for your navigation buttons
     backgroundColor: "#ffffff",
     zIndex: 3,
     shadowColor: "#000",
@@ -328,6 +329,6 @@ const styles = StyleSheet.create({
   },
   // Additional bottom spacing for scroll content
   bottomSpacing: {
-    height: 40, // Extra space at the bottom of scroll content
+    height: 20, // Extra space at the bottom of scroll content
   },
 });

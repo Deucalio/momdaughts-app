@@ -6,12 +6,13 @@ import {
   Text,
   TouchableOpacity,
   ScrollView,
-  Image,
+
   SafeAreaView,
   StyleSheet,
   Animated,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { Image } from 'expo-image';
 
 // Updated color theme with your colors
 const colors = {

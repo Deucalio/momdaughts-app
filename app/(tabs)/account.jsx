@@ -5,7 +5,6 @@ import { router } from "expo-router";
 import { useEffect, useState } from "react";
 import {
   Dimensions,
-  Image,
   RefreshControl,
   ScrollView,
   Switch,
@@ -13,6 +12,8 @@ import {
   TouchableOpacity,
   View
 } from "react-native";
+import { Image } from 'expo-image';
+
 import { SafeAreaView } from "react-native-safe-area-context";
 import { logOut } from "../utils/auth";
 import { useAuthenticatedFetch, useAuthStore } from "../utils/authStore";
