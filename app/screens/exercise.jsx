@@ -4,6 +4,7 @@ import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Dimensions } from
 import { LinearGradient } from "expo-linear-gradient"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
 import { router } from "expo-router";
+import { Ionicons } from '@expo/vector-icons';
 
 
 const { height: screenHeight, width: screenWidth } = Dimensions.get("window");
@@ -58,7 +59,8 @@ const ExerciseDetailScreen = ({ onBack }) => {
 
       {/* Absolute positioned back button */}
       <TouchableOpacity onPress={onBack} style={[styles.backButton, { top: insets.top + 10 }]}>
-        <Text style={styles.backArrow}>←</Text>
+        {/* <Text style={styles.backArrow}>←</Text> */}
+        <Ionicons style={styles.backArrow} name="arrow-back" size={20} color="#000" />
       </TouchableOpacity>
 
       <ScrollView
@@ -130,15 +132,14 @@ const styles = StyleSheet.create({
   backButton: {
     position: "absolute",
     left: 16,
-    width: 40,
-    height: 40,
+    width: 35,
+    height: 35,
     justifyContent: "center",
     zIndex: 10,
     backgroundColor: "rgba(255, 255, 255, 0.2)",
     borderRadius: 20,
   },
   backArrow: {
-    fontSize: 24,
     color: "#374151",
     fontWeight: "600",
     textAlign: "center",

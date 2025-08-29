@@ -122,6 +122,7 @@ const WellnessScreen = () => {
               <TouchableOpacity
                 onPress={() => router.push("/screens/exercise")}
                 key={exercise.id}
+                activeOpacity={0.8}
                 style={styles.exerciseCard}
               >
                 <LinearGradient

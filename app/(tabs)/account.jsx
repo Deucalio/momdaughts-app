@@ -119,13 +119,6 @@ export default function AccountScreen() {
       onPress: () => router.push("/screens/addresses"),
     },
     {
-      id: "payment",
-      title: "Payment Methods",
-      subtitle: "Cards & payment options",
-      icon: "card-outline",
-      onPress: () => router.push("/payment-methods"),
-    },
-    {
       id: "support",
       title: "Help & Support",
       subtitle: "Get help when you need it",
@@ -160,8 +153,8 @@ export default function AccountScreen() {
         {/* Profile Image */}
         <View
           style={{
-            width: 80,
-            height: 80,
+            width: 60,
+            height: 60,
             borderRadius: 40,
             backgroundColor: COLORS.lightGray,
             alignItems: "center",
@@ -173,11 +166,11 @@ export default function AccountScreen() {
           {userProfile?.avatar ? (
             <Image
               source={{ uri: userProfile.avatar }}
-              style={{ width: 80, height: 80, borderRadius: 40 }}
+              style={{ width: 60, height: 60, borderRadius: 40 }}
               resizeMode="cover"
             />
           ) : (
-            <Ionicons name="person" size={40} color={COLORS.gray} />
+            <Ionicons name="person" size={30} color={COLORS.gray} />
           )}
         </View>
 
@@ -206,30 +199,6 @@ export default function AccountScreen() {
           >
             {userProfile?.email || user?.email || "user@example.com"}
           </Text>
-
-          <View
-            style={{
-              flexDirection: "row",
-              alignItems: "center",
-              backgroundColor: COLORS.lightGray,
-              paddingHorizontal: 8,
-              paddingVertical: 4,
-              borderRadius: 12,
-              alignSelf: "flex-start",
-            }}
-          >
-            <Ionicons name="star" size={12} color={COLORS.warning} />
-            <Text
-              style={{
-                fontSize: 12,
-                fontWeight: "600",
-                color: COLORS.darkest,
-                marginLeft: 4,
-              }}
-            >
-              {userProfile?.loyaltyPoints || 0} Points
-            </Text>
-          </View>
         </View>
 
         {/* Edit Button */}

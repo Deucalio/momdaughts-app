@@ -635,11 +635,18 @@ const styles = StyleSheet.create({
     borderRadius: 25,
     paddingVertical: 16,
     alignItems: "center",
+
+      shadowColor: COLORS.deepBlue,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 4,
   },
   checkoutButtonText: {
     fontSize: 16,
     fontWeight: "600",
     color: COLORS.white,
+    
   },
   // Empty cart styles
   emptyCartContainer: {
