@@ -1,37 +1,40 @@
 "use client";
+
+import { useState, useCallback, useEffect, useRef } from "react";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  ScrollView,
+  StyleSheet,
+  RefreshControl,
+  FlatList,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import { router } from "expo-router";
-import { useCallback, useEffect, useState, useRef } from "react";
-import {
-  FlatList,
-  RefreshControl,
-  ScrollView,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { useAuthenticatedFetch } from "../utils/authStore";
 import { createCartOperations } from "../utils/cartOperations";
 
-// Updated color palette - more modern and clean
 const COLORS = {
-  darkest: "#21152B",
-  dark: "#2C103A",
-  medium: "#382449",
-  light: "#432B57",
-  lightest: "#4E3366",
   white: "#ffffff",
   background: "#f8f9fa",
-  buttonColor: "#2c2a6b",
-  accent: "#eb9fc1",
-  success: "#10b981",
-  warning: "#f59e0b",
-  error: "#ef4444",
+  text: "#1a1a1a",
+  lightPink: "#f5b8d0",
+  lavender: "#e2c6df",
+  mediumPink: "#eb9fc1",
+  darkBlue: "#2b2b6b",
+  deepBlue: "#2c2a6b",
+  almostBlack: "#040707",
   gray: "#6b7280",
   lightGray: "#f3f4f6",
   border: "#e5e7eb",
+  primary: "#16a085",
+  black: "#000000",
+  error: "#ef4444",
+  warning: "#f59e0b",
+  success: "#10b981",
 };
 
 export default function CartScreen() {
@@ -79,16 +82,16 @@ export default function CartScreen() {
     fetchCartItems();
   }, [fetchCartItems]);
 
-  const calculateTotal = useCallback(() => {
+  const getTotalItems = () => {
+    return cartItems.reduce((total, item) => total + item.quantity, 0);
+  };
+
+  const getTotalPrice = () => {
     return cartItems.reduce(
-      (total, item) => total + item.price * item.quantity,
+      (total, item) => total + (item.price || 0) * item.quantity,
       0
     );
-  }, [cartItems]);
-
-  const calculateItemsCount = useCallback(() => {
-    return cartItems.reduce((total, item) => total + item.quantity, 0);
-  }, [cartItems]);
+  };
 
   const renderStatusBadge = (item) => {
     // Check if user requested more than available
@@ -97,27 +100,9 @@ export default function CartScreen() {
       item.quantityUserInput > item.variantInventoryQuantity
     ) {
       return (
-        <View
-          style={{
-            backgroundColor: "#fef3c7",
-            borderRadius: 6,
-            paddingHorizontal: 8,
-            paddingVertical: 4,
-            marginTop: 6,
-            flexDirection: "row",
-            alignItems: "center",
-          }}
-        >
+        <View style={styles.statusBadge}>
           <Ionicons name="warning" size={12} color={COLORS.warning} />
-          <Text
-            style={{
-              fontSize: 10,
-              color: COLORS.warning,
-              fontWeight: "500",
-              marginLeft: 4,
-              flex: 1,
-            }}
-          >
+          <Text style={[styles.statusText, { color: COLORS.warning }]}>
             Requested {item.quantityUserInput} quantity not available
           </Text>
         </View>
@@ -126,55 +111,10 @@ export default function CartScreen() {
 
     if (item.isOutOfStock) {
       return (
-        <View
-          style={{
-            backgroundColor: "#fef2f2",
-            borderRadius: 6,
-            paddingHorizontal: 8,
-            paddingVertical: 4,
-            marginTop: 6,
-            flexDirection: "row",
-            alignItems: "center",
-          }}
-        >
+        <View style={[styles.statusBadge, { backgroundColor: "#fef2f2" }]}>
           <Ionicons name="close-circle" size={12} color={COLORS.error} />
-          <Text
-            style={{
-              fontSize: 10,
-              color: COLORS.error,
-              fontWeight: "600",
-              marginLeft: 4,
-            }}
-          >
+          <Text style={[styles.statusText, { color: COLORS.error }]}>
             Out of Stock
-          </Text>
-        </View>
-      );
-    }
-
-    if (item.isQuantityAdjusted) {
-      return (
-        <View
-          style={{
-            backgroundColor: "#fef3c7",
-            borderRadius: 6,
-            paddingHorizontal: 8,
-            paddingVertical: 4,
-            marginTop: 6,
-            flexDirection: "row",
-            alignItems: "center",
-          }}
-        >
-          <Ionicons name="warning" size={12} color={COLORS.warning} />
-          <Text
-            style={{
-              fontSize: 10,
-              color: COLORS.warning,
-              fontWeight: "500",
-              marginLeft: 4,
-            }}
-          >
-            Quantity adjusted
           </Text>
         </View>
       );
@@ -182,26 +122,9 @@ export default function CartScreen() {
 
     if (item.isPriceUpdated) {
       return (
-        <View
-          style={{
-            backgroundColor: "#dbeafe",
-            borderRadius: 6,
-            paddingHorizontal: 8,
-            paddingVertical: 4,
-            marginTop: 6,
-            flexDirection: "row",
-            alignItems: "center",
-          }}
-        >
+        <View style={[styles.statusBadge, { backgroundColor: "#dbeafe" }]}>
           <Ionicons name="information-circle" size={12} color="#3b82f6" />
-          <Text
-            style={{
-              fontSize: 10,
-              color: "#3b82f6",
-              fontWeight: "500",
-              marginLeft: 4,
-            }}
-          >
+          <Text style={[styles.statusText, { color: "#3b82f6" }]}>
             Price updated
           </Text>
         </View>
@@ -211,312 +134,94 @@ export default function CartScreen() {
     return null;
   };
 
-  const renderCartItem = ({ item }) => (
-    <View
-      style={{
-        backgroundColor: COLORS.white,
-        borderRadius: 12,
-        marginHorizontal: 16,
-        marginBottom: 8,
-        padding: 12,
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.1,
-        shadowRadius: 2,
-        elevation: 2,
-        opacity: 1,
-      }}
-    >
-      <View style={{ flexDirection: "row" }}>
-        {/* Product Image */}
-        <View
-          style={{
-            borderRadius: 8,
-            overflow: "hidden",
-            backgroundColor: COLORS.lightGray,
-            position: "relative",
+  const renderCartItem = (item) => (
+    <View key={item.id} style={styles.cartItem}>
+      <View style={styles.imageContainer}>
+        <Image
+          source={{
+            uri:
+              item.variantImage ||
+              `https://via.placeholder.com/80x80/4E3366/white?text=Product`,
           }}
-        >
-          <Image
-            source={{
-              uri:
-                item.variantImage ||
-                `https://via.placeholder.com/70x70/4E3366/white?text=Product`,
-            }}
-            style={{
-              width: 70,
-              height: 70,
-              borderRadius: 8,
-            }}
-            contentFit="cover"
-          />
-          {item.isOutOfStock && (
-            <View
-              style={{
-                position: "absolute",
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
-                backgroundColor: "rgba(0,0,0,0.6)",
-                borderRadius: 8,
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              <Text
-                style={{
-                  color: COLORS.white,
-                  fontSize: 8,
-                  fontWeight: "bold",
-                  textAlign: "center",
-                }}
-              >
-                OUT OF{"\n"}STOCK
-              </Text>
-            </View>
-          )}
-        </View>
-
-        {/* Product Details */}
-        <View style={{ flex: 1, marginLeft: 10 }}>
-          <Text
-            style={{
-              fontSize: 13,
-              fontWeight: "600",
-              color: COLORS.darkest,
-              marginBottom: 2,
-              lineHeight: 16,
-            }}
-            numberOfLines={2}
-          >
-            {item.productTitle}
-          </Text>
-
-          {item.title && (
-            <Text
-              style={{
-                fontSize: 11,
-                color: COLORS.gray,
-                marginBottom: 4,
-              }}
-            >
-              {item.title}
-            </Text>
-          )}
-
-          <View
-            style={{
-              flexDirection: "row",
-              alignItems: "center",
-              marginBottom: 6,
-            }}
-          >
-            <Text
-              style={{
-                fontSize: 14,
-                fontWeight: "bold",
-                color: COLORS.darkest,
-              }}
-            >
-              Rs. {item.price?.toLocaleString() || "0"}
-            </Text>
-       
+          style={styles.productImage}
+          contentFit="cover"
+        />
+        {item.isOutOfStock && (
+          <View style={styles.outOfStockOverlay}>
+            <Text style={styles.outOfStockText}>OUT OF{"\n"}STOCK</Text>
           </View>
-
-          {/* Quantity Controls */}
-          <View
-            style={{
-              flexDirection: "row",
-              alignItems: "center",
-              justifyContent: "space-between",
-            }}
-          >
-            <View
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                backgroundColor: COLORS.lightGray,
-                borderRadius: 16,
-                paddingHorizontal: 3,
-                paddingVertical: 3,
-              }}
-            >
-              <TouchableOpacity
-                style={{
-                  width: 24,
-                  height: 24,
-                  borderRadius: 12,
-                  backgroundColor: COLORS.buttonColor,
-                  alignItems: "center",
-                  justifyContent: "center",
-                  opacity: item.isOutOfStock ? 0.5 : 1,
-                }}
-                onPress={() => updateQuantity(item.id, item.quantity - 1)}
-                disabled={item.isOutOfStock}
-              >
-                <Ionicons name="remove" size={14} color={COLORS.white} />
-              </TouchableOpacity>
-
-              <Text
-                style={{
-                  fontSize: 13,
-                  fontWeight: "600",
-                  color: COLORS.darkest,
-                  marginHorizontal: 12,
-                  minWidth: 16,
-                  textAlign: "center",
-                }}
-              >
-                {item.quantity}
-              </Text>
-
-              <TouchableOpacity
-                style={{
-                  width: 24,
-                  height: 24,
-                  borderRadius: 12,
-                  backgroundColor: COLORS.buttonColor,
-                  alignItems: "center",
-                  justifyContent: "center",
-                  opacity:
-                    item.isOutOfStock ||
-                    (item.variantInventoryQuantity !== undefined &&
-                      item.quantity >= item.variantInventoryQuantity)
-                      ? 0.5
-                      : 1,
-                }}
-                onPress={() => updateQuantity(item.id, item.quantity + 1)}
-                disabled={
-                  item.isOutOfStock ||
-                  (item.variantInventoryQuantity !== undefined &&
-                    item.quantity >= item.variantInventoryQuantity)
-                }
-              >
-                <Ionicons name="add" size={14} color={COLORS.white} />
-              </TouchableOpacity>
-            </View>
-
-            {/* Remove Button */}
-            <TouchableOpacity
-              style={{
-                padding: 6,
-                borderRadius: 6,
-                backgroundColor: "#fef2f2",
-                opacity: item.isPending ? 0.5 : 1,
-              }}
-              onPress={() => removeItem(item.id)}
-              disabled={item.isPending}
-            >
-              <Ionicons name="trash-outline" size={16} color={COLORS.error} />
-            </TouchableOpacity>
-          </View>
-
-          {/* Status Badges */}
-          {renderStatusBadge(item)}
-        </View>
+        )}
       </View>
 
-      {/* Item Total */}
-      <View
-        style={{
-          marginTop: 8,
-          paddingTop: 8,
-          borderTopWidth: 1,
-          borderTopColor: COLORS.border,
-          flexDirection: "row",
-          justifyContent: "space-between",
-          alignItems: "center",
-        }}
+      <View style={styles.productDetails}>
+        <Text style={styles.productTitle} numberOfLines={2}>
+          {item.productTitle}
+        </Text>
+
+        {item.title && <Text style={styles.productInfo}>{item.title}</Text>}
+
+        <Text style={styles.productPrice}>
+          Rs. {(item.price || 0).toLocaleString()}
+        </Text>
+
+        <View style={styles.quantityContainer}>
+          <TouchableOpacity
+            style={[
+              styles.quantityButton,
+              { opacity: item.isOutOfStock ? 0.5 : 1 },
+            ]}
+            onPress={() => updateQuantity(item.id, item.quantity - 1)}
+            disabled={item.isOutOfStock}
+          >
+            <Text style={styles.quantityButtonText}>-</Text>
+          </TouchableOpacity>
+
+          <Text style={styles.quantityText}>{item.quantity}</Text>
+
+          <TouchableOpacity
+            style={[
+              styles.quantityButton,
+              { opacity: item.isOutOfStock ? 0.5 : 1 },
+            ]}
+            onPress={() => updateQuantity(item.id, item.quantity + 1)}
+            disabled={item.isOutOfStock}
+          >
+            <Text style={styles.quantityButtonText}>+</Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* Status Badges */}
+        {renderStatusBadge(item)}
+      </View>
+
+      <TouchableOpacity
+        style={[styles.deleteButton, { opacity: item.isPending ? 0.5 : 1 }]}
+        onPress={() => removeItem(item.id)}
+        disabled={item.isPending}
       >
-        <Text
-          style={{
-            fontSize: 11,
-            color: COLORS.gray,
-          }}
-        >
-          Item Total
-        </Text>
-        <Text
-          style={{
-            fontSize: 13,
-            fontWeight: "bold",
-            color: COLORS.darkest,
-          }}
-        >
-          Rs. {((item.price || 0) * item.quantity).toLocaleString()}
-        </Text>
-      </View>
+        <Ionicons name="trash-outline" size={20} color={COLORS.gray} />
+      </TouchableOpacity>
     </View>
   );
 
   const renderEmptyCart = () => (
-    <View
-      style={{
-        flex: 1,
-        alignItems: "center",
-        justifyContent: "center",
-        paddingHorizontal: 40,
-        paddingVertical: 60,
-      }}
-    >
-      <View
-        style={{
-          width: 100,
-          height: 100,
-          borderRadius: 50,
-          backgroundColor: COLORS.lightGray,
-          alignItems: "center",
-          justifyContent: "center",
-          marginBottom: 20,
-        }}
-      >
+    <View style={styles.emptyCartContainer}>
+      <View style={styles.emptyCartIcon}>
         <Ionicons name="bag-outline" size={50} color={COLORS.gray} />
       </View>
 
-      <Text
-        style={{
-          fontSize: 20,
-          fontWeight: "bold",
-          color: COLORS.darkest,
-          marginBottom: 6,
-          textAlign: "center",
-        }}
-      >
-        Your cart is empty
-      </Text>
+      <Text style={styles.emptyCartTitle}>Your cart is empty</Text>
 
-      <Text
-        style={{
-          fontSize: 13,
-          color: COLORS.gray,
-          textAlign: "center",
-          marginBottom: 24,
-          lineHeight: 18,
-        }}
-      >
-        Looks like you haven&apos;t added any items to your cart yet. Start
-        shopping to fill it up!
+      <Text style={styles.emptyCartText}>
+        Looks like you haven't added any items to your cart yet. Start shopping
+        to fill it up!
       </Text>
 
       <TouchableOpacity
-        style={{
-          backgroundColor: COLORS.buttonColor,
-          borderRadius: 20,
-          paddingHorizontal: 24,
-          paddingVertical: 10,
-        }}
+        style={styles.startShoppingButton}
         onPress={() => router.push("/shop")}
       >
-        <Text
-          style={{
-            color: COLORS.white,
-            fontSize: 13,
-            fontWeight: "600",
-          }}
-        >
-          Start Shopping
-        </Text>
+        <Text style={styles.startShoppingText}>Start Shopping</Text>
       </TouchableOpacity>
     </View>
   );
@@ -524,50 +229,12 @@ export default function CartScreen() {
   const renderLoadingSkeleton = () => (
     <View style={{ paddingHorizontal: 16 }}>
       {Array.from({ length: 3 }).map((_, index) => (
-        <View
-          key={index}
-          style={{
-            backgroundColor: COLORS.white,
-            borderRadius: 12,
-            marginBottom: 8,
-            padding: 12,
-            flexDirection: "row",
-          }}
-        >
-          <View
-            style={{
-              width: 70,
-              height: 70,
-              borderRadius: 8,
-              backgroundColor: COLORS.lightGray,
-            }}
-          />
-          <View style={{ flex: 1, marginLeft: 10 }}>
-            <View
-              style={{
-                height: 13,
-                backgroundColor: COLORS.lightGray,
-                borderRadius: 4,
-                marginBottom: 4,
-              }}
-            />
-            <View
-              style={{
-                height: 11,
-                backgroundColor: COLORS.lightGray,
-                borderRadius: 4,
-                width: "60%",
-                marginBottom: 6,
-              }}
-            />
-            <View
-              style={{
-                height: 24,
-                backgroundColor: COLORS.lightGray,
-                borderRadius: 12,
-                width: "40%",
-              }}
-            />
+        <View key={index} style={styles.skeletonItem}>
+          <View style={styles.skeletonImage} />
+          <View style={styles.skeletonDetails}>
+            <View style={styles.skeletonTitle} />
+            <View style={styles.skeletonInfo} />
+            <View style={styles.skeletonPrice} />
           </View>
         </View>
       ))}
@@ -576,48 +243,34 @@ export default function CartScreen() {
 
   if (loading) {
     return (
-      <SafeAreaView style={{ flex: 1, backgroundColor: COLORS.background }}>
+      <SafeAreaView style={styles.container}>
         {/* Header */}
-        <View
-          style={{
-            flexDirection: "row",
-            alignItems: "center",
-            justifyContent: "space-between",
-            paddingHorizontal: 16,
-            paddingVertical: 10,
-            backgroundColor: COLORS.white,
-            shadowColor: "#000",
-            shadowOffset: { width: 0, height: 1 },
-            shadowOpacity: 0.1,
-            shadowRadius: 2,
-            elevation: 2,
-          }}
-        >
+        <View style={styles.header}>
           <TouchableOpacity
+            style={styles.backButton}
             onPress={() => router.back()}
-            style={{
-              padding: 6,
-              borderRadius: 6,
-              backgroundColor: COLORS.lightGray,
-            }}
           >
-            <Ionicons name="chevron-back" size={18} color={COLORS.darkest} />
+            <Ionicons name="arrow-back" size={20} color={COLORS.black} />
           </TouchableOpacity>
 
-          <Text
-            style={{
-              fontSize: 16,
-              fontWeight: "700",
-              color: COLORS.darkest,
-            }}
-          >
-            My Cart
-          </Text>
+          <View style={styles.headerCenter}>
+            <Text style={styles.headerTitle}>My Cart</Text>
+          </View>
 
-          <View style={{ width: 30 }} />
+          <View style={styles.logoContainer}>
+            <View style={styles.logo}>
+              {/* <Text style={styles.logoText}>LOGO</Text> */}
+              <Image
+                source={{ uri: "https://i.ibb.co/391FfHYS/Layer-1.png" }}
+                style={styles.logo}
+                contentFit="contain"
+                cachePolicy="memory-disk"
+              />
+            </View>
+          </View>
         </View>
 
-        <ScrollView style={{ flex: 1, paddingTop: 12 }}>
+        <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
           {renderLoadingSkeleton()}
         </ScrollView>
       </SafeAreaView>
@@ -626,45 +279,30 @@ export default function CartScreen() {
 
   if (cartItems.length === 0) {
     return (
-      <SafeAreaView style={{ flex: 1, backgroundColor: COLORS.background }}>
+      <SafeAreaView style={styles.container}>
         {/* Header */}
-        <View
-          style={{
-            flexDirection: "row",
-            alignItems: "center",
-            justifyContent: "space-between",
-            paddingHorizontal: 16,
-            paddingVertical: 10,
-            backgroundColor: COLORS.white,
-            shadowColor: "#000",
-            shadowOffset: { width: 0, height: 1 },
-            shadowOpacity: 0.1,
-            shadowRadius: 2,
-            elevation: 2,
-          }}
-        >
+        <View style={styles.header}>
           <TouchableOpacity
+            style={styles.backButton}
             onPress={() => router.back()}
-            style={{
-              padding: 6,
-              borderRadius: 6,
-              backgroundColor: COLORS.lightGray,
-            }}
           >
-            <Ionicons name="chevron-back" size={18} color={COLORS.darkest} />
+            <Ionicons name="arrow-back" size={20} color={COLORS.black} />
           </TouchableOpacity>
 
-          <Text
-            style={{
-              fontSize: 16,
-              fontWeight: "700",
-              color: COLORS.darkest,
-            }}
-          >
-            My Cart
-          </Text>
+          <View style={styles.headerCenter}>
+            <Text style={styles.headerTitle}>My Cart</Text>
+          </View>
 
-          <View style={{ width: 30 }} />
+          <View style={styles.logoContainer}>
+            <View style={styles.logo}>
+                 <Image
+                source={{ uri: "https://i.ibb.co/391FfHYS/Layer-1.png" }}
+                style={styles.logo}
+                contentFit="contain"
+                cachePolicy="memory-disk"
+              />
+            </View>
+          </View>
         </View>
 
         {renderEmptyCart()}
@@ -673,207 +311,392 @@ export default function CartScreen() {
   }
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: COLORS.background }}>
-      {/* Compact Header */}
-      <View
-        style={{
-          flexDirection: "row",
-          alignItems: "center",
-          justifyContent: "space-between",
-          paddingHorizontal: 16,
-          paddingVertical: 10,
-          backgroundColor: COLORS.white,
-          shadowColor: "#000",
-          shadowOffset: { width: 0, height: 1 },
-          shadowOpacity: 0.1,
-          shadowRadius: 2,
-          elevation: 2,
-        }}
-      >
+    <SafeAreaView style={styles.container}>
+      {/* Header */}
+      <View style={styles.header}>
         <TouchableOpacity
+          style={styles.backButton}
           onPress={() => router.back()}
-          style={{
-            padding: 6,
-            borderRadius: 6,
-            backgroundColor: COLORS.lightGray,
-          }}
         >
-          <Ionicons name="chevron-back" size={18} color={COLORS.darkest} />
+          <Ionicons name="arrow-back" size={20} color={COLORS.black} />
         </TouchableOpacity>
 
-        <View style={{ alignItems: "center" }}>
-          <Text
-            style={{
-              fontSize: 16,
-              fontWeight: "700",
-              color: COLORS.darkest,
-            }}
-          >
-            My Cart
-          </Text>
-          <Text style={{ fontSize: 11, color: COLORS.gray }}>
-            {calculateItemsCount()} item
-            {calculateItemsCount() !== 1 ? "s" : ""}
-          </Text>
+        <View style={styles.headerCenter}>
+          <Text style={styles.headerTitle}>My Cart</Text>
+          <Text style={styles.itemCount}>{getTotalItems()} items</Text>
         </View>
 
-        <View style={{ width: 30 }} />
+        <View style={styles.logoContainer}>
+          <View style={styles.logo}>
+               <Image
+                source={{ uri: "https://i.ibb.co/391FfHYS/Layer-1.png" }}
+                style={styles.logo}
+                contentFit="contain"
+                cachePolicy="memory-disk"
+              />
+          </View>
+        </View>
       </View>
 
-      <View style={{ flex: 1 }}>
+      <ScrollView
+        style={styles.content}
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={handleRefresh}
+            colors={[COLORS.primary]}
+            tintColor={COLORS.primary}
+          />
+        }
+      >
         {/* Cart Items */}
-        <FlatList
-          data={cartItems}
-          renderItem={renderCartItem}
-          keyExtractor={(item) =>
-            item.id?.toString() || Math.random().toString()
-          }
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={{
-            paddingTop: 12,
-            paddingBottom: 160,
-          }}
-          refreshControl={
-            <RefreshControl
-              refreshing={refreshing}
-              onRefresh={handleRefresh}
-              colors={[COLORS.buttonColor]}
-              tintColor={COLORS.buttonColor}
-            />
-          }
-        />
+        {cartItems.map(renderCartItem)}
+      </ScrollView>
 
-        {/* Compact Bottom Summary */}
-        <View
-          style={{
-            position: "absolute",
-            bottom: 0,
-            left: 0,
-            right: 0,
-            backgroundColor: COLORS.white,
-            paddingHorizontal: 16,
-            paddingTop: 10,
-            paddingBottom: 14,
-            shadowColor: "#000",
-            shadowOffset: { width: 0, height: -2 },
-            shadowOpacity: 0.1,
-            shadowRadius: 6,
-            elevation: 6,
-            borderTopLeftRadius: 16,
-            borderTopRightRadius: 16,
-          }}
-        >
-          {/* Compact Order Summary */}
-          <View
-            style={{
-              backgroundColor: COLORS.lightGray,
-              borderRadius: 10,
-              padding: 12,
-              marginBottom: 12,
-            }}
-          >
-            <View
-              style={{
-                flexDirection: "row",
-                justifyContent: "space-between",
-                marginBottom: 6,
-              }}
-            >
-              <Text style={{ fontSize: 12, color: COLORS.gray }}>
-                Subtotal ({calculateItemsCount()} items)
-              </Text>
-              <Text
-                style={{
-                  fontSize: 12,
-                  fontWeight: "600",
-                  color: COLORS.darkest,
-                }}
-              >
-                Rs. {calculateTotal().toLocaleString()}
-              </Text>
-            </View>
-
-            <View
-              style={{
-                flexDirection: "row",
-                justifyContent: "space-between",
-                marginBottom: 8,
-              }}
-            >
-              <Text style={{ fontSize: 12, color: COLORS.gray }}>Shipping</Text>
-              <Text
-                style={{
-                  fontSize: 12,
-                  fontWeight: "600",
-                  color: COLORS.success,
-                }}
-              >
-                Free
-              </Text>
-            </View>
-
-            <View
-              style={{
-                height: 1,
-                backgroundColor: COLORS.border,
-                marginVertical: 8,
-              }}
-            />
-
-            <View
-              style={{
-                flexDirection: "row",
-                justifyContent: "space-between",
-              }}
-            >
-              <Text
-                style={{
-                  fontSize: 14,
-                  fontWeight: "bold",
-                  color: COLORS.darkest,
-                }}
-              >
-                Total
-              </Text>
-              <Text
-                style={{
-                  fontSize: 14,
-                  fontWeight: "bold",
-                  color: COLORS.buttonColor,
-                }}
-              >
-                Rs. {calculateTotal().toLocaleString()}
-              </Text>
-            </View>
-          </View>
-
-          {/* Compact Checkout Button */}
-          <TouchableOpacity
-            style={{
-              backgroundColor: COLORS.buttonColor,
-              borderRadius: 10,
-              paddingVertical: 12,
-              alignItems: "center",
-              shadowColor: COLORS.buttonColor,
-              shadowOffset: { width: 0, height: 2 },
-              shadowOpacity: 0.3,
-              shadowRadius: 4,
-              elevation: 4,
-            }}
-            onPress={() => router.push("/screens/checkout")}
-          >
-            <Text
-              style={{
-                color: COLORS.white,
-                fontSize: 14,
-                fontWeight: "600",
-              }}
-            >
-              Proceed to Checkout
-            </Text>
-          </TouchableOpacity>
+      {/* Bottom Summary */}
+      <View style={styles.bottomSummary}>
+        <View style={styles.totalRow}>
+          <Text style={styles.totalLabel}>Order Total</Text>
+          <Text style={styles.totalAmount}>
+            Rs. {getTotalPrice().toLocaleString()}
+          </Text>
         </View>
+
+        <View style={styles.finalTotalRow}>
+          <Text style={styles.finalTotalLabel}>Total Amount</Text>
+          <Text style={styles.finalTotalAmount}>
+            Rs. {getTotalPrice().toLocaleString()}
+          </Text>
+        </View>
+
+        <TouchableOpacity
+          style={styles.checkoutButton}
+          onPress={() => router.push("/screens/checkout")}
+        >
+          <Text style={styles.checkoutButtonText}>Proceed to Checkout</Text>
+        </TouchableOpacity>
       </View>
     </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: COLORS.background,
+  },
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    backgroundColor: COLORS.white,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.border,
+  },
+  backButton: {
+    padding: 4,
+  },
+  headerCenter: {
+    alignItems: "center",
+    flex: 1,
+  },
+  headerTitle: {
+    fontSize: 18,
+    fontWeight: "600",
+    color: COLORS.text,
+  },
+  itemCount: {
+    fontSize: 12,
+    color: COLORS.gray,
+    marginTop: 2,
+  },
+  logoContainer: {
+    width: 40,
+    alignItems: "flex-end",
+  },
+  logo: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  logoText: {
+    fontSize: 8,
+    fontWeight: "600",
+    color: COLORS.gray,
+  },
+  content: {
+    flex: 1,
+    paddingTop: 16,
+  },
+  cartItem: {
+    flexDirection: "row",
+    backgroundColor: COLORS.white,
+    marginHorizontal: 16,
+    marginBottom: 12,
+    borderRadius: 12,
+    padding: 16,
+    alignItems: "flex-start",
+    
+
+   
+  },
+  imageContainer: {
+    position: "relative",
+  },
+  productImage: {
+    width: 80,
+    height: 80,
+    borderRadius: 8,
+    backgroundColor: COLORS.lightGray,
+  },
+  outOfStockOverlay: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: "rgba(0,0,0,0.6)",
+    borderRadius: 8,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  outOfStockText: {
+    color: COLORS.white,
+    fontSize: 8,
+    fontWeight: "bold",
+    textAlign: "center",
+  },
+  productDetails: {
+    flex: 1,
+    marginLeft: 12,
+  },
+  productTitle: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: COLORS.text,
+    marginBottom: 4,
+  },
+  productInfo: {
+    fontSize: 12,
+    color: COLORS.gray,
+    marginBottom: 8,
+  },
+  productPrice: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: COLORS.text,
+    marginBottom: 12,
+  },
+  quantityContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  quantityButton: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: COLORS.lightGray,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  quantityButtonText: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: COLORS.text,
+  },
+  quantityText: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: COLORS.text,
+    marginHorizontal: 16,
+  },
+  deleteButton: {
+    padding: 4,
+    marginLeft: 8,
+  },
+  statusBadge: {
+    backgroundColor: "#fef3c7",
+    borderRadius: 6,
+    paddingHorizontal: 6,
+    paddingVertical: 4,
+    marginTop: 6,
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  statusText: {
+    fontSize: 10,
+    fontWeight: "500",
+    marginLeft: 4,
+    flex: 1,
+  },
+  promoSection: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    backgroundColor: COLORS.white,
+    marginHorizontal: 16,
+    marginBottom: 8,
+    borderRadius: 12,
+    padding: 16,
+  },
+  promoLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  promoText: {
+    fontSize: 14,
+    color: COLORS.text,
+    marginLeft: 12,
+  },
+  loyaltySection: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    backgroundColor: COLORS.white,
+    marginHorizontal: 16,
+    marginBottom: 16,
+    borderRadius: 12,
+    padding: 16,
+  },
+  loyaltyLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+    flex: 1,
+  },
+  loyaltyText: {
+    fontSize: 14,
+    color: COLORS.text,
+    marginLeft: 12,
+  },
+  bottomSummary: {
+    backgroundColor: COLORS.white,
+    paddingHorizontal: 16,
+    paddingTop: 16,
+    paddingBottom: 32,
+    borderTopWidth: 1,
+    borderTopColor: COLORS.border,
+  },
+  totalRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 8,
+  },
+  totalLabel: {
+    fontSize: 14,
+    color: COLORS.gray,
+  },
+  totalAmount: {
+    fontSize: 14,
+    color: COLORS.text + 80,
+  },
+  finalTotalRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 20,
+  },
+  finalTotalLabel: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: COLORS.text,
+  },
+  finalTotalAmount: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: COLORS.text,
+  },
+  checkoutButton: {
+    backgroundColor: COLORS.darkBlue,
+    borderRadius: 25,
+    paddingVertical: 16,
+    alignItems: "center",
+  },
+  checkoutButtonText: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: COLORS.white,
+  },
+  // Empty cart styles
+  emptyCartContainer: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 40,
+    paddingVertical: 60,
+  },
+  emptyCartIcon: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: COLORS.lightGray,
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 20,
+  },
+  emptyCartTitle: {
+    fontSize: 20,
+    fontWeight: "bold",
+    color: COLORS.text,
+    marginBottom: 6,
+    textAlign: "center",
+  },
+  emptyCartText: {
+    fontSize: 13,
+    color: COLORS.gray,
+    textAlign: "center",
+    marginBottom: 24,
+    lineHeight: 18,
+  },
+  startShoppingButton: {
+    backgroundColor: COLORS.primary,
+    borderRadius: 20,
+    paddingHorizontal: 24,
+    paddingVertical: 10,
+  },
+  startShoppingText: {
+    color: COLORS.white,
+    fontSize: 13,
+    fontWeight: "600",
+  },
+  // Loading skeleton styles
+  skeletonItem: {
+    backgroundColor: COLORS.white,
+    borderRadius: 12,
+    marginBottom: 8,
+    padding: 12,
+    flexDirection: "row",
+  },
+  skeletonImage: {
+    width: 80,
+    height: 80,
+    borderRadius: 8,
+    backgroundColor: COLORS.lightGray,
+  },
+  skeletonDetails: {
+    flex: 1,
+    marginLeft: 10,
+  },
+  skeletonTitle: {
+    height: 13,
+    backgroundColor: COLORS.lightGray,
+    borderRadius: 4,
+    marginBottom: 4,
+  },
+  skeletonInfo: {
+    height: 11,
+    backgroundColor: COLORS.lightGray,
+    borderRadius: 4,
+    width: "60%",
+    marginBottom: 6,
+  },
+  skeletonPrice: {
+    height: 24,
+    backgroundColor: COLORS.lightGray,
+    borderRadius: 12,
+    width: "40%",
+  },
+});

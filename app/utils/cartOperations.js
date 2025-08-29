@@ -83,14 +83,22 @@ export class CartOperations {
 
       // Update the UI to reflect server state (remove the temporary flag)
       setCartItems((prev) =>
-        prev.map((item) =>
-          item.id === itemId
-            ? {
-                ...item,
-                quantityUserInput: undefined,
-              }
-            : item
-        )
+        prev.map((item) => {
+          if (item.id === itemId) {
+            const updatedItem = { ...item };
+            // Only clear quantityUserInput if quantity doesn't exceed available inventory
+            if (
+              item.variantInventoryQuantity === undefined ||
+              quantity <= item.variantInventoryQuantity
+            ) {
+              updatedItem.quantityUserInput = undefined;
+            } else {
+              updatedItem.quantityUserInput = quantity;
+            }
+            return updatedItem;
+          }
+          return item;
+        })
       );
     } catch (error) {
       console.error("Error updating quantity:", error);
@@ -163,7 +171,11 @@ export class CartOperations {
           return {
             ...item,
             quantity: newQuantity,
-            quantityUserInput: newQuantity,
+            quantityUserInput:
+              item.variantInventoryQuantity !== undefined &&
+              newQuantity > item.variantInventoryQuantity
+                ? newQuantity
+                : undefined,
           };
         }
         return item;
@@ -185,8 +197,10 @@ export class CartOperations {
 
       const response = await this.authenticatedFetch(
         `${BACKEND_URL}/cart/${itemId}`,
+
         {
           method: "DELETE",
+          body: JSON.stringify({}),
         }
       );
 
