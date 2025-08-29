@@ -1,15 +1,11 @@
-import React, { useState, useEffect } from "react";
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-  Dimensions,
-  StatusBar,
-} from "react-native";
-import { LinearGradient } from "expo-linear-gradient";
-import { Ionicons } from "@expo/vector-icons";
-// Your color theme
+"use client"
+
+import { useState, useEffect } from "react"
+import { Image } from "expo-image"
+import { View, Text, TouchableOpacity, StyleSheet, Dimensions, StatusBar, Modal } from "react-native"
+import { LinearGradient } from "expo-linear-gradient"
+import { Ionicons } from "@expo/vector-icons"
+
 const COLORS = {
   lightPink: "#f5b8d0",
   lavender: "#e2c6df",
@@ -18,14 +14,15 @@ const COLORS = {
   deepBlue: "#2c2a6b",
   almostBlack: "#040707",
   white: "#ffffff",
-  // Additional utility colors
   lightGray: "#f8f9fa",
   mediumGray: "#6c757d",
   border: "#e9ecef",
   success: "#28a745",
   danger: "#dc3545",
-};
-const { width, height } = Dimensions.get("window");
+}
+
+const { width, height } = Dimensions.get("window")
+
 const menstrualReliefExercises = [
   {
     id: 1,
@@ -33,133 +30,124 @@ const menstrualReliefExercises = [
     image: "https://i.ibb.co/kF3J0B7/image.png",
     gradientColors: [COLORS.lightPink, COLORS.mediumPink, COLORS.lavender],
     duration: "3 min",
-    poses: [
-      "Supported child's pose",
-      "Supported pigeon pose",
-      "Supported cat pose",
+    poses: ["Supported child's pose", "Camel Pose", "Supported cat pose"],
+    images: [
+      "https://i.ibb.co/4RPLw0gF/image-fotor-bg-remover-2025082819617.png",
+      "https://i.ibb.co/C5z5wgG4/image-fotor-bg-remover-2025082819217.png",
+      "https://i.ibb.co/k2XWmY1b/image-fotor-bg-remover-20250828194042.png",
     ],
-    images: ["", "", ""],
   },
-  {
-    id: 2,
-    title: "Foot massage \n relieve",
-    image: "https://i.ibb.co/CKVJp6gn/woman-relaxing-spa-min.jpg",
-    gradientColors: ["#333333", "#dd1818"],
-    duration: "3 min",
-    poses: ["Left foot massage", "Right foot massage"],
-    images: ["", "", ""],
-  },
-];
-export default function ExerciseScreen(
-  {
-    // exercise,
-    // currentPoseIndex,
-    // onComplete,
-  }
-) {
-  const [timeLeft, setTimeLeft] = useState(180); // 3 minutes in seconds
-  const [isPlaying, setIsPlaying] = useState(true);
-  const exercise = menstrualReliefExercises[0];
-  const currentPoseIndex = 0;
-  const onComplete = () => {
-    console.log("hi");
-  };
+]
+
+export default function ExerciseScreen() {
+  const [timeLeft, setTimeLeft] = useState(60) // 1 minute per pose
+  const [isPlaying, setIsPlaying] = useState(true)
+  const [currentPoseIndex, setCurrentPoseIndex] = useState(0)
+  const [showCompletionModal, setShowCompletionModal] = useState(false)
+  const [completedPoses, setCompletedPoses] = useState(0)
+
+  const exercise = menstrualReliefExercises[0]
 
   useEffect(() => {
-    let interval = null;
+    let interval = null
 
     if (isPlaying && timeLeft > 0) {
       interval = setInterval(() => {
-        setTimeLeft(timeLeft - 1);
-      }, 1000);
+        setTimeLeft(timeLeft - 1)
+      }, 1000)
     } else if (timeLeft === 0) {
-      onComplete();
+      handleNextPose()
     }
 
     return () => {
-      if (interval) clearInterval(interval);
-    };
-  }, [isPlaying, timeLeft, onComplete]);
+      if (interval) clearInterval(interval)
+    }
+  }, [isPlaying, timeLeft])
 
-  /*************  ✨ Windsurf Command ⭐  *************/
-  /**
-   * Format seconds as MM:SS
-   * @param {number} seconds time in seconds
-   * @returns {string} formatted string
-   */
-  /*******  164f1fc7-4cac-459e-9ad2-88eeeb677d5d  *******/
   const formatTime = (seconds) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins.toString().padStart(2, "0")}:${secs
-      .toString()
-      .padStart(2, "0")}`;
-  };
+    const mins = Math.floor(seconds / 60)
+    const secs = seconds % 60
+    return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`
+  }
 
   const togglePlayPause = () => {
-    setIsPlaying(!isPlaying);
-  };
+    setIsPlaying(!isPlaying)
+  }
+
+  const handlePreviousPose = () => {
+    if (currentPoseIndex > 0) {
+      setCurrentPoseIndex(currentPoseIndex - 1)
+      setTimeLeft(60)
+      setIsPlaying(true)
+    }
+  }
+
+  const handleNextPose = () => {
+    if (currentPoseIndex < exercise.poses.length - 1) {
+      setCurrentPoseIndex(currentPoseIndex + 1)
+      setCompletedPoses(completedPoses + 1)
+      setTimeLeft(60)
+      setIsPlaying(true)
+    } else {
+      setCompletedPoses(completedPoses + 1)
+      setShowCompletionModal(true)
+      setIsPlaying(false)
+    }
+  }
+
+  const handleStop = () => {
+    setIsPlaying(false)
+    setTimeLeft(60)
+    setCurrentPoseIndex(0)
+    setCompletedPoses(0)
+  }
+
+  const closeModal = () => {
+    setShowCompletionModal(false)
+    // Reset to beginning
+    setCurrentPoseIndex(0)
+    setTimeLeft(60)
+    setCompletedPoses(0)
+  }
 
   return (
-    <LinearGradient
-      colors={["#fce7f3", "#e9d5ff"]} // from-pink-100 to-purple-100
-      style={styles.container}
-    >
+    <View style={styles.container}>
       <StatusBar barStyle="dark-content" />
 
-      {/* Background pattern */}
-      <View style={styles.backgroundPattern}>
-        <Text style={[styles.patternText, styles.pattern1]}>
-          period tracker
-        </Text>
-        <Text style={[styles.patternText, styles.pattern2]}>
-          period tracker
-        </Text>
-        <Text style={[styles.patternText, styles.pattern3]}>
-          period tracker
-        </Text>
-        <Text style={[styles.patternText, styles.pattern4]}>
-          period tracker
-        </Text>
-      </View>
-
-      {/* Status bar */}
-      <View style={styles.header}>
-        <TouchableOpacity>
-          <Ionicons name="arrow-back" size={24} color="#374151" />
-        </TouchableOpacity>
-        <Text style={styles.progressText}>{currentPoseIndex + 1}/3</Text>
-        <TouchableOpacity>
-          <Ionicons name="musical-notes" size={24} color="#7c3aed" />
-        </TouchableOpacity>
-      </View>
-
-      {/* Main content */}
-      <View style={styles.mainContent}>
-        {/* Yoga pose illustration */}
-        <View style={styles.illustrationContainer}>
-          <LinearGradient
-            colors={["#a855f7", "#3b82f6"]} // from-purple-400 to-blue-500
-            style={styles.illustrationCircle}
-          >
-            {/* Simplified yoga pose illustration */}
-            <View style={styles.yogaPose}>
-              <View style={styles.poseBody} />
-              <View style={styles.poseHead} />
-              <View style={styles.poseArm1} />
-              <View style={styles.poseArm2} />
-            </View>
-          </LinearGradient>
+      <LinearGradient colors={["#fce7f3", "#e9d5ff"]} style={styles.topSection}>
+        {/* Header */}
+        <View style={styles.header}>
+          <TouchableOpacity>
+            <Ionicons name="arrow-back" size={24} color="#374151" />
+          </TouchableOpacity>
+          <Text style={styles.progressText}>
+            {currentPoseIndex + 1}/{exercise.poses.length}
+          </Text>
+          <TouchableOpacity>
+            <Ionicons name="musical-notes" size={24} color="#7c3aed" />
+          </TouchableOpacity>
         </View>
 
-        {/* Pose name */}
-        <Text style={styles.poseName}>{exercise.poses[currentPoseIndex]}</Text>
+        {/* Exercise illustration */}
+        <View style={styles.illustrationContainer}>
+          <Image source={{ uri: exercise.images[currentPoseIndex] }} style={styles.illustrationImage} />
+        </View>
+      </LinearGradient>
 
-        {/* Timer */}
+      <View style={styles.bottomSection}>
+        {/* Pose name and timer */}
+        <Text style={styles.poseName}>{exercise.poses[currentPoseIndex]}</Text>
         <Text style={styles.timer}>{formatTime(timeLeft)}</Text>
 
-        {/* Controls */}
         <View style={styles.controls}>
+          <TouchableOpacity
+            onPress={handlePreviousPose}
+            style={[styles.controlButton, currentPoseIndex === 0 && styles.disabledButton]}
+            disabled={currentPoseIndex === 0}
+          >
+            <Ionicons name="chevron-back" size={24} color={currentPoseIndex === 0 ? "#9ca3af" : "#374151"} />
+          </TouchableOpacity>
+
           <TouchableOpacity onPress={togglePlayPause} style={styles.playButton}>
             <Ionicons
               name={isPlaying ? "pause" : "play"}
@@ -168,57 +156,86 @@ export default function ExerciseScreen(
               style={isPlaying ? undefined : { marginLeft: 4 }}
             />
           </TouchableOpacity>
-          <Ionicons name="chevron-forward" size={32} color="#9ca3af" />
+
+          <TouchableOpacity onPress={handleStop} style={styles.controlButton}>
+            <Ionicons name="stop" size={24} color="#dc3545" />
+          </TouchableOpacity>
+
+          <TouchableOpacity onPress={handleNextPose} style={styles.controlButton}>
+            <Ionicons name="chevron-forward" size={24} color="#374151" />
+          </TouchableOpacity>
         </View>
       </View>
-    </LinearGradient>
-  );
+
+      <Modal visible={showCompletionModal} transparent={true} animationType="fade" onRequestClose={closeModal}>
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.successIcon}>
+              <Ionicons name="checkmark" size={32} color="white" />
+            </View>
+
+            <Text style={styles.modalTitle}>1 Exercise Completed!</Text>
+            <Text style={styles.modalSubtitle}>
+              Great job! You've just completed your exercise. Here's a quick summary of your workout.
+            </Text>
+
+            <View style={styles.statsContainer}>
+              <View style={styles.statItem}>
+                <Text style={styles.statNumber}>3</Text>
+                <Text style={styles.statLabel}>minutes</Text>
+              </View>
+              <View style={styles.statItem}>
+                <Text style={styles.statNumber}>45</Text>
+                <Text style={styles.statLabel}>calories</Text>
+              </View>
+              <View style={styles.statItem}>
+                <Text style={styles.statNumber}>1</Text>
+                <Text style={styles.statLabel}>exercise</Text>
+              </View>
+            </View>
+
+            <View style={styles.exerciseInfo}>
+              <Text style={styles.dayText}>Day 1</Text>
+              <Text style={styles.exerciseTitle}>Period Pain Relief</Text>
+              <View style={styles.stars}>
+                <Ionicons name="star" size={20} color="#fbbf24" />
+                <Ionicons name="star" size={20} color="#fbbf24" />
+                <Ionicons name="star" size={20} color="#fbbf24" />
+              </View>
+            </View>
+
+            <TouchableOpacity style={styles.submitButton} onPress={closeModal}>
+              <Text style={styles.submitButtonText}>Submit</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+    </View>
+  )
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    minHeight: height,
+    backgroundColor: COLORS.white,
   },
-  backgroundPattern: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    opacity: 0.2,
+  topSection: {
+    height: height * 0.5,
+    paddingTop: 48,
   },
-  patternText: {
-    position: "absolute",
-    color: "#f9a8d4",
-    fontWeight: "300",
-  },
-  pattern1: {
-    top: 80,
-    left: 40,
-    fontSize: 48,
-  },
-  pattern2: {
-    top: 160,
-    right: 40,
-    fontSize: 32,
-  },
-  pattern3: {
-    bottom: 160,
-    left: 20,
-    fontSize: 40,
-  },
-  pattern4: {
-    bottom: 80,
-    right: 80,
-    fontSize: 24,
+  bottomSection: {
+    height: height * 0.5,
+    backgroundColor: COLORS.white,
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingVertical: 32,
+    paddingHorizontal: 24,
   },
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
     paddingHorizontal: 16,
-    paddingTop: 48,
     paddingBottom: 16,
   },
   progressText: {
@@ -226,82 +243,45 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     fontSize: 18,
   },
-  mainContent: {
+  illustrationContainer: {
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
-    paddingHorizontal: 32,
-    marginTop: 80,
   },
-  illustrationContainer: {
-    width: 320,
-    height: 320,
-    marginBottom: 64,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  illustrationCircle: {
-    width: 256,
-    height: 256,
-    borderRadius: 128,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  yogaPose: {
-    position: "relative",
-    width: 128,
-    height: 80,
-  },
-  poseBody: {
-    width: 128,
-    height: 80,
-    backgroundColor: "#581c87",
-    borderRadius: 40,
-  },
-  poseHead: {
-    position: "absolute",
-    top: -16,
-    left: 32,
-    width: 64,
-    height: 64,
-    backgroundColor: "#fed7aa",
-    borderRadius: 32,
-  },
-  poseArm1: {
-    position: "absolute",
-    top: 16,
-    left: 16,
-    width: 96,
-    height: 32,
-    backgroundColor: "#fed7aa",
-    borderRadius: 16,
-  },
-  poseArm2: {
-    position: "absolute",
-    top: 32,
-    right: 8,
-    width: 80,
-    height: 24,
-    backgroundColor: "#fed7aa",
-    borderRadius: 12,
+  illustrationImage: {
+    width: 280,
+    height: 280,
+    borderRadius: 140,
   },
   poseName: {
     fontSize: 24,
     fontWeight: "bold",
     color: "#1f2937",
-    marginBottom: 32,
     textAlign: "center",
+    marginTop: 16,
   },
   timer: {
-    fontSize: 60,
+    fontSize: 48,
     fontWeight: "bold",
     color: "#1f2937",
-    marginBottom: 48,
   },
   controls: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 32,
+    justifyContent: "center",
+    gap: 24,
+    marginBottom: 32,
+  },
+  controlButton: {
+    width: 48,
+    height: 48,
+    backgroundColor: "#f3f4f6",
+    borderRadius: 24,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  disabledButton: {
+    opacity: 0.5,
   },
   playButton: {
     width: 64,
@@ -319,4 +299,92 @@ const styles = StyleSheet.create({
     shadowRadius: 3.84,
     elevation: 5,
   },
-});
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 24,
+  },
+  modalContent: {
+    backgroundColor: "white",
+    borderRadius: 24,
+    padding: 32,
+    alignItems: "center",
+    width: "100%",
+    maxWidth: 320,
+  },
+  successIcon: {
+    width: 64,
+    height: 64,
+    backgroundColor: "#22c55e",
+    borderRadius: 32,
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 24,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: "bold",
+    color: "#1f2937",
+    marginBottom: 12,
+  },
+  modalSubtitle: {
+    fontSize: 14,
+    color: "#6b7280",
+    textAlign: "center",
+    lineHeight: 20,
+    marginBottom: 32,
+  },
+  statsContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    width: "100%",
+    marginBottom: 32,
+  },
+  statItem: {
+    alignItems: "center",
+  },
+  statNumber: {
+    fontSize: 32,
+    fontWeight: "bold",
+    color: "#1f2937",
+  },
+  statLabel: {
+    fontSize: 12,
+    color: "#6b7280",
+    marginTop: 4,
+  },
+  exerciseInfo: {
+    alignItems: "center",
+    marginBottom: 32,
+  },
+  dayText: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#1f2937",
+    marginBottom: 4,
+  },
+  exerciseTitle: {
+    fontSize: 14,
+    color: "#6b7280",
+    marginBottom: 12,
+  },
+  stars: {
+    flexDirection: "row",
+    gap: 4,
+  },
+  submitButton: {
+    backgroundColor: "#7c3aed",
+    paddingVertical: 16,
+    paddingHorizontal: 48,
+    borderRadius: 24,
+    width: "100%",
+  },
+  submitButtonText: {
+    color: "white",
+    fontSize: 16,
+    fontWeight: "600",
+    textAlign: "center",
+  },
+})

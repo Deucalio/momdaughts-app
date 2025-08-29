@@ -43,7 +43,7 @@ interface UserState {
   tokens: any;
 }
 
-const BACKEND_URL = "http://192.168.100.3:3000";
+const BACKEND_URL = "http://192.168.18.5:3000";
 
 export const useAuthStore = create(
   persist<UserState>(
@@ -65,7 +65,7 @@ export const useAuthStore = create(
               "Content-Type": "application/json",
             },
             body: JSON.stringify({ userId, metaData }),
-          })
+          });
           console.log("body:", JSON.stringify({ userId, metaData }));
           console.log("syncUserMetaData response status:", response);
           if (response.ok) {
@@ -269,6 +269,7 @@ export const useAuthStore = create(
           user: null,
           isLoggedIn: false,
           authMethod: null,
+          hasCompletedOnboarding: false,
         });
       },
       completeOnboarding: () => {

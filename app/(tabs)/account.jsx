@@ -1,24 +1,25 @@
 // https://www.behance.net/gallery/211430663/mobile-app-uiux-case-routine-tracker-app?tracking_source=search_projects|skincare+routine+mobile&l=0
 "use client";
 import { Ionicons } from "@expo/vector-icons";
+import { Image } from "expo-image";
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
 import {
   Dimensions,
   RefreshControl,
   ScrollView,
+  StatusBar,
   Switch,
   Text,
   TouchableOpacity,
-  View
+  View,
 } from "react-native";
-import { Image } from 'expo-image';
 
 import { SafeAreaView } from "react-native-safe-area-context";
 import { logOut } from "../utils/auth";
 import { useAuthenticatedFetch, useAuthStore } from "../utils/authStore";
 
-const BACKEND_URL = "http://192.168.100.3:3000";
+const BACKEND_URL = "http://192.168.18.5:3000";
 const { width } = Dimensions.get("window");
 
 // Color palette matching the cart design
@@ -115,7 +116,7 @@ export default function AccountScreen() {
       title: "Addresses",
       subtitle: "Manage delivery addresses",
       icon: "location-outline",
-      onPress: () => router.push("/addresses"),
+      onPress: () => router.push("/screens/addresses"),
     },
     {
       id: "payment",
@@ -550,34 +551,6 @@ export default function AccountScreen() {
           thumbColor={notifications ? COLORS.white : COLORS.gray}
         />
       </View>
-
-      <View
-        style={{
-          flexDirection: "row",
-          justifyContent: "space-between",
-          alignItems: "center",
-          paddingVertical: 8,
-        }}
-      >
-        <View style={{ flexDirection: "row", alignItems: "center" }}>
-          <Ionicons name="moon-outline" size={20} color={COLORS.gray} />
-          <Text
-            style={{
-              fontSize: 14,
-              color: COLORS.darkest,
-              marginLeft: 12,
-            }}
-          >
-            Dark Mode
-          </Text>
-        </View>
-        <Switch
-          value={darkMode}
-          onValueChange={setDarkMode}
-          trackColor={{ false: COLORS.lightGray, true: COLORS.buttonColor }}
-          thumbColor={darkMode ? COLORS.white : COLORS.gray}
-        />
-      </View>
     </View>
   );
 
@@ -714,7 +687,8 @@ export default function AccountScreen() {
   }
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: COLORS.background }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: "white" }}>
+        <StatusBar barStyle="dark-content" backgroundColor={COLORS.white} />
       {/* Header */}
       <View
         style={{

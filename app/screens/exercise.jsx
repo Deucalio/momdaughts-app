@@ -31,17 +31,18 @@ const ExerciseDetailScreen = ({ onBack }) => {
     {
       id: 1,
       name: "Supported child's pose",
-      image: "/woman-doing-child-pose-yoga.png",
+      image: "https://i.ibb.co/Y7Vk2FxD/image.png",
     },
     {
       id: 2,
-      name: "Supported pigeon pose",
-      image: "/woman-doing-pigeon-pose-yoga.png",
+      name: "Camel Pose",
+      image: "https://i.ibb.co/wZnG2K2T/image.png",
     },
     {
+      // https://i.ibb.co/R4Gn1009/image.png
       id: 3,
       name: "Supported reclining bound angle pose",
-      image: "/woman-doing-reclining-bound-angle-yoga-pose.png",
+      image: "https://i.ibb.co/k2XWmY1b/image-fotor-bg-remover-20250828194042.png",
     },
   ]
 
@@ -68,7 +69,9 @@ const ExerciseDetailScreen = ({ onBack }) => {
         {/* Hero Image */}
         <View style={styles.heroImageContainer}>
           <Image 
-            source={{ uri: "https://momdaughts.com/cdn/shop/files/aunty_heating_pad.jpg?v=1750342577&width=1000" }} 
+          
+          // https://momdaughts.com/cdn/shop/files/aunty_heating_pad.jpg?v=1750342577&width=1000
+            source={{ uri: "https://i.ibb.co/kF3J0B7/image.png" }} 
             style={styles.heroImage} 
             resizeMode="cover"
           />
@@ -152,7 +155,7 @@ const styles = StyleSheet.create({
 //   },
   heroImageContainer: {
     width: "100%",
-    backgroundColor: "#2c2a6b",
+    backgroundColor: "#f5b8d0",
     justifyContent: "center",
     alignItems: "center",
   },
@@ -188,7 +191,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   posesList: {
-    marginBottom: 24,
+    marginBottom: 10,
   },
   poseItem: {
     flexDirection: "row",
@@ -196,10 +199,10 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   poseImageContainer: {
-    width: 60,
-    height: 60,
+    width: 90,
+    height: 90,
     borderRadius: 12,
-    backgroundColor: "#E5E7EB",
+    backgroundColor: "white",
     marginRight: 16,
     overflow: "hidden",
   },
@@ -214,13 +217,13 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   startButton: {
-    backgroundColor: "#EC4899",
+    backgroundColor: "#2c2a6b",
     borderRadius: 28,
     paddingVertical: 16,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    shadowColor: "#EC4899",
+    shadowColor: "#2c2a6b",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 8,

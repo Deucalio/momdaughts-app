@@ -24,6 +24,7 @@ import { useFocusEffect, useRouter } from "expo-router";
 
 import { fetchWishlistItems } from "../utils/actions";
 import { Touchable } from "react-native";
+import HeaderWithoutCart from "../../components/HeaderWithoutCart";
 
 // Your color theme
 const COLORS = {
@@ -190,20 +191,11 @@ export default function WishlistScreen({ navigation }) {
       <StatusBar barStyle="dark-content" backgroundColor={COLORS.white} />
 
       {/* Header */}
-      <View style={styles.header}>
-        <Pressable style={styles.backButton} onPress={handleBack}>
-          <Ionicons name="arrow-back" size={24} color={"#000000"} />
-        </Pressable>
-
-        <View style={styles.headerContent}>
-          <Text style={styles.headerTitle}>My Wishlist</Text>
-          <Text style={styles.headerSubtitle}>
-            {loading ? "Loading..." : `${wishlistItems.length} variants saved`}
-          </Text>
-        </View>
-
-        <View style={styles.headerDecoration} />
-      </View>
+     <HeaderWithoutCart
+        title="Wishlist"
+        showBackButton
+        onBackPress={handleBack}
+      />
 
       {/* Content */}
       {loading ? (
@@ -367,61 +359,6 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.lightGray,
   },
 
-  // Header
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 20,
-    paddingTop: Platform.OS === "ios" ? 8 : 35,
-    paddingBottom: 20,
-    backgroundColor: COLORS.white,
-    shadowColor: COLORS.almostBlack,
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 2 },
-    elevation: 4,
-    position: "relative",
-  },
-  backButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: "#ffffff",
-    alignItems: "center",
-    justifyContent: "center",
-    marginRight: 16,
-    shadowColor: COLORS.mediumPink,
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    shadowOffset: { width: 0, height: 2 },
-    elevation: 3,
-  },
-  headerContent: {
-    flex: 1,
-    zIndex: 2,
-  },
-  headerTitle: {
-    fontSize: 24,
-    fontWeight: "800",
-    color: COLORS.darkBlue,
-    marginBottom: 4,
-  },
-  headerSubtitle: {
-    fontSize: 14,
-    color: COLORS.mediumGray,
-    fontWeight: "500",
-  },
-  headerDecoration: {
-    position: "absolute",
-    top: -30,
-    right: -30,
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    backgroundColor: COLORS.lavender,
-    opacity: 0.3,
-    zIndex: 1,
-  },
 
   // List
   listContainer: {

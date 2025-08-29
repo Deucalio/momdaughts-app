@@ -1,26 +1,27 @@
-"use client"
-import { Image } from 'expo-image';
+"use client";
+import { Image } from "expo-image";
 
+import { Ionicons } from "@expo/vector-icons";
+import { useFocusEffect, useRouter } from "expo-router";
+import { useCallback, useEffect, useState } from "react";
 import {
-  StyleSheet,
-  Text,
-  View,
-  ScrollView,
-  TextInput,
-  TouchableOpacity,
+  Dimensions,
   FlatList,
   SafeAreaView,
-  Dimensions,
-} from "react-native"
-import { StatusBar } from "expo-status-bar"
-import { Ionicons } from "@expo/vector-icons"
-import { useState, useEffect } from "react"
-import { logOut } from "../utils/auth";
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import ScreenWrapper from "../../components/ScreenWrapper";
+import { fetchCartItemsCount, addToCart } from "../utils/actions";
 import { useAuthenticatedFetch, useAuthStore } from "../utils/authStore";
-import ScreenWrapper from "../../components/ScreenWrapper"
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import CartToast from "../../components/CartToast";
 
-const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
+const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
 
 const COLORS = {
   darkest: "#21152B",
@@ -36,9 +37,9 @@ const COLORS = {
   error: "#E17055",
   gray: "#636e72",
   lightGray: "#ddd",
-}
+};
 
-const BACKEND_URL = "http://192.168.100.3:3000"
+const BACKEND_URL = "http://192.168.18.5:3000";
 
 const categories = [
   {
@@ -64,25 +65,15 @@ const categories = [
     title: "Skin Care",
     imageUrl: "https://i.ibb.co/jP5cS5J0/image.png",
     color: "#E5F5E5",
-  }
-]
+  },
+];
 
 const assignRandomCategory = () => {
-  const categoryTitles = ["Best Selling"]
-  return categoryTitles[Math.floor(Math.random() * categoryTitles.length)]
-}
+  const categoryTitles = ["Best Selling"];
+  return categoryTitles[Math.floor(Math.random() * categoryTitles.length)];
+};
 
 const bannerData = [
-  {
-    id: 1,
-    title: "First Purchase",
-    subtitle: "Enjoy a Special Offer!",
-    buttonText: "Shop Now",
-    colors: [COLORS.medium, COLORS.lightest],
-    discount: "$200",
-    image:
-      "https://i.ibb.co/9khSfZ4w/image.png",
-  },
   {
     id: 2,
     title: "Wellness Sale",
@@ -94,6 +85,16 @@ const bannerData = [
       "https://momdaughts.com/cdn/shop/files/banner_3_mob.jpg?v=1748096411&width=400%20400w,%20//momdaughts.com/cdn/shop/files/banner_3_mob.jpg?v=1748096411&width=600%20600w,%20//momdaughts.com/cdn/shop/files/banner_3_mob.jpg?v=1748096411&width=800%20800w,%20//momdaughts.com/cdn/shop/files/banner_3_mob.jpg?v=1748096411&width=1000%201000w",
   },
   {
+    id: 1,
+    title: "First Purchase",
+    subtitle: "Enjoy a Special Offer!",
+    buttonText: "Shop Now",
+    colors: [COLORS.medium, COLORS.lightest],
+    discount: "$200",
+    image:
+      "https://momdaughts.com/cdn/shop/files/banne_2_mob.jpg?v=1748096411&width=800",
+  },
+  {
     id: 3,
     title: "New Arrivals",
     subtitle: "Fresh Products Daily",
@@ -103,75 +104,172 @@ const bannerData = [
     image:
       "https://momdaughts.com/cdn/shop/files/banner_1_mob.jpg?v=1748096411&width=400%20400w,%20//momdaughts.com/cdn/shop/files/banner_1_mob.jpg?v=1748096411&width=600%20600w,%20//momdaughts.com/cdn/shop/files/banner_1_mob.jpg?v=1748096411&width=800%20800w,%20//momdaughts.com/cdn/shop/files/banner_1_mob.jpg?v=1748096411&width=1000%201000w",
   },
-]
+];
 
 export default function App() {
-  const [products, setProducts] = useState([])
-  const [filteredProducts, setFilteredProducts] = useState([])
-  const [productSearchQuery, setProductSearchQuery] = useState("")
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState(null)
-  const [refreshing, setRefreshing] = useState(false)
-  const {authenticatedFetch} = useAuthenticatedFetch();
+  const [products, setProducts] = useState([]);
+  const [filteredProducts, setFilteredProducts] = useState([]);
+  const [productSearchQuery, setProductSearchQuery] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [refreshing, setRefreshing] = useState(false);
+  const { authenticatedFetch } = useAuthenticatedFetch();
   const insets = useSafeAreaInsets();
+  const [cartItemCount, setCartItemCount] = useState(0);
+  const [addToCartToast, setAddToCartToast] = useState({
+    clickCount: 0,
+    showToast: false,
+    selectedProduct: {
+      name: "",
+      image: "",
+    },
+  });
+  const router = useRouter();
+  const { user } = useAuthStore();
+
+  const loadCartItemsCount = async () => {
+    try {
+      const result = await fetchCartItemsCount(authenticatedFetch);
+      if (result.success) {
+        setCartItemCount(result.count);
+      }
+    } catch (error) {
+      console.error("[v0] Failed to load cart count:", error);
+    }
+  };
 
   const fetchProducts = async (isRefresh = false) => {
     try {
-      if (!isRefresh) setLoading(true)
-      setError(null)
-      const response = await authenticatedFetch(`${BACKEND_URL}/products?numberOfProducts=100`)
+      if (!isRefresh) setLoading(true);
+      setError(null);
+      const response = await authenticatedFetch(
+        `${BACKEND_URL}/products?numberOfProducts=100`
+      );
       if (!response.ok) {
-        throw new Error(`Failed to fetch products: ${response.status}`)
+        throw new Error(`Failed to fetch products: ${response.status}`);
       }
-      const data = await response.json()
+      const data = await response.json();
       if (!data || !Array.isArray(data.products)) {
-        throw new Error("Invalid response format")
+        throw new Error("Invalid response format");
       }
       const productsWithCategories = (data.products || []).map((product) => ({
         ...product,
         assignedCategory: assignRandomCategory(),
-      }))
-      setProducts(productsWithCategories)
-      setFilteredProducts(productsWithCategories)
+      }));
+      setProducts(productsWithCategories);
+      setFilteredProducts(productsWithCategories);
     } catch (error) {
-      console.error("Error fetching products:", error)
-      setError(error.message || "Failed to load products")
+      console.error("Error fetching products:", error);
+      setError(error.message || "Failed to load products");
     } finally {
-      setLoading(false)
-      if (isRefresh) setRefreshing(false)
+      setLoading(false);
+      if (isRefresh) setRefreshing(false);
     }
-  }
+  };
 
   const handleProductSearch = (query) => {
-    setProductSearchQuery(query)
+    setProductSearchQuery(query);
     if (query.trim() === "") {
-      setFilteredProducts(products)
+      setFilteredProducts(products);
     } else {
-      const filtered = products.filter(product =>
+      const filtered = products.filter((product) =>
         product.title.toLowerCase().includes(query.toLowerCase())
-      )
-      setFilteredProducts(filtered)
+      );
+      setFilteredProducts(filtered);
     }
-  }
+  };
 
   useEffect(() => {
-    fetchProducts()
+    fetchProducts();
+    loadCartItemsCount();
+  }, []);
+
+useFocusEffect(
+  useCallback(() => {
+    // Use requestAnimationFrame to defer state updates
+    requestAnimationFrame(() => {
+      loadCartItemsCount();
+      setAddToCartToast({
+        clickCount: 0,
+        showToast: false,
+        selectedProduct: {
+          name: "",
+          image: "",
+        },
+      });
+    });
   }, [])
+);
+  const handleAddToCart = async (item) => {
+    const cartItem = {
+      userId: user.id,
+      shopifyProductId: item.id.split("/").slice(-1)[0],
+      shopifyVariantId: item.variants[0].id.split("/").slice(-1)[0],
+      productTitle: item.title,
+      price: parseInt(item.variants[0].price.replace("Rs.", "").trim()),
+      quantity: 1,
+      addedAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+    console.log("cartItem:", cartItem);
+
+
+    try {
+      setCartItemCount(cartItemCount + 1);
+      setAddToCartToast({
+        clickCount: addToCartToast.clickCount + 1,
+        showToast: true,
+        selectedProduct: {
+          name: item.title,
+          image: item.images[0]?.originalSrc || "",
+        },
+      });
+      // const res = await authenticatedFetch(`${BACKEND_URL}/add-to-cart`, {
+      //   method: "POST",
+      //   headers: {
+      //     "Content-Type": "application/json",
+      //   },
+      //   body: JSON.stringify({ cartData: cartItem }),
+      // });
+      // const data = await res.json();
+      const addToCartAction = await addToCart(authenticatedFetch, cartItem);
+    } catch (e) {
+      setCartItemCount(cartItemCount - 1);
+      console.log("Error Occured: ", error);
+    } finally {
+      loadCartItemsCount();
+    }
+  };
+
+  const navigateToProduct = (id) => {
+    const formattedId = id.split("/").pop();
+    router.push(`/products/${formattedId}`);
+  };
 
   const renderCategoryItem = ({ item }) => (
     <View style={styles.categoryItemContainer}>
-      <TouchableOpacity style={[styles.categoryCard, { backgroundColor: item.color }]}>
+      <TouchableOpacity
+        style={[styles.categoryCard, { backgroundColor: item.color }]}
+      >
         <Image source={{ uri: item.imageUrl }} style={styles.categoryImage} />
       </TouchableOpacity>
       <Text style={styles.categoryTitle}>{item.title}</Text>
     </View>
-  )
+  );
 
   const renderProductItem = ({ item }) => (
-    <View style={styles.productCard}>
+    <TouchableOpacity
+      activeOpacity={0.7}
+      onPress={() => navigateToProduct(item.id)}
+      style={styles.productCard}
+    >
       <View style={styles.productImageContainer}>
         <Image
-          source={{ uri: item.images?.[0]?.originalSrc || "/placeholder.svg?height=200&width=200" }}
+          source={{
+            uri:
+              item.images?.[0]?.originalSrc ||
+              "/placeholder.svg?height=200&width=200",
+          }}
           style={styles.productImage}
         />
       </View>
@@ -183,19 +281,32 @@ export default function App() {
           <Ionicons name="star" size={14} color="#FFD700" />
           <Text style={styles.ratingText}>4.8 (104)</Text>
         </View>
-        <Text style={styles.productPrice}>Rs. {item.variants?.[0]?.price || "0.00"}</Text>
-        <TouchableOpacity style={styles.addToCartButton}>
+        <Text style={styles.productPrice}>
+          Rs. {item.variants?.[0]?.price || "0.00"}
+        </Text>
+        <TouchableOpacity
+          onPress={() => handleAddToCart(item)}
+          style={styles.addToCartButton}
+        >
           <Text style={styles.addToCartText}>Add to Cart</Text>
         </TouchableOpacity>
       </View>
-    </View>
-  )
+    </TouchableOpacity>
+  );
 
   const renderGridProductItem = ({ item }) => (
-    <View style={styles.gridProductCard}>
+    <TouchableOpacity
+      activeOpacity={0.7}
+      onPress={() => navigateToProduct(item.id)}
+      style={styles.gridProductCard}
+    >
       <View style={styles.gridProductImageContainer}>
         <Image
-          source={{ uri: item.images?.[0]?.originalSrc || "/placeholder.svg?height=200&width=200" }}
+          source={{
+            uri:
+              item.images?.[0]?.originalSrc ||
+              "/placeholder.svg?height=200&width=200",
+          }}
           style={styles.gridProductImage}
         />
       </View>
@@ -207,13 +318,18 @@ export default function App() {
           <Ionicons name="star" size={12} color="#FFD700" />
           <Text style={styles.gridRatingText}>4.8 (104)</Text>
         </View>
-        <Text style={styles.gridProductPrice}>Rs. {item.variants?.[0]?.price || "0.00"}</Text>
-        <TouchableOpacity style={styles.gridAddToCartButton}>
+        <Text style={styles.gridProductPrice}>
+          Rs. {item.variants?.[0]?.price || "0.00"}
+        </Text>
+        <TouchableOpacity
+          onPress={() => handleAddToCart(item)}
+          style={styles.gridAddToCartButton}
+        >
           <Text style={styles.gridAddToCartText}>Add to Cart</Text>
         </TouchableOpacity>
       </View>
-    </View>
-  )
+    </TouchableOpacity>
+  );
 
   const renderBannerItem = ({ item }) => (
     <View style={styles.bannerCard}>
@@ -231,89 +347,116 @@ export default function App() {
         </View>
       </View> */}
     </View>
-  )
+  );
 
   return (
-    <ScreenWrapper cartItemCount={0}>
-    <SafeAreaView style={[styles.container, {
-      paddingTop: insets.top + 2,
-    }]}>
-      {/* <StatusBar style="dark" /> */}
-      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
-        {/* Header with Search */}
+    <ScreenWrapper cartItemCount={cartItemCount}>
+      <SafeAreaView
+        style={[
+          styles.container,
+          {
+            paddingTop: insets.top + 2,
+          },
+        ]}
+      >
+        {/* <StatusBar style="dark" /> */}
+        <ScrollView
+          style={styles.scrollView}
+          showsVerticalScrollIndicator={false}
+        >
+          {/* Header with Search */}
 
-        {/* Banners */}
-        <View style={styles.bannerSection}>
-          <FlatList
-            data={bannerData}
-            renderItem={renderBannerItem}
-            keyExtractor={(item) => item.id.toString()}
-            horizontal
-            pagingEnabled
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.bannerContainer}
-          />
-        </View>
-
-        {/* Categories Grid */}
-        <View style={styles.section}>
-          <FlatList
-            data={categories}
-            renderItem={renderCategoryItem}
-            keyExtractor={(item) => item.id}
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.categoriesContainer}
-          />
-        </View>
-
-        {/* Best Selling */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Best Selling</Text>
-          <FlatList
-            data={products.filter((p) => p.assignedCategory === "Best Selling")}
-            renderItem={renderProductItem}
-            keyExtractor={(item) => item.id}
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.productsContainer}
-          />
-        </View>
-
-        {/* All Products Section */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>All Products</Text>
-          
-          {/* Search Bar for Products */}
-          <View style={styles.productSearchContainer}>
-            <Ionicons name="search" size={20} color="#999" style={styles.searchIcon} />
-            <TextInput
-              style={styles.productSearchInput}
-              placeholder="Search all products"
-              placeholderTextColor="#999"
-              value={productSearchQuery}
-              onChangeText={handleProductSearch}
+          {/* Banners */}
+          <View style={styles.bannerSection}>
+            <FlatList
+              data={bannerData}
+              renderItem={renderBannerItem}
+              keyExtractor={(item) => item.id.toString()}
+              horizontal
+              pagingEnabled
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.bannerContainer}
             />
-            <TouchableOpacity style={styles.filterButton}>
-              <Ionicons name="options" size={20} color="#333" />
-            </TouchableOpacity>
           </View>
 
-          {/* Products Grid */}
-          <FlatList
-            data={filteredProducts}
-            renderItem={renderGridProductItem}
-            keyExtractor={(item) => item.id}
-            numColumns={2}
-            columnWrapperStyle={styles.gridRow}
-            scrollEnabled={false}
-            contentContainerStyle={styles.gridContainer}
-          />
-        </View>
-      </ScrollView>
-    </SafeAreaView>
+          {/* Categories Grid */}
+          <View style={styles.section}>
+            <FlatList
+              data={categories}
+              renderItem={renderCategoryItem}
+              keyExtractor={(item) => item.id}
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.categoriesContainer}
+            />
+          </View>
+
+          {/* Best Selling */}
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Best Selling</Text>
+            <FlatList
+              data={products.filter(
+                (p) => p.assignedCategory === "Best Selling"
+              )}
+              renderItem={renderProductItem}
+              keyExtractor={(item) => item.id}
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.productsContainer}
+            />
+          </View>
+
+          {/* All Products Section */}
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>All Products</Text>
+
+            {/* Search Bar for Products */}
+            <View style={styles.productSearchContainer}>
+              <Ionicons
+                name="search"
+                size={20}
+                color="#999"
+                style={styles.searchIcon}
+              />
+              <TextInput
+                style={styles.productSearchInput}
+                placeholder="Search all products"
+                placeholderTextColor="#999"
+                value={productSearchQuery}
+                onChangeText={handleProductSearch}
+              />
+              <TouchableOpacity style={styles.filterButton}>
+                <Ionicons name="options" size={20} color="#333" />
+              </TouchableOpacity>
+            </View>
+
+            {/* Products Grid */}
+            <FlatList
+              data={filteredProducts}
+              renderItem={renderGridProductItem}
+              keyExtractor={(item) => item.id}
+              numColumns={2}
+              columnWrapperStyle={styles.gridRow}
+              scrollEnabled={false}
+              contentContainerStyle={styles.gridContainer}
+            />
+          </View>
+        </ScrollView>
+      </SafeAreaView>
+      <CartToast
+        isVisible={addToCartToast.showToast}
+        onClose={() => {
+          setAddToCartToast((prev) => ({
+            ...prev,
+            showToast: false,
+          }));
+        }}
+        productName={addToCartToast.selectedProduct.name}
+        productImage={addToCartToast.selectedProduct.image}
+        clickCount={addToCartToast.clickCount}
+      />
     </ScreenWrapper>
-  )
+  );
 }
 
 const styles = StyleSheet.create({
@@ -337,24 +480,24 @@ const styles = StyleSheet.create({
     height: screenHeight * 0.3,
     marginRight: 37,
     borderRadius: 16,
-    overflow: 'hidden',
-    position: 'relative',
+    overflow: "hidden",
+    position: "relative",
   },
   bannerImage: {
-    width: '100%',
-    height: '100%',
-    resizeMode: 'cover',
+    width: "100%",
+    height: "100%",
+    resizeMode: "cover",
   },
   bannerOverlay: {
-    position: 'absolute',
+    position: "absolute",
     top: 0,
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: 'rgba(0,0,0,0.1)',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-end',
+    backgroundColor: "rgba(0,0,0,0.1)",
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-end",
     padding: 20,
   },
   bannerContent: {
@@ -362,39 +505,39 @@ const styles = StyleSheet.create({
   },
   bannerTitle: {
     fontSize: 24,
-    fontWeight: 'bold',
-    color: '#fff',
+    fontWeight: "bold",
+    color: "#fff",
     marginBottom: 8,
   },
   bannerSubtitle: {
     fontSize: 16,
-    color: '#fff',
+    color: "#fff",
     marginBottom: 16,
     opacity: 0.9,
   },
   bannerButton: {
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     paddingHorizontal: 20,
     paddingVertical: 10,
     borderRadius: 20,
-    alignSelf: 'flex-start',
+    alignSelf: "flex-start",
   },
   bannerButtonText: {
-    color: '#333',
-    fontWeight: '600',
+    color: "#333",
+    fontWeight: "600",
     fontSize: 14,
   },
   bannerBadge: {
-    backgroundColor: '#FF6B6B',
+    backgroundColor: "#FF6B6B",
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 8,
-    alignSelf: 'flex-start',
+    alignSelf: "flex-start",
   },
   bannerBadgeText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 12,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   section: {
     paddingHorizontal: 20,
@@ -410,7 +553,7 @@ const styles = StyleSheet.create({
     paddingRight: 20,
   },
   categoryItemContainer: {
-    alignItems: 'center',
+    alignItems: "center",
     marginRight: 6,
   },
   categoryCard: {
@@ -438,20 +581,20 @@ const styles = StyleSheet.create({
   },
   productCard: {
     width: 180,
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     marginRight: 15,
   },
   productImageContainer: {
-    width: '100%',
+    width: "100%",
     height: 140,
     alignItems: "center",
     justifyContent: "center",
   },
   productImage: {
-    width: '90%',
-    height: '90%',
+    width: "90%",
+    height: "90%",
     borderRadius: 12,
-    resizeMode: 'cover',
+    resizeMode: "cover",
   },
   productInfo: {
     padding: 12,
@@ -464,8 +607,8 @@ const styles = StyleSheet.create({
     lineHeight: 18,
   },
   ratingContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginBottom: 6,
   },
   ratingText: {
@@ -484,12 +627,12 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     width: "90%",
     borderRadius: 8,
-    alignItems: 'center',
+    alignItems: "center",
   },
   addToCartText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 13,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   // New styles for All Products section
   productSearchContainer: {
@@ -510,12 +653,12 @@ const styles = StyleSheet.create({
     paddingBottom: 20,
   },
   gridRow: {
-    justifyContent: 'space-between',
+    justifyContent: "space-between",
     marginBottom: 20,
   },
   gridProductCard: {
     width: (screenWidth - 60) / 2,
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     borderRadius: 12,
     // elevation: 2,
     // shadowColor: '#000',
@@ -527,7 +670,7 @@ const styles = StyleSheet.create({
     // shadowRadius: 3.84,
   },
   gridProductImageContainer: {
-    width: '100%',
+    width: "100%",
     height: 120,
     alignItems: "center",
     justifyContent: "center",
@@ -536,10 +679,10 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 12,
   },
   gridProductImage: {
-    width: '100%',
-    height: '100%',
+    width: "100%",
+    height: "100%",
     borderRadius: 8,
-    resizeMode: 'cover',
+    resizeMode: "cover",
   },
   gridProductInfo: {
     padding: 12,
@@ -567,11 +710,11 @@ const styles = StyleSheet.create({
     backgroundColor: "#2c2a6b",
     paddingVertical: 8,
     borderRadius: 6,
-    alignItems: 'center',
+    alignItems: "center",
   },
   gridAddToCartText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 12,
-    fontWeight: '600',
+    fontWeight: "600",
   },
-})
+});

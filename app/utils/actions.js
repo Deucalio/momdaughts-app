@@ -1,4 +1,4 @@
-const BACKEND_URL = "http://192.168.100.3:3000";
+const BACKEND_URL = "http://192.168.18.5:3000";
 export const fetchCartItemsCount = async (authenticatedFetch) => {
   try {
     const res = await authenticatedFetch(`${BACKEND_URL}/cart-items-count`);
@@ -102,7 +102,9 @@ export const addToWishlist = async (authenticatedFetch, body) => {
 
 export const fetchProducts = async (authenticatedFetch, query) => {
   try {
-    const response = await authenticatedFetch(`${BACKEND_URL}/products?${query}`);
+    const response = await authenticatedFetch(
+      `${BACKEND_URL}/products?${query}`
+    );
     if (!response.ok) {
       throw new Error(`Failed to fetch products: ${response.status}`);
     }
@@ -196,9 +198,14 @@ export const fetchWishlistItems = async (authenticatedFetch) => {
   }
 };
 
-export const fetchArticles = async (authenticatedFetch, numberOfArticles = 3) => {
+export const fetchArticles = async (
+  authenticatedFetch,
+  numberOfArticles = 3
+) => {
   try {
-    const response = await authenticatedFetch(`${BACKEND_URL}/articles?numberOfArticles=${numberOfArticles}`);
+    const response = await authenticatedFetch(
+      `${BACKEND_URL}/articles?numberOfArticles=${numberOfArticles}`
+    );
     if (!response.ok) {
       throw new Error(`Failed to fetch blogs: ${response.status}`);
     }
@@ -222,7 +229,7 @@ export const fetchArticle = async (authenticatedFetch, id) => {
       throw new Error(`Failed to fetch articles: ${response.status}`);
     }
     const data = await response.json();
-    return data
+    return data;
   } catch (error) {
     console.error("Error fetching article:", error);
     return [];
@@ -317,4 +324,15 @@ export const createIPLSession = async (authenticatedFetch, data) => {
       details: error.message,
     };
   }
+};
+
+export const appendShippingAdresses = async (authenticatedFetch, email) => {
+  // Post request to /append-shipping-addresses
+
+  authenticatedFetch(`${BACKEND_URL}/append-shipping-addresses`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email }),
+  });
+  console.log("Shipping addresses appended");
 };

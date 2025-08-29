@@ -1,26 +1,26 @@
+import { Image } from 'expo-image';
 import { useFocusEffect } from "expo-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
-    ActivityIndicator,
-    Alert,
-    Animated,
-    FlatList,
-  
-    KeyboardAvoidingView,
-    Platform,
-    Pressable,
-    SafeAreaView,
-    ScrollView,
-    StatusBar,
-    StyleSheet,
-    Text,
-    TextInput,
-    View,
+  ActivityIndicator,
+  Alert,
+  Animated,
+  FlatList,
+
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  SafeAreaView,
+  ScrollView,
+  StatusBar,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
 } from "react-native";
-import { Image } from 'expo-image';
 
 // Configure these for your app
-const CART_API = "http://192.168.100.3:3000/cart";
+const CART_API = "http://192.168.18.5:3000/cart";
 const CURRENCY_SYMBOL = "PKR ";
 
 import { createOrder } from "../utils/actions";
