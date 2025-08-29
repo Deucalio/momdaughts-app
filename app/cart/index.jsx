@@ -13,7 +13,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
-import { router } from "expo-router";
+import { router, useFocusEffect } from "expo-router";
 import { useAuthenticatedFetch } from "../utils/authStore";
 import { createCartOperations } from "../utils/cartOperations";
 
@@ -82,6 +82,12 @@ export default function CartScreen() {
     fetchCartItems();
   }, [fetchCartItems]);
 
+  useFocusEffect(
+    useCallback(() => {
+      fetchCartItems();
+    }, [])
+  );
+
   const getTotalItems = () => {
     return cartItems.reduce((total, item) => total + item.quantity, 0);
   };
@@ -90,6 +96,12 @@ export default function CartScreen() {
     return cartItems.reduce(
       (total, item) => total + (item.price || 0) * item.quantity,
       0
+    );
+  };
+
+  const navigateToProduct = (item) => {
+    router.push(
+      `/products/${item.shopifyProductId}?variantId=${item.shopifyVariantId}`
     );
   };
 
@@ -137,15 +149,18 @@ export default function CartScreen() {
   const renderCartItem = (item) => (
     <View key={item.id} style={styles.cartItem}>
       <View style={styles.imageContainer}>
-        <Image
-          source={{
-            uri:
-              item.variantImage ||
-              `https://via.placeholder.com/80x80/4E3366/white?text=Product`,
-          }}
-          style={styles.productImage}
-          contentFit="cover"
-        />
+        <TouchableOpacity activeOpacity={0.5} onPress={() => navigateToProduct(item)}>
+          <Image
+            source={{
+              uri:
+                item.variantImage ||
+                `https://via.placeholder.com/80x80/4E3366/white?text=Product`,
+            }}
+            style={styles.productImage}
+            contentFit="cover"
+          />
+        </TouchableOpacity>
+
         {item.isOutOfStock && (
           <View style={styles.outOfStockOverlay}>
             <Text style={styles.outOfStockText}>OUT OF{"\n"}STOCK</Text>
@@ -154,11 +169,19 @@ export default function CartScreen() {
       </View>
 
       <View style={styles.productDetails}>
-        <Text style={styles.productTitle} numberOfLines={2}>
-          {item.productTitle}
-        </Text>
+        <TouchableOpacity
+          onPress={() => navigateToProduct(item)}
+          activeOpacity={0.5}
+          numberOfLines={2}
+        >
+          <Text style={styles.productTitle}>{item.productTitle}</Text>
+        </TouchableOpacity>
 
-        {item.title && <Text style={styles.productInfo}>{item.title}</Text>}
+        {item.title && (
+          <View style={styles.productInfo}>
+            <Text style={styles.productInfo}>{item.title}</Text>
+          </View>
+        )}
 
         <Text style={styles.productPrice}>
           Rs. {(item.price || 0).toLocaleString()}
@@ -295,7 +318,7 @@ export default function CartScreen() {
 
           <View style={styles.logoContainer}>
             <View style={styles.logo}>
-                 <Image
+              <Image
                 source={{ uri: "https://i.ibb.co/391FfHYS/Layer-1.png" }}
                 style={styles.logo}
                 contentFit="contain"
@@ -328,12 +351,12 @@ export default function CartScreen() {
 
         <View style={styles.logoContainer}>
           <View style={styles.logo}>
-               <Image
-                source={{ uri: "https://i.ibb.co/391FfHYS/Layer-1.png" }}
-                style={styles.logo}
-                contentFit="contain"
-                cachePolicy="memory-disk"
-              />
+            <Image
+              source={{ uri: "https://i.ibb.co/391FfHYS/Layer-1.png" }}
+              style={styles.logo}
+              contentFit="contain"
+              cachePolicy="memory-disk"
+            />
           </View>
         </View>
       </View>
@@ -371,6 +394,7 @@ export default function CartScreen() {
         </View>
 
         <TouchableOpacity
+          activeOpacity={0.7}
           style={styles.checkoutButton}
           onPress={() => router.push("/screens/checkout")}
         >
@@ -441,9 +465,6 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 16,
     alignItems: "flex-start",
-    
-
-   
   },
   imageContainer: {
     position: "relative",
