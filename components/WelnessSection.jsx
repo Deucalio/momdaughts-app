@@ -1,61 +1,110 @@
-"use client"
+"use client";
 
-import { useRef, useState } from "react"
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Dimensions, Image } from "react-native"
+import { useEffect, useRef, useState } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+  Dimensions,
+  Image,
+} from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
+import { useAuthenticatedFetch } from "@/app/utils/authStore";
 
-const { width } = Dimensions.get("window")
-const CARD_WIDTH = width * 0.65
-const CARD_SPACING = 16
+const { width } = Dimensions.get("window");
+const CARD_WIDTH = width * 0.65;
+const CARD_SPACING = 16;
+import { fetchCollections } from "./../app/utils/actions";
 
-
-
-const collections = [
-    {
-    id: "1",
+const COLLECTIONS = [
+  {
+    id: "426340712740",
     title: "The Menstrual Collection",
-    itemCount: 8,
-    imageUrl: "https://momdaughts.com/cdn/shop/collections/the-menstrual-collection-125547.png?v=1748522707&width=710",
+    itemCount: 0,
+    imageUrl: "https://cdn.shopify.com/s/files/1/0669/0773/4308/collections/the-menstrual-collection-125547.png?v=1748522707",
   },
   {
-    id: "2",
+    id: "630364766500",
     title: "IPL Laser Hair Removers",
-    itemCount: 3,
-    imageUrl: "https://momdaughts.com/cdn/shop/collections/ipl-hair-removal-collection.jpg?v=1748522744&width=710",
+    itemCount: 0,
+    imageUrl: "https://cdn.shopify.com/s/files/1/0669/0773/4308/collections/ipl-hair-removal-collection.jpg?v=1748522744",
   },
   {
-    id: "3",
+    id: "449705443620",
     title: "Skin Serums",
-    itemCount: 9,
-    imageUrl: "https://momdaughts.com/cdn/shop/collections/momdaughts-skin-care-collection-683704.png?v=1748526758&width=710",
+    itemCount: 0,
+    imageUrl: "",
   },
 
   {
-    id: "4",
+    id: "637913465124",
     title: "Skin Care",
-    itemCount: 12,
-    imageUrl: "https://momdaughts.com/cdn/shop/collections/skin_care_collection_image.jpg?v=1749815037&width=710",
+    itemCount: 0,
+    imageUrl: "",
   },
-]
+];
 
 export default function WellnessCollections() {
-  const scrollViewRef = useRef(null)
-  const [currentIndex, setCurrentIndex] = useState(0)
+  const scrollViewRef = useRef(null);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const router = useRouter();
+  const [collections, setCollections] = useState(COLLECTIONS);
+  const { authenticatedFetch } = useAuthenticatedFetch();
 
   const handleScroll = (event) => {
-    const scrollPosition = event.nativeEvent.contentOffset.x
-    const index = Math.round(scrollPosition / (CARD_WIDTH + CARD_SPACING))
-    setCurrentIndex(index)
-  }
+    const scrollPosition = event.nativeEvent.contentOffset.x;
+    const index = Math.round(scrollPosition / (CARD_WIDTH + CARD_SPACING));
+    setCurrentIndex(index);
+  };
 
   const scrollToIndex = (index) => {
     scrollViewRef.current?.scrollTo({
       x: index * (CARD_WIDTH + CARD_SPACING),
       animated: true,
-    })
-    setCurrentIndex(index)
-  }
+    });
+    setCurrentIndex(index);
+  };
 
+  useEffect(() => {
+    const fetchAndUpdateCollections = async () => {
+      try {
+        const ids = COLLECTIONS.map((collection) => collection.id).join(",");
+        const collections_ = await fetchCollections(authenticatedFetch, ids);
+        console.log("API Collections:", collections_);
+
+
+
+        // Update static COLLECTIONS with latest API data
+        const updatedCollections = COLLECTIONS.map((collection) => {
+          const apiData = collections_.find(
+            (item) => item.id.replace("gid://shopify/Collection/", "") === collection.id
+          );
+          console.log("API Data:", apiData);
+          return apiData
+            ? {
+                ...collection,
+                title: apiData.title,
+                handle: apiData.handle,
+                itemCount: apiData.activeProductsItemsCount,
+                description: apiData.description,
+                imageUrl: apiData.image.url || collection.imageUrl, // fallback to old
+              }
+            : collection;
+        });
+
+        console.log("Updated Collections:", updatedCollections);
+
+        setCollections(updatedCollections);
+      } catch (error) {
+        console.error("Failed to fetch or update collections:", error);
+      }
+    };
+
+    fetchAndUpdateCollections();
+  }, []);
   return (
     <View style={styles.container}>
       {/* Header */}
@@ -81,19 +130,33 @@ export default function WellnessCollections() {
         scrollEventThrottle={16}
       >
         {collections.map((collection, index) => (
-          <TouchableOpacity key={collection.id} style={styles.card}>
+          <TouchableOpacity
+            onPress={() => router.push(`/screens/collections/${collection.id}?imageUrl=${collection.imageUrl}&title=${collection.title}&description=${collection.description}`)}
+            key={collection.id}
+            style={styles.card}
+          >
             <View style={styles.imageContainer}>
-              <Image source={{ uri: collection.imageUrl }} style={styles.backgroundImage} resizeMode="cover" />
+              <Image
+                source={{ uri: collection.imageUrl }}
+                style={styles.backgroundImage}
+                resizeMode="cover"
+              />
             </View>
 
             <View style={styles.textSection}>
               <View style={styles.textContent}>
                 <Text style={styles.cardTitle}>{collection.title}</Text>
-                <Text style={styles.itemCount}>{collection.itemCount} items</Text>
+                <Text style={styles.itemCount}>
+                  {collection.itemCount} items
+                </Text>
               </View>
               <TouchableOpacity style={styles.arrowButton}>
                 {/* <Text style={styles.arrowText}>→</Text> */}
-                  <Ionicons name="arrow-forward-outline" size={16} color={"#1f2937"} />
+                <Ionicons
+                  name="arrow-forward-outline"
+                  size={16}
+                  color={"#1f2937"}
+                />
               </TouchableOpacity>
             </View>
           </TouchableOpacity>
@@ -105,13 +168,16 @@ export default function WellnessCollections() {
         {collections.map((_, index) => (
           <TouchableOpacity
             key={index}
-            style={[styles.dot, currentIndex === index ? styles.activeDot : styles.inactiveDot]}
+            style={[
+              styles.dot,
+              currentIndex === index ? styles.activeDot : styles.inactiveDot,
+            ]}
             onPress={() => scrollToIndex(index)}
           />
         ))}
       </View>
     </View>
-  )
+  );
 }
 
 const styles = StyleSheet.create({
@@ -150,7 +216,7 @@ const styles = StyleSheet.create({
     marginRight: CARD_SPACING,
     borderRadius: 20,
     backgroundColor: "#ffffff",
- 
+
     overflow: "hidden",
   },
   imageContainer: {
@@ -218,4 +284,4 @@ const styles = StyleSheet.create({
     color: "#ffffff",
     fontWeight: "600",
   },
-})
+});

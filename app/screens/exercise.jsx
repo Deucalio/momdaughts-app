@@ -1,11 +1,17 @@
-
-import { Image } from 'expo-image';
-import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Dimensions } from "react-native"
-import { LinearGradient } from "expo-linear-gradient"
-import { useSafeAreaInsets } from "react-native-safe-area-context"
-import { router } from "expo-router";
-import { Ionicons } from '@expo/vector-icons';
-
+import { Image } from "expo-image";
+import {
+  View,
+  Text,
+  ScrollView,
+  TouchableOpacity,
+  StyleSheet,
+  Dimensions,
+  StatusBar,
+} from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useRouter, useLocalSearchParams } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
 
 const { height: screenHeight, width: screenWidth } = Dimensions.get("window");
 
@@ -25,42 +31,96 @@ const COLORS = {
   danger: "#dc3545",
 };
 
-const ExerciseDetailScreen = ({ onBack }) => {
-  const insets = useSafeAreaInsets()
+const menstrualReliefExercises = [
+  {
+    id: 1,
+    title: "Period pain relief",
+    image: "https://i.ibb.co/kF3J0B7/image.png",
+    gradientColors: [COLORS.lightPink, COLORS.mediumPink, COLORS.lavender],
+    containerColor: COLORS.lightPink,
+    duration: "3 min",
+    poses: ["Supported child's pose", "Camel Pose", "Supported cat pose"],
+    images: [
+      "https://i.ibb.co/4RPLw0gF/image-fotor-bg-remover-2025082819617.png",
+      "https://i.ibb.co/C5z5wgG4/image-fotor-bg-remover-2025082819217.png",
+      "https://i.ibb.co/k2XWmY1b/image-fotor-bg-remover-20250828194042.png",
+    ],
+  },
+  {
+    id: 2,
+    title: "Foot massage relieve",
+    image: "https://i.ibb.co/CKVJp6gn/woman-relaxing-spa-min.jpg",
+    gradientColors: ["#333333", "#dd1818"],
+    containerColor: "#333333",
+    duration: "3 min",
+    poses: ["Left foot massage", "Right foot massage"],
+    images: [
+      "https://i.ibb.co/gFSP7k2R/image.png",
+      "https://i.ibb.co/1G24x6vQ/download.png"
+    ],
+  },
+];
 
-  const poses = [
-    {
-      id: 1,
-      name: "Supported child's pose",
-      image: "https://i.ibb.co/Y7Vk2FxD/image.png",
-    },
-    {
-      id: 2,
-      name: "Camel Pose",
-      image: "https://i.ibb.co/wZnG2K2T/image.png",
-    },
-    {
-      // https://i.ibb.co/R4Gn1009/image.png
-      id: 3,
-      name: "Supported reclining bound angle pose",
-      image: "https://i.ibb.co/k2XWmY1b/image-fotor-bg-remover-20250828194042.png",
-    },
-  ]
+const ExerciseDetailScreen = () => {
+  const insets = useSafeAreaInsets();
+  const router = useRouter();
+
+  const params = useLocalSearchParams();
+  const exercise_id = parseInt(params.exercise_id);
+  const exercise = menstrualReliefExercises[exercise_id - 1];
+
+  // Handle case where exercise is not found
+  if (!exercise) {
+    return (
+      <View style={styles.container}>
+        <View style={styles.errorContainer}>
+          <TouchableOpacity
+            onPress={() => router.back()}
+            style={[styles.backButton, { top: insets.top + 10 }]}
+          >
+            <Ionicons
+              style={styles.backArrow}
+              name="arrow-back"
+              size={20}
+              color="#000"
+            />
+          </TouchableOpacity>
+          <Text style={styles.errorText}>Exercise not found</Text>
+        </View>
+      </View>
+    );
+  }
+
+  // Create poses array from exercise data
+  const poses = exercise.poses.map((poseName, index) => ({
+    id: index + 1,
+    name: poseName,
+    image: exercise.images[index] || exercise.image, // fallback to main image if pose image not available
+  }));
 
   return (
     <View style={styles.container}>
+      <StatusBar barStyle={`${exercise_id === 2 ? "light-content" : "dark-content"}`} />
       {/* Gradient Background */}
       <LinearGradient
-        colors={[COLORS.lightPink, COLORS.mediumPink, COLORS.lavender]}
+        colors={exercise.gradientColors}
         start={{ x: 0, y: 0 }}
         end={{ x: 0, y: 0.6 }}
         style={styles.gradientBackground}
       />
 
       {/* Absolute positioned back button */}
-      <TouchableOpacity onPress={onBack} style={[styles.backButton, { top: insets.top + 10 }]}>
-        {/* <Text style={styles.backArrow}>←</Text> */}
-        <Ionicons style={styles.backArrow} name="arrow-back" size={20} color="#000" />
+      <TouchableOpacity
+        // onPress={onBack}
+        onPress={() => router.back()}
+        style={[styles.backButton, { top: insets.top + 10 }]}
+      >
+        <Ionicons
+          style={styles.backArrow}
+          name="arrow-back"
+          size={20}
+          color="#000"
+        />
       </TouchableOpacity>
 
       <ScrollView
@@ -69,29 +129,40 @@ const ExerciseDetailScreen = ({ onBack }) => {
         contentContainerStyle={styles.scrollContent}
       >
         {/* Hero Image */}
-        <View style={styles.heroImageContainer}>
-          <Image 
-          
-          // https://momdaughts.com/cdn/shop/files/aunty_heating_pad.jpg?v=1750342577&width=1000
-            source={{ uri: "https://i.ibb.co/kF3J0B7/image.png" }} 
-            style={styles.heroImage} 
-            resizeMode="cover"
+        <View 
+          style={[
+            styles.heroImageContainer,
+            { backgroundColor: exercise.containerColor }
+          ]}
+        >
+          <Image
+            source={{ uri: exercise.image }}
+            style={styles.heroImage}
+            contentFit="cover"
           />
         </View>
 
         {/* Content Section */}
         <View style={styles.contentSection}>
-          <Text style={styles.title}>Period pain relief</Text>
-          <Text style={styles.subtitle}>Here are some easy poses to help you calm down and relieve the pain.</Text>
+          <Text style={styles.title}>{exercise.title.replace('\n', ' ')}</Text>
+          <Text style={styles.subtitle}>
+            Here are some easy poses to help you calm down and relieve the pain.
+          </Text>
 
-          <Text style={styles.duration}>3 min, 3 Poses</Text>
+          <Text style={styles.duration}>
+            {exercise.duration}, {exercise.poses.length} Poses
+          </Text>
 
           {/* Poses List */}
           <View style={styles.posesList}>
             {poses.map((pose) => (
               <View key={pose.id} style={styles.poseItem}>
                 <View style={styles.poseImageContainer}>
-                  <Image source={{ uri: pose.image }} style={styles.poseImage} resizeMode="cover" />
+                  <Image
+                    source={{ uri: pose.image }}
+                    style={styles.poseImage}
+                    contentFit="cover"
+                  />
                 </View>
                 <Text style={styles.poseName}>{pose.name}</Text>
               </View>
@@ -99,7 +170,10 @@ const ExerciseDetailScreen = ({ onBack }) => {
           </View>
 
           {/* Start Button */}
-          <TouchableOpacity onPress={() => router.push("/screens/start")} style={styles.startButton}>
+          <TouchableOpacity
+            onPress={() => router.push(`/screens/start?exercise_id=${exercise_id}`)}
+            style={styles.startButton}
+          >
             <View style={styles.playIcon}>
               <View style={styles.playTriangle} />
             </View>
@@ -108,8 +182,8 @@ const ExerciseDetailScreen = ({ onBack }) => {
         </View>
       </ScrollView>
     </View>
-  )
-}
+  );
+};
 
 const styles = StyleSheet.create({
   container: {
@@ -140,23 +214,12 @@ const styles = StyleSheet.create({
     borderRadius: 20,
   },
   backArrow: {
-    color: "#374151",
+    color: "#fff",
     fontWeight: "600",
     textAlign: "center",
   },
-//   heroImageContainer: {
-//     alignItems: "center",
-//     marginBottom: 20,
-//     paddingHorizontal: 16,
-//   },
-//   heroImage: {
-//     width: width,
-//     height: auto,
-//     borderRadius: 16,
-//   },
   heroImageContainer: {
     width: "100%",
-    backgroundColor: "#f5b8d0",
     justifyContent: "center",
     alignItems: "center",
   },
@@ -249,6 +312,16 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "600",
   },
-})
+  errorContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  errorText: {
+    fontSize: 18,
+    color: "#111827",
+    textAlign: "center",
+  },
+});
 
-export default ExerciseDetailScreen
+export default ExerciseDetailScreen;

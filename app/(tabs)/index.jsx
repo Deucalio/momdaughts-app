@@ -83,7 +83,7 @@ export default function App() {
   const [cartCount, setCartCount] = useState(0);
   const [addingToCart, setAddingToCart] = useState(new Set());
   const router = useRouter();
-  console.log("user.metaData:", user.metaData);
+  console.log("user:", user);
 
   useFocusEffect(
     useCallback(() => {

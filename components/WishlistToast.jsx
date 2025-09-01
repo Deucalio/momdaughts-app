@@ -7,8 +7,10 @@ import {
   Dimensions,
   Easing,
   PanResponder,
+  TouchableOpacity,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const SWIPE_THRESHOLD = SCREEN_WIDTH * 0.25;
@@ -25,6 +27,7 @@ const WishlistToast = ({
   const translateX = useRef(new Animated.Value(0)).current;
   const opacity = useRef(new Animated.Value(0)).current;
   const scale = useRef(new Animated.Value(0.9)).current;
+  const router = useRouter();
   
   const [isVisible, setIsVisible] = useState(false);
   const timeoutRef = useRef(null);
@@ -236,7 +239,7 @@ const WishlistToast = ({
       <View style={[styles.gradientOverlay, { backgroundColor: isRemoved ? '#95a5a6' : '#e74c3c' }]} />
       
       {/* Content */}
-      <View style={styles.contentContainer}>
+      <TouchableOpacity onPress={() => router.push("/screens/wishlist")} style={styles.contentContainer}>
         {/* Heart icon with subtle animation */}
         <View style={[styles.iconContainer, { backgroundColor: isRemoved ? 'rgba(149, 165, 166, 0.1)' : 'rgba(231, 76, 60, 0.1)' }]}>
           <Ionicons 
@@ -260,7 +263,7 @@ const WishlistToast = ({
         <View style={styles.swipeIndicator}>
           <View style={styles.swipeHandle} />
         </View>
-      </View>
+      </TouchableOpacity>
     </Animated.View>
   );
 };

@@ -35,7 +35,7 @@ const StarRating = ({ rating }) => {
           {star <= Math.floor(rating) ? "★" : star <= rating ? "☆" : "☆"}
         </Text>
       ))}
-      <Text style={styles.ratingText}>{rating}</Text>
+      <Text style={styles.ratingText}>{rating} (253)</Text>
     </View>
   );
 };

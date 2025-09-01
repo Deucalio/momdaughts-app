@@ -16,10 +16,14 @@ import {
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import ScreenWrapper from "../../components/ScreenWrapper";
-import { fetchCartItemsCount, addToCart } from "../utils/actions";
-import { useAuthenticatedFetch, useAuthStore } from "../utils/authStore";
 import CartToast from "../../components/CartToast";
+import ScreenWrapper from "../../components/ScreenWrapper";
+import {
+  addToCart,
+  fetchCartItemsCount,
+  fetchCollections,
+} from "../utils/actions";
+import { useAuthenticatedFetch, useAuthStore } from "../utils/authStore";
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
 
@@ -39,29 +43,29 @@ const COLORS = {
   lightGray: "#ddd",
 };
 
-const BACKEND_URL = "http://192.168.18.5:3000";
+const BACKEND_URL = "http://192.168.77.137:3000";
 
 const categories = [
   {
-    id: "2",
+    id: "426340712740",
     title: "Menstrual Collection",
     imageUrl: "https://i.ibb.co/DfJhZQr5/image.png",
     color: "#E5F5E5",
   },
   {
-    id: "3",
+    id: "630364766500",
     title: "IPL Laser Hair Removal",
     imageUrl: "https://i.ibb.co/YBNh9319/image.png",
     color: "#F0E5FF",
   },
   {
-    id: "4",
+    id: "449705443620",
     title: "Skin Serums",
     imageUrl: "https://i.ibb.co/QFvp5VXw/image.png",
     color: "#FFF5E5",
   },
   {
-    id: "5",
+    id: "637913465124",
     title: "Skin Care",
     imageUrl: "https://i.ibb.co/jP5cS5J0/image.png",
     color: "#E5F5E5",
@@ -126,6 +130,7 @@ export default function App() {
   });
   const router = useRouter();
   const { user } = useAuthStore();
+  const [apiCollections, setApiCollections] = useState([]);
 
   const loadCartItemsCount = async () => {
     try {
@@ -167,6 +172,12 @@ export default function App() {
     }
   };
 
+  const loadCollections = async () => {
+    const ids = "426340712740,630364766500,449705443620,637913465124";
+    const collections = await fetchCollections(authenticatedFetch, ids);
+    setApiCollections(collections);
+  };
+
   const handleProductSearch = (query) => {
     setProductSearchQuery(query);
     if (query.trim() === "") {
@@ -182,24 +193,25 @@ export default function App() {
   useEffect(() => {
     fetchProducts();
     loadCartItemsCount();
+    loadCollections();
   }, []);
 
-useFocusEffect(
-  useCallback(() => {
-    // Use requestAnimationFrame to defer state updates
-    requestAnimationFrame(() => {
-      loadCartItemsCount();
-      setAddToCartToast({
-        clickCount: 0,
-        showToast: false,
-        selectedProduct: {
-          name: "",
-          image: "",
-        },
+  useFocusEffect(
+    useCallback(() => {
+      // Use requestAnimationFrame to defer state updates
+      requestAnimationFrame(() => {
+        loadCartItemsCount();
+        setAddToCartToast({
+          clickCount: 0,
+          showToast: false,
+          selectedProduct: {
+            name: "",
+            image: "",
+          },
+        });
       });
-    });
-  }, [])
-);
+    }, [])
+  );
   const handleAddToCart = async (item) => {
     const cartItem = {
       userId: user.id,
@@ -211,8 +223,6 @@ useFocusEffect(
       addedAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
-    console.log("cartItem:", cartItem);
-
 
     try {
       setCartItemCount(cartItemCount + 1);
@@ -249,6 +259,23 @@ useFocusEffect(
   const renderCategoryItem = ({ item }) => (
     <View style={styles.categoryItemContainer}>
       <TouchableOpacity
+        activeOpacity={0.5}
+        onPress={() => {
+          const collection_ = apiCollections.find(
+            (collection) => collection.id.split("/").slice(-1)[0] === item.id
+          );
+          if (!collection_) {
+            router.push(`/screens/collections/${item.id}`);
+            return1;
+          }
+          router.push(
+            `/screens/collections/${
+              collection_.id.split("/").slice(-1)[0]
+            }?imageUrl=${collection_.image?.url}&title=${
+              collection_.title
+            }&description=${collection_.description}`
+          );
+        }}
         style={[styles.categoryCard, { backgroundColor: item.color }]}
       >
         <Image source={{ uri: item.imageUrl }} style={styles.categoryImage} />

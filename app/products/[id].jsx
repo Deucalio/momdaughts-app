@@ -27,7 +27,7 @@ import WishlistToast from "../../components/WishlistToast";
 import { addToCart, addToWishlist, fetchCartItemsCount, removeFromWishlist } from "../utils/actions";
 import { useAuthenticatedFetch } from "../utils/authStore";
 const { width, height } = Dimensions.get("window");
-const BACKEND_URL = "http://192.168.18.5:3000";
+const BACKEND_URL = "http://192.168.77.137:3000";
 const CONTAINER_WIDTH = width - 32;
 
 const ProductDetailPage = () => {
@@ -567,7 +567,7 @@ useEffect(() => {
       <Image
         source={{ uri: item.url }}
         style={styles.thumbnail}
-        resizeMode="cover"
+        contentFit="cover"
       />
     </TouchableOpacity>
   );
@@ -641,7 +641,7 @@ useEffect(() => {
             <Ionicons name="arrow-back" size={24} color="#000" />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Product Detail</Text>
-          <TouchableOpacity style={styles.headerButton}>
+          <TouchableOpacity onPress={() => router.push("/cart")} style={styles.headerButton}>
             <Animated.View
               style={{
                 transform: [
@@ -654,7 +654,8 @@ useEffect(() => {
                 ],
               }}
             >
-              <Ionicons name="bag-outline" size={24} color="#000" />
+              {/* <Ionicons name="bag-outline" size={24} color="#000" /> */}
+              <Ionicons name="bag-outline" size={24} color="#ec4899" />
               {cartCount > 0 && (
                 <View style={styles.cartBadge}>
                   <Text style={styles.cartBadgeText}>{cartCount}</Text>
@@ -690,7 +691,7 @@ useEffect(() => {
                   <Image
                     source={{ uri: image.url }}
                     style={styles.mainImage}
-                    resizeMode="cover"
+                    contentFit="cover"
                   />
                 </View>
               ))}
@@ -966,7 +967,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#F5F5F5",
     elevation: 0,
     shadowOpacity: 0,
-    paddingTop: 10,
+    paddingTop: 11,
     zIndex: 10,
   },
   headerContent: {
@@ -986,11 +987,11 @@ const styles = StyleSheet.create({
   cartBadge: {
     position: "absolute",
     top: -2,
-    right: -2,
-    backgroundColor: "#EF4444",
+    right: -5,
+    backgroundColor: "#ec4899",
     borderRadius: 10,
-    minWidth: 18,
-    height: 18,
+    minWidth: 16,
+    height: 16,
     justifyContent: "center",
     alignItems: "center",
     paddingHorizontal: 4,

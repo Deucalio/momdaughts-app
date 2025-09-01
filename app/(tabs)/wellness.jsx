@@ -6,14 +6,15 @@ import {
   StyleSheet,
   Dimensions,
 } from "react-native";
-import { Image } from 'expo-image';
-
+import { Image } from "expo-image";
+import { useAuthenticatedFetch } from "../utils/authStore";
 const { width } = Dimensions.get("window");
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";
-
+import { fetchCartItemsCount } from "../utils/actions";
 import ScreenWrapper from "../../components/ScreenWrapper";
-import { useRouter } from "expo-router";
+import { useRouter, useFocusEffect } from "expo-router";
+import { useCallback, useEffect, useState } from "react";
 const COLORS = {
   lightPink: "#f5b8d0",
   lavender: "#e2c6df",
@@ -32,28 +33,20 @@ const COLORS = {
 const WellnessScreen = () => {
   const insets = useSafeAreaInsets();
   const router = useRouter();
+  const [cartItemCount, setCartItemCount] = useState(0);
+  const {authenticatedFetch} = useAuthenticatedFetch();
   const menstrualReliefExercises = [
     {
       id: 1,
-      title: "Period pain \n relief",
+      title: "Period pain \nrelief",
       image: "https://i.ibb.co/kF3J0B7/image.png",
       gradientColors: [COLORS.lightPink, COLORS.mediumPink, COLORS.lavender],
-      duration: "3 min",
-      poses: [
-        "Supported child's pose",
-        "Supported pigeon pose",
-        "Supported cat pose",
-      ],
-      images: ["", "", ""],
     },
     {
       id: 2,
-      title: "Foot massage \n relieve",
+      title: "Foot massage \nrelieve",
       image: "https://i.ibb.co/CKVJp6gn/woman-relaxing-spa-min.jpg",
       gradientColors: ["#333333", "#dd1818"],
-      duration: "3 min",
-      poses: ["Left foot massage", "Right foot massage"],
-      images: ["", "", ""],
     },
     // {
     //   id: 3,
@@ -100,8 +93,32 @@ const WellnessScreen = () => {
     </View>
   );
 
+  const loadCartItemsCount = async () => {
+    try {
+      const result = await fetchCartItemsCount(authenticatedFetch);
+      if (result.success) {
+        setCartItemCount(result.count);
+      }
+    } catch (error) {
+      console.error("[v0] Failed to load cart count:", error);
+    }
+  };
+
+  useEffect(() => {
+    loadCartItemsCount();
+  }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      // Use requestAnimationFrame to defer state updates
+      requestAnimationFrame(() => {
+        loadCartItemsCount();
+      });
+    }, [])
+  );
+
   return (
-    <ScreenWrapper cartItemCount={0}>
+    <ScreenWrapper cartItemCount={cartItemCount}>
       <ScrollView
         style={[
           styles.container,
@@ -120,7 +137,9 @@ const WellnessScreen = () => {
           >
             {menstrualReliefExercises.map((exercise) => (
               <TouchableOpacity
-                onPress={() => router.push("/screens/exercise")}
+                onPress={() =>
+                  router.push(`/screens/exercise?exercise_id=${exercise.id}`)
+                }
                 key={exercise.id}
                 activeOpacity={0.8}
                 style={styles.exerciseCard}

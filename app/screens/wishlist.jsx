@@ -25,6 +25,7 @@ import { useFocusEffect, useRouter } from "expo-router";
 import { fetchWishlistItems } from "../utils/actions";
 import { Touchable } from "react-native";
 import HeaderWithoutCart from "../../components/HeaderWithoutCart";
+import NavigationSpaceContainer from "../../components/NavigationSpaceContainer";
 
 // Your color theme
 const COLORS = {
@@ -262,6 +263,7 @@ function WishlistItem({
   const isAvailable = !item.isOutOfStock && item.variantInventoryQuantity > 0;
 
   return (
+
     <Animated.View style={[styles.itemContainer, { opacity: fadeAnim }]}>
       <View style={styles.itemCard}>
         {/* Remove Button */}
@@ -347,9 +349,12 @@ function WishlistItem({
               </Text>
             )}
           </Pressable>
+
         </View>
+
       </View>
     </Animated.View>
+
   );
 }
 

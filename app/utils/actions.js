@@ -1,4 +1,4 @@
-const BACKEND_URL = "http://192.168.18.5:3000";
+const BACKEND_URL = "http://192.168.77.137:3000";
 export const fetchCartItemsCount = async (authenticatedFetch) => {
   try {
     const res = await authenticatedFetch(`${BACKEND_URL}/cart-items-count`);
@@ -239,17 +239,47 @@ export const fetchArticle = async (authenticatedFetch, id) => {
 export const fetchDevices = async (authenticatedFetch) => {
   try {
     const response = await authenticatedFetch(
-      `${BACKEND_URL}/collections/630364766500`
+      `${BACKEND_URL}/ipl-devices`
     );
     if (response.ok) {
       const data = await response.json();
-      return data.collection;
+      return data.collections;
     }
   } catch (error) {
     console.error("Failed to fetch devices:", error);
     return [];
   }
 };
+
+export const fetchCollection = async (authenticatedFetch, id) => {
+  try {
+    const response = await authenticatedFetch(
+      `${BACKEND_URL}/collections/${id}`
+    );
+    if (response.ok) {
+      const data = await response.json();
+      return data.collection;
+    }
+  } catch (error) {
+    console.error("Failed to fetch collection:", error);
+    return [];
+  } 
+}
+
+export const fetchCollections = async (authenticatedFetch, ids) => {
+  try {
+    const response = await authenticatedFetch(
+      `${BACKEND_URL}/collections${ids ? `?collectionsIds=${ids}` : ""}`
+    );
+    if (response.ok) {
+      const data = await response.json();
+      return data.collections;
+    }
+  } catch (error) {
+    console.error("Failed to fetch collections:", error);
+    return [];
+  }
+} 
 
 export const createIPLProfile = async (authenticatedFetch, data) => {
   const { onboardingData } = data;
