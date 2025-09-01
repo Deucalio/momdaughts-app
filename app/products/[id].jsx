@@ -1,6 +1,6 @@
 "use client";
 import { Ionicons } from "@expo/vector-icons";
-import { Image } from 'expo-image';
+import { Image } from "expo-image";
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
@@ -10,7 +10,6 @@ import {
   Dimensions,
   Easing,
   FlatList,
-
   PanResponder,
   SafeAreaView,
   ScrollView,
@@ -24,11 +23,183 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import CartToast from "../../components/CartToast";
 import WishlistToast from "../../components/WishlistToast";
-import { addToCart, addToWishlist, fetchCartItemsCount, removeFromWishlist } from "../utils/actions";
+import {
+  addToCart,
+  addToWishlist,
+  fetchCartItemsCount,
+  removeFromWishlist,
+} from "../utils/actions";
 import { useAuthenticatedFetch } from "../utils/authStore";
 const { width, height } = Dimensions.get("window");
 const BACKEND_URL = "http://192.168.77.137:3000";
 const CONTAINER_WIDTH = width - 32;
+
+// Product Detail Page Skeleton
+const ProductDetailSkeleton = () => (
+  <SafeAreaView style={styles.container}>
+    {/* Header Skeleton */}
+    <View style={styles.header}>
+      <View style={styles.headerContent}>
+        <View style={[styles.skeletonCircle, { width: 40, height: 40 }]} />
+        <View style={[styles.skeletonText, { width: 120, height: 18 }]} />
+        <View style={[styles.skeletonCircle, { width: 40, height: 40 }]} />
+      </View>
+    </View>
+
+    <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+      {/* Image Section Skeleton */}
+      <View style={styles.imageSection}>
+        <View style={styles.mainImageContainer}>
+          <View
+            style={[
+              styles.skeletonImage,
+              {
+                width: CONTAINER_WIDTH - 20,
+                height: 280,
+                borderRadius: 12,
+              },
+            ]}
+          />
+        </View>
+        {/* Thumbnails Skeleton */}
+        <View
+          style={[
+            styles.thumbnailList,
+            { flexDirection: "row", marginTop: 16 },
+          ]}
+        >
+          {Array.from({ length: 4 }).map((_, index) => (
+            <View
+              key={index}
+              style={[
+                styles.skeletonImage,
+                {
+                  width: 50,
+                  height: 50,
+                  borderRadius: 8,
+                  marginRight: 8,
+                },
+              ]}
+            />
+          ))}
+        </View>
+      </View>
+
+      {/* Product Info Skeleton */}
+      <View style={styles.productInfo}>
+        {/* Title and Heart */}
+        <View style={styles.productHeader}>
+          <View style={[styles.skeletonText, { width: "70%", height: 20 }]} />
+          <View style={[styles.skeletonCircle, { width: 40, height: 40 }]} />
+        </View>
+
+        {/* Price */}
+        <View
+          style={[
+            styles.skeletonText,
+            { width: 100, height: 24, marginBottom: 12 },
+          ]}
+        />
+
+        {/* Rating */}
+        <View
+          style={[
+            styles.skeletonText,
+            { width: 150, height: 16, marginBottom: 20 },
+          ]}
+        />
+
+        {/* Options */}
+        <View style={styles.optionContainer}>
+          <View
+            style={[
+              styles.skeletonText,
+              { width: 80, height: 16, marginBottom: 12 },
+            ]}
+          />
+          <View style={{ flexDirection: "row", gap: 8 }}>
+            {Array.from({ length: 3 }).map((_, index) => (
+              <View
+                key={index}
+                style={[
+                  styles.skeletonText,
+                  {
+                    width: 60,
+                    height: 36,
+                    borderRadius: 8,
+                  },
+                ]}
+              />
+            ))}
+          </View>
+        </View>
+
+        {/* Quantity */}
+        <View style={styles.quantityContainer}>
+          <View
+            style={[
+              styles.skeletonText,
+              { width: 60, height: 16, marginBottom: 12 },
+            ]}
+          />
+          <View
+            style={[
+              styles.skeletonText,
+              { width: 120, height: 44, borderRadius: 8 },
+            ]}
+          />
+        </View>
+
+        {/* Description */}
+        <View style={styles.descriptionContainer}>
+          <View
+            style={[
+              styles.skeletonText,
+              { width: 80, height: 18, marginBottom: 8 },
+            ]}
+          />
+          <View
+            style={[
+              styles.skeletonText,
+              { width: "100%", height: 16, marginBottom: 4 },
+            ]}
+          />
+          <View
+            style={[
+              styles.skeletonText,
+              { width: "80%", height: 16, marginBottom: 4 },
+            ]}
+          />
+          <View style={[styles.skeletonText, { width: "90%", height: 16 }]} />
+        </View>
+      </View>
+    </ScrollView>
+
+    {/* Bottom Buttons Skeleton */}
+    <View style={styles.bottomContainer}>
+      <View style={styles.actionButtons}>
+        <View
+          style={[
+            styles.skeletonImage,
+            { width: 48, height: 48, borderRadius: 12 },
+          ]}
+        />
+        <View
+          style={[
+            styles.skeletonImage,
+            { flex: 1, height: 48, borderRadius: 12 },
+          ]}
+        />
+        <View
+          style={[
+            styles.skeletonImage,
+            { flex: 1, height: 48, borderRadius: 12 },
+          ]}
+        />
+      </View>
+    </View>
+  </SafeAreaView>
+);
 
 const ProductDetailPage = () => {
   const params = useLocalSearchParams();
@@ -210,49 +381,55 @@ const ProductDetailPage = () => {
     },
   });
 
-useEffect(() => {
-  if (!product || !product.variants || product.variants.length === 0) return
+  useEffect(() => {
+    if (!product || !product.variants || product.variants.length === 0) return;
 
-  let variantToSet = null
+    let variantToSet = null;
 
-  // 1. Match by variantId
-  if (params.variantId) {
-    variantToSet = product.variants.find((v) => v.id === params.variantId)
-  }
+    // 1. Match by variantId
+    if (params.variantId) {
+      variantToSet = product.variants.find((v) => v.id === params.variantId);
+    }
 
-  // 2. Fallback
-  if (!variantToSet) {
-    variantToSet = product.variants[0]
-  }
+    // 2. Fallback
+    if (!variantToSet) {
+      variantToSet = product.variants[0];
+    }
 
-  setSelectedVariant(variantToSet)
+    setSelectedVariant(variantToSet);
 
-  // 3. Extract selectedOptions from variant title
-  if (variantToSet && variantToSet.title) {
-    const optionValues = variantToSet.title.split(" / ")
-    const newSelectedOptions = {}
+    // 3. Extract selectedOptions from variant title
+    if (variantToSet && variantToSet.title) {
+      const optionValues = variantToSet.title.split(" / ");
+      const newSelectedOptions = {};
 
-    product.options.forEach((option, index) => {
-      newSelectedOptions[option.name] = optionValues[index]
-    })
+      product.options.forEach((option, index) => {
+        newSelectedOptions[option.name] = optionValues[index];
+      });
 
-    setSelectedOptions(newSelectedOptions)
-  }
-}, [product, params.variantId])
+      setSelectedOptions(newSelectedOptions);
+    }
+  }, [product, params.variantId]);
 
-useEffect(() => {
-  if (!product || !product.variants || Object.keys(selectedOptions).length === 0) return
+  useEffect(() => {
+    if (
+      !product ||
+      !product.variants ||
+      Object.keys(selectedOptions).length === 0
+    )
+      return;
 
-  const selectedOptionString = Object.values(selectedOptions).join(" / ")
-  const variant = product.variants.find(
-    (v) => v.title === selectedOptionString || v.displayName === selectedOptionString
-  )
+    const selectedOptionString = Object.values(selectedOptions).join(" / ");
+    const variant = product.variants.find(
+      (v) =>
+        v.title === selectedOptionString ||
+        v.displayName === selectedOptionString
+    );
 
-  if (variant && variant.id !== selectedVariant?.id) {
-    setSelectedVariant(variant)
-  }
-}, [selectedOptions])
-
+    if (variant && variant.id !== selectedVariant?.id) {
+      setSelectedVariant(variant);
+    }
+  }, [selectedOptions]);
 
   const loadProduct = async () => {
     try {
@@ -603,13 +780,7 @@ useEffect(() => {
   );
 
   if (loading) {
-    return (
-      <SafeAreaView style={styles.loadingContainer}>
-        <StatusBar barStyle="dark-content" />
-        <ActivityIndicator size="large" color="#22C55E" />
-        <Text style={styles.loadingText}>Loading product...</Text>
-      </SafeAreaView>
-    );
+    return <ProductDetailSkeleton />;
   }
 
   if (!product) {
@@ -641,7 +812,10 @@ useEffect(() => {
             <Ionicons name="arrow-back" size={24} color="#000" />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Product Detail</Text>
-          <TouchableOpacity onPress={() => router.push("/cart")} style={styles.headerButton}>
+          <TouchableOpacity
+            onPress={() => router.push("/cart")}
+            style={styles.headerButton}
+          >
             <Animated.View
               style={{
                 transform: [
@@ -1330,6 +1504,19 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "600",
     color: "white",
+  },
+
+  // Add these to your styles object
+  skeletonImage: {
+    backgroundColor: "#e0e0e0",
+  },
+  skeletonText: {
+    backgroundColor: "#e0e0e0",
+    borderRadius: 4,
+  },
+  skeletonCircle: {
+    backgroundColor: "#e0e0e0",
+    borderRadius: 50,
   },
 });
 
