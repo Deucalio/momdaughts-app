@@ -1,4 +1,6 @@
-import { Image } from 'expo-image';
+"use client";
+
+import { Image } from "expo-image";
 import { useFocusEffect } from "expo-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
@@ -6,7 +8,6 @@ import {
   Alert,
   Animated,
   FlatList,
-
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -18,14 +19,15 @@ import {
   TextInput,
   View,
 } from "react-native";
-
+import { useRouter } from "expo-router";
 // Configure these for your app
-const CART_API = "http://192.168.77.137:3000/cart";
+const CART_API = "http://192.168.100.193:3000/cart";
 const CURRENCY_SYMBOL = "PKR ";
 
+import { Ionicons } from "@expo/vector-icons";
 import { createOrder } from "../utils/actions";
 import { useAuthenticatedFetch } from "../utils/authStore";
-
+import NavigationSpaceContainer from "../../components/NavigationSpaceContainer";
 // Subtle, elegant color palette
 const COLORS = {
   primary: "#6B46C1", // Deep purple
@@ -33,6 +35,11 @@ const COLORS = {
   secondary: "#EC4899", // Muted pink
   accent: "#4F46E5", // Indigo
   text: "#111827", // Almost black
+  lightPink: "#f5b8d0",
+  lavender: "#e2c6df",
+  mediumPink: "#eb9fc1",
+  darkBlue: "#2b2b6b",
+  deepBlue: "#2c2a6b",
   textLight: "#4B5563", // Dark gray
   textMuted: "#6B7280", // Medium gray
   border: "#D1D5DB", // Light gray border
@@ -54,49 +61,82 @@ export default function CheckoutScreen() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [items, setItems] = useState([]);
-  const [summaryExpanded, setSummaryExpanded] = useState(false);
+  const [summaryExpanded, setSummaryExpanded] = useState(true); // Always expanded by default
   const [sameAsBilling, setSameAsBilling] = useState(true);
   const [processingPayment, setProcessingPayment] = useState(false);
-  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState("card");
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState("cod"); // Default to COD
   const [discountCode, setDiscountCode] = useState("");
   const [appliedDiscount, setAppliedDiscount] = useState(null);
   const [applyingDiscount, setApplyingDiscount] = useState(false);
+  const [selectedShippingMethod, setSelectedShippingMethod] = useState(null);
+
+  const router = useRouter();
+
+  const [savedAddresses, setSavedAddresses] = useState([
+    {
+      id: "1",
+      firstName: "John",
+      lastName: "Doe",
+      phone: "+92 300 1234567",
+      address1: "123 Main Street",
+      address2: "Apt 4B",
+      city: "Karachi",
+      province: "Sindh",
+      postalCode: "75500",
+      country: "Pakistan",
+      isDefault: true,
+      type: "Home",
+    },
+    {
+      id: "2",
+      firstName: "John",
+      lastName: "Doe",
+      phone: "+92 300 1234567",
+      address1: "456 Business Ave",
+      address2: "Suite 200",
+      city: "Lahore",
+      province: "Punjab",
+      postalCode: "54000",
+      country: "Pakistan",
+      isDefault: false,
+      type: "Work",
+    },
+  ]);
+  const [selectedShippingAddress, setSelectedShippingAddress] = useState(null);
+  const [selectedBillingAddress, setSelectedBillingAddress] = useState(null);
+  const [showAddressSelector, setShowAddressSelector] = useState(false);
+  const [addressSelectorType, setAddressSelectorType] = useState("shipping");
 
   const { authenticatedFetch } = useAuthenticatedFetch();
 
   // Animation for accordion
-  const animatedHeight = useState(new Animated.Value(0))[0];
-  const animatedRotation = useState(new Animated.Value(0))[0];
+  const animatedHeight = useState(new Animated.Value(1))[0]; // Start expanded
+  const animatedRotation = useState(new Animated.Value(1))[0]; // Start rotated
 
-  // Address states
   const [shippingAddress, setShippingAddress] = useState({
-    fullName: "",
+    firstName: "",
+    lastName: "",
     phone: "",
     email: "",
-    address: "",
+    address1: "",
+    address2: "",
     city: "",
-    state: "",
+    province: "",
     postalCode: "",
     country: "",
   });
 
   const [billingAddress, setBillingAddress] = useState({
-    fullName: "",
+    firstName: "",
+    lastName: "",
     phone: "",
     email: "",
-    address: "",
+    address1: "",
+    address2: "",
     city: "",
-    state: "",
+    province: "",
     postalCode: "",
     country: "",
-  });
-
-  // Payment states
-  const [paymentInfo, setPaymentInfo] = useState({
-    cardNumber: "",
-    expiryDate: "",
-    cvv: "",
-    cardHolderName: "",
   });
 
   useFocusEffect(
@@ -105,6 +145,29 @@ export default function CheckoutScreen() {
       StatusBar.setBarStyle("dark-content");
     }, [])
   );
+
+  useEffect(() => {
+    const defaultAddress = savedAddresses.find((addr) => addr.isDefault);
+    if (defaultAddress) {
+      setSelectedShippingAddress(defaultAddress);
+      const mappedAddress = {
+        firstName: defaultAddress.firstName,
+        lastName: defaultAddress.lastName,
+        phone: defaultAddress.phone,
+        email: "", // Will need to be filled
+        address1: defaultAddress.address1,
+        address2: defaultAddress.address2,
+        city: defaultAddress.city,
+        province: defaultAddress.province,
+        postalCode: defaultAddress.postalCode,
+        country: defaultAddress.country,
+      };
+      setShippingAddress(mappedAddress);
+      if (sameAsBilling) {
+        setBillingAddress(mappedAddress);
+      }
+    }
+  }, []);
 
   useEffect(() => {
     let mounted = true;
@@ -128,6 +191,9 @@ export default function CheckoutScreen() {
       mounted = false;
     };
   }, []);
+
+
+
 
   // Animate accordion
   useEffect(() => {
@@ -163,13 +229,67 @@ export default function CheckoutScreen() {
     [availableItems]
   );
 
-  const shipping = subtotal > 2000 ? 0 : 150; // Free shipping over PKR 2000
-  const tax = Math.round(subtotal * 0.17); // 17% tax (Pakistan GST)
+
+    const totalWeight = useMemo(() => {
+    return availableItems.reduce((sum, item) => {
+      const weight = item.weight?.value || 0;
+      return sum + weight * item.quantity;
+    }, 0);
+  }, [availableItems]);
+
+    const shippingMethods = useMemo(() => {
+    const methods = [
+      {
+        id: "express",
+        name: "Express Shipping",
+        description: "2-4 Days",
+        price: 99,
+      },
+      {
+        id: "free-express",
+        name: "Free Express Shipping",
+        description: "2-4 Days",
+        price: 0,
+      },
+    ];
+    // Auto-select based on weight
+   const defaultMethod = totalWeight > 0.1 ? methods[1] : methods[0];
+    if (!selectedShippingMethod) {
+      setSelectedShippingMethod(defaultMethod);
+    }
+
+    return methods;
+  }, [
+    totalWeight,
+    selectedShippingMethod,
+    setSelectedShippingMethod,
+  ]);
+
+  useEffect(() => {
+    const defaultMethod = totalWeight > 0.1 ? shippingMethods[1] : shippingMethods[0];
+    setSelectedShippingMethod(defaultMethod);
+  }, [totalWeight])
+
+  const shipping = selectedShippingMethod?.price || 0;
+
+  // const tax = Math.round(subtotal * 0.17); // 17% tax (Pakistan GST)
+  // 2% Tax (Pakistan GST)
+  const tax = Math.round(subtotal * 0.02);
   const discountAmount = appliedDiscount
     ? Math.round(subtotal * (appliedDiscount.percentage / 100))
     : 0;
   const total = subtotal + shipping + tax - discountAmount;
-
+  const isAddressSelected = (address, type) => {
+    const currentAddress =
+      type === "shipping" ? shippingAddress : billingAddress;
+    return (
+      currentAddress.firstName === address.firstName &&
+      currentAddress.lastName === address.lastName &&
+      currentAddress.address1 === address.address1 &&
+      currentAddress.city === address.city &&
+      currentAddress.postalCode === address.postalCode
+    );
+  };
   const handleApplyDiscount = async () => {
     if (!discountCode.trim()) {
       Alert.alert("Invalid Code", "Please enter a discount code.");
@@ -221,36 +341,29 @@ export default function CheckoutScreen() {
     setDiscountCode("");
   };
 
-  const isFormValid = () => {
-    const shipping = shippingAddress;
-    const billing = sameAsBilling ? shipping : billingAddress;
-    const payment = paymentInfo;
+const isFormValid = () => {
+  const shipping = shippingAddress;
+  const billing = sameAsBilling ? shipping : billingAddress;
 
-    const addressValid = (addr) =>
-      addr.fullName.trim() &&
-      addr.phone.trim() &&
-      addr.email.trim() &&
-      addr.address.trim() &&
-      addr.city.trim() &&
-      addr.state.trim() &&
-      addr.postalCode.trim() &&
-      addr.country.trim();
+  const addressValid = (addr) =>
+    addr.firstName.trim() &&
+    addr.lastName.trim() &&
+    addr.phone.trim() &&
+    addr.email.trim() &&
+    addr.address1.trim() &&
+    addr.city.trim() &&
+    addr.province.trim() &&
+    addr.postalCode.trim() &&
+    addr.country.trim();
 
-    const paymentValid =
-      selectedPaymentMethod === "cod" ||
-      (payment.cardNumber.trim() &&
-        payment.expiryDate.trim() &&
-        payment.cvv.trim() &&
-        payment.cardHolderName.trim());
-
-    return (
-      addressValid(shipping) &&
-      addressValid(billing) &&
-      paymentValid &&
-      availableItems.length > 0 &&
-      total > 0
-    );
-  };
+  return (
+    addressValid(shipping) &&
+    addressValid(billing) &&
+    availableItems.length > 0 &&
+    selectedShippingMethod &&
+    total > 0
+  );
+};
 
   const handlePay = async () => {
     if (!isFormValid()) {
@@ -263,17 +376,19 @@ export default function CheckoutScreen() {
     const validItems = availableItems.filter(
       (item) => item.quantity > 0 && !item.outOfStock
     );
-    const orderData = {
-      shippingAddress,
-      billingAddress,
-      paymentInfo,
-      items: validItems,
-      subtotal,
-      shipping,
-      tax,
-      discountAmount,
-      total,
-    };
+const orderData = {
+  shippingAddress,
+  billingAddress,
+  paymentMethod: "cod",
+  shippingMethod: selectedShippingMethod,
+  items: validItems,
+  subtotal,
+  shipping,
+  tax,
+  discountAmount,
+  total,
+  totalWeight,
+};
     console.log("data:", orderData);
     setProcessingPayment(true);
     try {
@@ -286,7 +401,7 @@ export default function CheckoutScreen() {
 
       Alert.alert("Order Placed!", "Your order has been successfully placed.");
     } catch (e) {
-      Alert.alert("Payment Failed", "Please try again.");
+      Alert.alert("Order Failed", "Please try again.");
     } finally {
       setProcessingPayment(false);
     }
@@ -297,6 +412,45 @@ export default function CheckoutScreen() {
     if (sameAsBilling) {
       setBillingAddress((prev) => ({ ...prev, [field]: value }));
     }
+  };
+
+  const handleSelectAddress = (address, type) => {
+    if (type === "shipping") {
+      setSelectedShippingAddress(address);
+      // Map to the form format for validation
+      const mappedAddress = {
+        firstName: address.firstName,
+        lastName: address.lastName,
+        phone: address.phone,
+        email: shippingAddress.email,
+        address1: address.address1,
+        address2: address.address2,
+        city: address.city,
+        province: address.province,
+        postalCode: address.postalCode,
+        country: address.country,
+      };
+      setShippingAddress(mappedAddress);
+      if (sameAsBilling) {
+        setBillingAddress(mappedAddress);
+      }
+    } else {
+      // Handle billing address selection
+      const mappedAddress = {
+        firstName: address.firstName,
+        lastName: address.lastName,
+        phone: address.phone,
+        email: billingAddress.email,
+        address1: address.address1,
+        address2: address.address2,
+        city: address.city,
+        province: address.province,
+        postalCode: address.postalCode,
+        country: address.country,
+      };
+      setBillingAddress(mappedAddress);
+    }
+    setShowAddressSelector(false);
   };
 
   const rotateInterpolate = animatedRotation.interpolate({
@@ -347,25 +501,228 @@ export default function CheckoutScreen() {
   }
 
   return (
-    <SafeAreaView style={styles.safe}>
+    <View style={styles.safe}>
       <StatusBar barStyle="dark-content" backgroundColor={COLORS.background} />
 
-      {/* Header with proper spacing */}
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Checkout</Text>
         <Text style={styles.headerSubtitle}>Complete your order</Text>
       </View>
-
       <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
         style={{ flex: 1 }}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 20}
       >
         <ScrollView
           style={styles.body}
-          contentContainerStyle={{ paddingBottom: 240 }}
+          contentContainerStyle={{ paddingBottom: 20 }} // Reduced padding for better mobile nav compatibility
           showsVerticalScrollIndicator={false}
         >
-          {/* Collapsible Order Summary at Top */}
+          {/* Shipping Address */}
+          {/* Shipping Address Selector */}
+          <View style={styles.card}>
+            <View style={styles.cardHeader}>
+              <View style={styles.iconContainer}>
+                <Text style={styles.icon}>📦</Text>
+              </View>
+              <View style={styles.cardTitleContainer}>
+                <Text style={styles.cardTitle}>Shipping Information</Text>
+                <Text style={styles.cardSubtitle}>
+                  Where should we deliver your products?
+                </Text>
+              </View>
+            </View>
+
+            <Pressable
+              onPress={() => {
+                setAddressSelectorType("shipping");
+                setShowAddressSelector(true);
+              }}
+              style={styles.addressSelectorCard}
+            >
+              {selectedShippingAddress ? (
+                <View style={styles.selectedAddressContainer}>
+                  <View style={styles.selectedAddressHeader}>
+                    <View style={styles.addressTypeIndicator}>
+                      <Text style={styles.addressTypeIcon}>
+                        {selectedShippingAddress.type === "Home" ? "🏠" : "🏢"}
+                      </Text>
+                      <Text style={styles.addressTypeText}>
+                        {selectedShippingAddress.type}
+                      </Text>
+                    </View>
+                    <Text style={styles.changeText}>Change</Text>
+                  </View>
+                  <Text style={styles.selectedAddressName}>
+                    {selectedShippingAddress.firstName}{" "}
+                    {selectedShippingAddress.lastName}
+                  </Text>
+                  <Text style={styles.selectedAddressDetails}>
+                    {selectedShippingAddress.address1}
+                    {selectedShippingAddress.address2 &&
+                      `, ${selectedShippingAddress.address2}`}
+                  </Text>
+                  <Text style={styles.selectedAddressDetails}>
+                    {selectedShippingAddress.city},{" "}
+                    {selectedShippingAddress.province}{" "}
+                    {selectedShippingAddress.postalCode}
+                  </Text>
+                  <Text style={styles.selectedAddressPhone}>
+                    {selectedShippingAddress.phone}
+                  </Text>
+                </View>
+              ) : (
+                <View style={styles.noAddressContainer}>
+                  <View style={styles.noAddressIcon}>
+                    <Text style={styles.noAddressIconText}>+</Text>
+                  </View>
+                  <View style={styles.noAddressText}>
+                    <Text style={styles.noAddressTitle}>
+                      Select Shipping Address
+                    </Text>
+                    <Text style={styles.noAddressSubtitle}>
+                      Choose from saved addresses or add new
+                    </Text>
+                  </View>
+                  <Text style={styles.selectArrow}>→</Text>
+                </View>
+              )}
+            </Pressable>
+          </View>
+
+          {/* Billing Address */}
+          <View style={styles.card}>
+            <View style={styles.cardHeader}>
+              <View style={styles.iconContainer}>
+                <Text style={styles.icon}>💳</Text>
+              </View>
+              <View style={styles.cardTitleContainer}>
+                <Text style={styles.cardTitle}>Billing Address</Text>
+                <Text style={styles.cardSubtitle}>
+                  For payment verification
+                </Text>
+              </View>
+              {!sameAsBilling && (
+                <Pressable
+                  onPress={() => {
+                    setAddressSelectorType("billing");
+                    setShowAddressSelector(true);
+                  }}
+                  style={styles.savedAddressBtn}
+                >
+                  <Text style={styles.savedAddressBtnText}>📋</Text>
+                </Pressable>
+              )}
+            </View>
+
+            <Pressable
+              onPress={() => setSameAsBilling(!sameAsBilling)}
+              style={styles.checkboxRow}
+            >
+              <View
+                style={[
+                  styles.checkbox,
+                  sameAsBilling && styles.checkboxChecked,
+                ]}
+              >
+                {sameAsBilling && <Text style={styles.checkmark}>✓</Text>}
+              </View>
+              <Text style={styles.checkboxLabel}>Same as shipping address</Text>
+            </Pressable>
+
+            {!sameAsBilling && (
+              <AddressForm
+                address={billingAddress}
+                onUpdate={(field, value) =>
+                  setBillingAddress((prev) => ({ ...prev, [field]: value }))
+                }
+              />
+            )}
+          </View>
+
+
+          {/* Shipping Method */}
+<View style={styles.card}>
+  <View style={styles.cardHeader}>
+    <View style={styles.iconContainer}>
+      <Text style={styles.icon}>🚛</Text>
+    </View>
+    <View style={styles.cardTitleContainer}>
+      <Text style={styles.cardTitle}>Shipping Method</Text>
+      <Text style={styles.cardSubtitle}>Total weight: {totalWeight.toFixed(1)}kg</Text>
+    </View>
+  </View>
+
+  <View style={styles.paymentMethods}>
+    {shippingMethods.map((method) => (
+      <Pressable
+      // If the weight is 0.1 then free-express is disabled, but if the weight is 0.2 then free-express is enabled
+        disabled={method.price === 0 && totalWeight < 0.2}
+        key={method.id}
+        onPress={() => setSelectedShippingMethod(method)}
+        style={[
+          method.price === 0 && totalWeight < 0.2 && {
+            opacity: 0.5,
+          },
+          styles.paymentOption,
+          selectedShippingMethod?.id === method.id && styles.paymentOptionSelected,
+        ]}
+      >
+        <View style={styles.paymentOptionContent}>
+          <Text style={styles.paymentOptionIcon}>
+            {method.price === 0 ? '🆓' : '⚡'}
+          </Text>
+          <View style={styles.paymentOptionText}>
+            <Text style={styles.paymentOptionTitle}>{method.name}</Text>
+            <Text style={styles.paymentOptionSubtitle}>
+              {method.description} • {method.price === 0 ? 'FREE' : fmt(method.price)}
+            </Text>
+          </View>
+        </View>
+        <View
+          style={[
+            styles.radioButton,
+            selectedShippingMethod?.id === method.id && styles.radioButtonSelected,
+          ]}
+        />
+      </Pressable>
+    ))}
+  </View>
+</View>
+
+          <View style={styles.card}>
+            <View style={styles.cardHeader}>
+              <View style={styles.iconContainer}>
+                <Text style={styles.icon}>💰</Text>
+              </View>
+              <View style={styles.cardTitleContainer}>
+                <Text style={styles.cardTitle}>Payment Method</Text>
+                <Text style={styles.cardSubtitle}>Cash on Delivery</Text>
+              </View>
+            </View>
+
+            <View style={styles.paymentMethods}>
+              <View
+                style={[styles.paymentOption, styles.paymentOptionSelected]}
+              >
+                <View style={styles.paymentOptionContent}>
+                  <Text style={styles.paymentOptionIcon}>🚚</Text>
+                  <View style={styles.paymentOptionText}>
+                    <Text style={styles.paymentOptionTitle}>
+                      Cash on Delivery
+                    </Text>
+                    <Text style={styles.paymentOptionSubtitle}>
+                      Pay when you receive your order
+                    </Text>
+                  </View>
+                </View>
+                <View
+                  style={[styles.radioButton, styles.radioButtonSelected]}
+                />
+              </View>
+            </View>
+          </View>
+
           <View style={styles.summaryCard}>
             <Pressable
               onPress={() => setSummaryExpanded(!summaryExpanded)}
@@ -390,7 +747,7 @@ export default function CheckoutScreen() {
                 {
                   maxHeight: animatedHeight.interpolate({
                     inputRange: [0, 1],
-                    outputRange: [0, 600],
+                    outputRange: [0, 800], // Increased max height
                   }),
                   opacity: animatedHeight,
                 },
@@ -498,7 +855,7 @@ export default function CheckoutScreen() {
                   </View>
                 )}
                 <View style={styles.summaryRow}>
-                  <Text style={styles.summaryLabel}>Tax (17%)</Text>
+                  <Text style={styles.summaryLabel}>Tax (2%)</Text>
                   <Text style={styles.summaryValue}>{fmt(tax)}</Text>
                 </View>
                 <View style={styles.summaryRow}>
@@ -520,151 +877,7 @@ export default function CheckoutScreen() {
             </Animated.View>
           </View>
 
-          {/* Shipping Address */}
-          <View style={styles.card}>
-            <View style={styles.cardHeader}>
-              <View style={styles.iconContainer}>
-                <Text style={styles.icon}>📦</Text>
-              </View>
-              <View style={styles.cardTitleContainer}>
-                <Text style={styles.cardTitle}>Shipping Information</Text>
-                <Text style={styles.cardSubtitle}>
-                  Where should we deliver your products?
-                </Text>
-              </View>
-            </View>
-            <AddressForm
-              address={shippingAddress}
-              onUpdate={updateShippingAddress}
-            />
-          </View>
-
-          {/* Billing Address */}
-          <View style={styles.card}>
-            <View style={styles.cardHeader}>
-              <View style={styles.iconContainer}>
-                <Text style={styles.icon}>💳</Text>
-              </View>
-              <View style={styles.cardTitleContainer}>
-                <Text style={styles.cardTitle}>Billing Address</Text>
-                <Text style={styles.cardSubtitle}>
-                  For payment verification
-                </Text>
-              </View>
-            </View>
-
-            <Pressable
-              onPress={() => setSameAsBilling(!sameAsBilling)}
-              style={styles.checkboxRow}
-            >
-              <View
-                style={[
-                  styles.checkbox,
-                  sameAsBilling && styles.checkboxChecked,
-                ]}
-              >
-                {sameAsBilling && <Text style={styles.checkmark}>✓</Text>}
-              </View>
-              <Text style={styles.checkboxLabel}>Same as shipping address</Text>
-            </Pressable>
-
-            {!sameAsBilling && (
-              <AddressForm
-                address={billingAddress}
-                onUpdate={(field, value) =>
-                  setBillingAddress((prev) => ({ ...prev, [field]: value }))
-                }
-              />
-            )}
-          </View>
-
-          {/* Payment Method */}
-          <View style={styles.card}>
-            <View style={styles.cardHeader}>
-              <View style={styles.iconContainer}>
-                <Text style={styles.icon}>💰</Text>
-              </View>
-              <View style={styles.cardTitleContainer}>
-                <Text style={styles.cardTitle}>Payment Method</Text>
-                <Text style={styles.cardSubtitle}>
-                  How would you like to pay?
-                </Text>
-              </View>
-            </View>
-
-            <View style={styles.paymentMethods}>
-              <Pressable
-                onPress={() => setSelectedPaymentMethod("card")}
-                style={[
-                  styles.paymentOption,
-                  selectedPaymentMethod === "card" &&
-                    styles.paymentOptionSelected,
-                ]}
-              >
-                <View style={styles.paymentOptionContent}>
-                  <Text style={styles.paymentOptionIcon}>💳</Text>
-                  <View style={styles.paymentOptionText}>
-                    <Text style={styles.paymentOptionTitle}>
-                      Credit/Debit Card
-                    </Text>
-                    <Text style={styles.paymentOptionSubtitle}>
-                      Visa, Mastercard, JCB
-                    </Text>
-                  </View>
-                </View>
-                <View
-                  style={[
-                    styles.radioButton,
-                    selectedPaymentMethod === "card" &&
-                      styles.radioButtonSelected,
-                  ]}
-                />
-              </Pressable>
-
-              <Pressable
-                onPress={() => setSelectedPaymentMethod("cod")}
-                style={[
-                  styles.paymentOption,
-                  selectedPaymentMethod === "cod" &&
-                    styles.paymentOptionSelected,
-                ]}
-              >
-                <View style={styles.paymentOptionContent}>
-                  <Text style={styles.paymentOptionIcon}>🚚</Text>
-                  <View style={styles.paymentOptionText}>
-                    <Text style={styles.paymentOptionTitle}>
-                      Cash on Delivery
-                    </Text>
-                    <Text style={styles.paymentOptionSubtitle}>
-                      Pay when you receive
-                    </Text>
-                  </View>
-                </View>
-                <View
-                  style={[
-                    styles.radioButton,
-                    selectedPaymentMethod === "cod" &&
-                      styles.radioButtonSelected,
-                  ]}
-                />
-              </Pressable>
-            </View>
-
-            {selectedPaymentMethod === "card" && (
-              <PaymentForm
-                paymentInfo={paymentInfo}
-                onUpdate={(field, value) =>
-                  setPaymentInfo((prev) => ({ ...prev, [field]: value }))
-                }
-              />
-            )}
-          </View>
-        </ScrollView>
-
-        {/* Enhanced Fixed Bottom Container */}
-        <View style={styles.bottomContainer}>
-          <View style={styles.bottomGradient} />
-          <View style={styles.bottomContent}>
+          <View style={styles.bottomContainer}>
             <View style={styles.bottomSummaryRow}>
               <View style={styles.bottomLeft}>
                 <Text style={styles.bottomTotal}>{fmt(total)}</Text>
@@ -682,27 +895,125 @@ export default function CheckoutScreen() {
               <Pressable
                 onPress={handlePay}
                 disabled={!isFormValid() || processingPayment}
-                style={[
-                  styles.payButton,
-                  (!isFormValid() || processingPayment) &&
-                    styles.payButtonDisabled,
-                ]}
+                style={[styles.payButton]}
               >
                 {processingPayment ? (
                   <ActivityIndicator color="white" size="small" />
                 ) : (
-                  <Text style={styles.payButtonText}>
-                    {selectedPaymentMethod === "cod"
-                      ? "Place Order"
-                      : "Pay Now"}
-                  </Text>
+                  <Text style={styles.payButtonText}>Place Order</Text>
                 )}
               </Pressable>
             </View>
           </View>
-        </View>
+        </ScrollView>
+
+        {showAddressSelector && (
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContent}>
+              <View style={styles.modalHeader}>
+                <View>
+                  <Text style={styles.modalTitle}>
+                    Select{" "}
+                    {addressSelectorType === "shipping"
+                      ? "Shipping"
+                      : "Billing"}{" "}
+                    Address
+                  </Text>
+                  <Text style={styles.modalSubtitle}>
+                    Choose from your saved addresses
+                  </Text>
+                </View>
+                <Pressable
+                  onPress={() => setShowAddressSelector(false)}
+                  style={styles.modalCloseBtn}
+                >
+                  <Text style={styles.modalCloseText}>✕</Text>
+                </Pressable>
+              </View>
+
+              <ScrollView
+                style={styles.modalBody}
+                showsVerticalScrollIndicator={false}
+              >
+                {savedAddresses.map((address) => (
+                  <Pressable
+                    key={address.id}
+                    onPress={() =>
+                      handleSelectAddress(address, addressSelectorType)
+                    }
+                    style={styles.addressOption}
+                  >
+                    <View style={styles.addressOptionContent}>
+                      <View style={styles.addressOptionHeader}>
+                        <View style={styles.addressTypeContainer}>
+                          <Text style={styles.addressTypeIcon}>
+                            {address.type === "Home" ? "🏠" : "🏢"}
+                          </Text>
+                          <Text style={styles.addressType}>{address.type}</Text>
+                        </View>
+                        <View style={styles.badgeContainer}>
+                          {address.isDefault && (
+                            <View style={styles.defaultBadge}>
+                              <Text style={styles.defaultBadgeText}>
+                                Default
+                              </Text>
+                            </View>
+                          )}
+                          {isAddressSelected(address, addressSelectorType) && (
+                            <View style={styles.selectedBadge}>
+                              <Text style={styles.selectedBadgeText}>
+                                Selected
+                              </Text>
+                            </View>
+                          )}
+                        </View>
+                      </View>
+                      <Text style={styles.addressName}>
+                        {address.firstName} {address.lastName}
+                      </Text>
+                      <Text style={styles.addressDetails}>
+                        {address.address1}
+                        {address.address2 && `, ${address.address2}`}
+                      </Text>
+                      <Text style={styles.addressDetails}>
+                        {address.city}, {address.province} {address.postalCode}
+                      </Text>
+                      <Text style={styles.addressPhone}>{address.phone}</Text>
+                    </View>
+                  </Pressable>
+                ))}
+
+                <Pressable
+                  onPress={() => {
+                    setShowAddressSelector(false);
+                    router.push("/screens/addresses");
+                  }}
+                  style={styles.addNewAddressOption}
+                >
+                  <View style={styles.addNewAddressContent}>
+                    <View style={styles.addNewAddressIcon}>
+                      <Text style={styles.addNewAddressPlus}>+</Text>
+                    </View>
+                    <View style={styles.addNewAddressText}>
+                      <Text style={styles.addNewAddressTitle}>
+                        Add New Address
+                      </Text>
+                      <Text style={styles.addNewAddressSubtitle}>
+                        Create a new shipping address
+                      </Text>
+                    </View>
+                  </View>
+                  {/* <View style={styles.selectIndicator}>
+            <Text style={styles.selectArrow}>→</Text>
+          </View> */}
+                </Pressable>
+              </ScrollView>
+            </View>
+          </View>
+        )}
       </KeyboardAvoidingView>
-    </SafeAreaView>
+      <NavigationSpaceContainer />
+    </View>
   );
 }
 
@@ -753,15 +1064,27 @@ function AddressForm({ address, onUpdate }) {
     <View style={styles.formContainer}>
       <View style={styles.inputRowDouble}>
         <FormInput
-          label="Full Name"
-          value={address.fullName}
-          onChangeText={(value) => onUpdate("fullName", value)}
-          placeholder="Enter your full name"
+          label="First Name"
+          value={address.firstName}
+          onChangeText={(value) => onUpdate("firstName", value)}
+          placeholder="Enter first name"
           autoCapitalize="words"
           containerStyle={{ flex: 1 }}
           required
         />
         <View style={{ width: 12 }} />
+        <FormInput
+          label="Last Name"
+          value={address.lastName}
+          onChangeText={(value) => onUpdate("lastName", value)}
+          placeholder="Enter last name"
+          autoCapitalize="words"
+          containerStyle={{ flex: 1 }}
+          required
+        />
+      </View>
+
+      <View style={styles.inputRowDouble}>
         <FormInput
           label="Phone Number"
           value={address.phone}
@@ -771,25 +1094,32 @@ function AddressForm({ address, onUpdate }) {
           containerStyle={{ flex: 1 }}
           required
         />
+        <View style={{ width: 12 }} />
+        <FormInput
+          label="Email Address"
+          value={address.email}
+          onChangeText={(value) => onUpdate("email", value)}
+          placeholder="your@email.com"
+          keyboardType="email-address"
+          autoCapitalize="none"
+          containerStyle={{ flex: 1 }}
+          required
+        />
       </View>
 
       <FormInput
-        label="Email Address"
-        value={address.email}
-        onChangeText={(value) => onUpdate("email", value)}
-        placeholder="your@email.com"
-        keyboardType="email-address"
-        autoCapitalize="none"
+        label="Street Address"
+        value={address.address1}
+        onChangeText={(value) => onUpdate("address1", value)}
+        placeholder="House no, Street name, Area"
         required
       />
 
       <FormInput
-        label="Street Address"
-        value={address.address}
-        onChangeText={(value) => onUpdate("address", value)}
-        placeholder="House no, Street name, Area"
-        multiline
-        required
+        label="Apartment, Suite, etc."
+        value={address.address2}
+        onChangeText={(value) => onUpdate("address2", value)}
+        placeholder="Apartment, suite, unit, building, floor, etc."
       />
 
       <View style={styles.inputRowDouble}>
@@ -803,10 +1133,10 @@ function AddressForm({ address, onUpdate }) {
         />
         <View style={{ width: 12 }} />
         <FormInput
-          label="State/Province"
-          value={address.state}
-          onChangeText={(value) => onUpdate("state", value)}
-          placeholder="State"
+          label="Province"
+          value={address.province}
+          onChangeText={(value) => onUpdate("province", value)}
+          placeholder="Province"
           containerStyle={{ flex: 1 }}
           required
         />
@@ -828,56 +1158,6 @@ function AddressForm({ address, onUpdate }) {
           value={address.country}
           onChangeText={(value) => onUpdate("country", value)}
           placeholder="Pakistan"
-          containerStyle={{ flex: 1 }}
-          required
-        />
-      </View>
-    </View>
-  );
-}
-
-function PaymentForm({ paymentInfo, onUpdate }) {
-  return (
-    <View style={styles.formContainer}>
-      <FormInput
-        label="Card Holder Name"
-        value={paymentInfo.cardHolderName}
-        onChangeText={(value) => onUpdate("cardHolderName", value)}
-        placeholder="Name as on card"
-        autoCapitalize="words"
-        required
-      />
-
-      <FormInput
-        label="Card Number"
-        value={paymentInfo.cardNumber}
-        onChangeText={(value) => onUpdate("cardNumber", value)}
-        placeholder="1234 5678 9012 3456"
-        keyboardType="number-pad"
-        maxLength={19}
-        required
-      />
-
-      <View style={styles.inputRowDouble}>
-        <FormInput
-          label="Expiry Date"
-          value={paymentInfo.expiryDate}
-          onChangeText={(value) => onUpdate("expiryDate", value)}
-          placeholder="MM/YY"
-          keyboardType="number-pad"
-          maxLength={5}
-          containerStyle={{ flex: 1 }}
-          required
-        />
-        <View style={{ width: 12 }} />
-        <FormInput
-          label="CVV"
-          value={paymentInfo.cvv}
-          onChangeText={(value) => onUpdate("cvv", value)}
-          placeholder="123"
-          keyboardType="number-pad"
-          maxLength={4}
-          secureTextEntry
           containerStyle={{ flex: 1 }}
           required
         />
@@ -924,12 +1204,12 @@ function FormInput({
 const styles = StyleSheet.create({
   safe: {
     flex: 1,
-    backgroundColor: COLORS.backgroundSoft,
+    backgroundColor: COLORS.backgroundCard,
   },
 
   header: {
     paddingHorizontal: 20,
-    paddingTop: Platform.OS === "ios" ? 8 : 20, // More space for Android status bar
+    paddingTop: Platform.OS === "ios" ? 8 : StatusBar.currentHeight + 10,
     paddingBottom: 20,
     backgroundColor: COLORS.background,
     borderBottomWidth: 1,
@@ -1227,14 +1507,17 @@ const styles = StyleSheet.create({
   // Cards
   card: {
     backgroundColor: COLORS.backgroundCard,
+    // backgroundColor: "#e5e5e5",
     borderRadius: 12,
     padding: 18,
     marginBottom: 16,
-    shadowColor: "#000",
-    shadowOpacity: 0.06,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 2 },
-    elevation: 2,
+    borderWidth: 1,
+    borderColor: COLORS.borderLight,
+    // shadowColor: "#000",
+    // shadowOpacity: 0.06,
+    // shadowRadius: 8,
+    // shadowOffset: { width: 0, height: 2 },
+    // elevation: 1,
   },
   cardHeader: {
     flexDirection: "row",
@@ -1267,6 +1550,120 @@ const styles = StyleSheet.create({
     color: COLORS.textLight,
   },
 
+  addressSelectorCard: {
+    backgroundColor: COLORS.backgroundSoft,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    borderRadius: 12,
+    padding: 16,
+    borderStyle: "dashed",
+  },
+  selectedAddressContainer: {
+    flex: 1,
+  },
+
+  selectedAddressHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 8,
+  },
+  addressTypeIndicator: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  addressTypeText: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: COLORS.primary,
+  },
+  changeText: {
+    fontSize: 14,
+    color: COLORS.primary,
+    fontWeight: "600",
+  },
+
+  selectedAddressName: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: COLORS.text,
+    marginBottom: 4,
+  },
+
+  selectedAddressDetails: {
+    fontSize: 14,
+    color: COLORS.textLight,
+    marginBottom: 2,
+  },
+
+  selectedAddressPhone: {
+    fontSize: 14,
+    color: COLORS.textMuted,
+    marginTop: 4,
+  },
+
+  noAddressContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+
+  noAddressIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: COLORS.border,
+    alignItems: "center",
+    justifyContent: "center",
+    marginRight: 12,
+  },
+
+  noAddressIconText: {
+    fontSize: 18,
+    color: COLORS.textMuted,
+    fontWeight: "600",
+  },
+
+  noAddressText: {
+    flex: 1,
+  },
+
+  noAddressTitle: {
+    fontSize: 15,
+    fontWeight: "600",
+    color: COLORS.text,
+    marginBottom: 2,
+  },
+
+  noAddressSubtitle: {
+    fontSize: 13,
+    color: COLORS.textLight,
+  },
+
+  savedAddressButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#edf2f4",
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderWidth: 1,
+    borderColor: "black" + 50,
+    borderRadius: 8,
+    shadowColor: "#edf2f4",
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 2,
+  },
+  savedAddressIcon: {
+    fontSize: 12,
+    marginRight: 6,
+  },
+  savedAddressText: {
+    color: "black",
+    fontSize: 12,
+    fontWeight: "600",
+  },
+
   // Checkbox
   checkboxRow: {
     flexDirection: "row",
@@ -1275,6 +1672,12 @@ const styles = StyleSheet.create({
     padding: 12,
     backgroundColor: COLORS.backgroundSoft,
     borderRadius: 10,
+
+    shadowColor: "#000",
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 1 },
+    elevation: 1,
   },
   checkbox: {
     width: 18,
@@ -1388,40 +1791,19 @@ const styles = StyleSheet.create({
     textAlignVertical: "top",
   },
 
-  // Enhanced Bottom Container
   bottomContainer: {
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
-    paddingBottom: Platform.OS === "ios" ? 34 : 20, // Extra space for 3-button navigation
+    backgroundColor: COLORS.backgroundCard,
+    borderRadius: 12,
+    // padding: 16,
+    marginBottom: 50,
+    // marginTop: 8,
+    // shadowColor: "#000",
+    // shadowOpacity: 0.06,
+    // shadowRadius: 8,
+    // shadowOffset: { width: 0, height: 2 },
+    // elevation: 2,
   },
-  bottomGradient: {
-    position: "absolute",
-    top: -20,
-    left: 0,
-    right: 0,
-    height: 20,
-    backgroundColor: "transparent",
-    borderTopWidth: 0,
-    shadowColor: "#000",
-    shadowOpacity: 0.1,
-    shadowRadius: 10,
-    shadowOffset: { width: 0, height: -5 },
-    elevation: 10,
-  },
-  bottomContent: {
-    backgroundColor: COLORS.background,
-    borderTopWidth: 1,
-    borderTopColor: COLORS.border,
-    paddingHorizontal: 16,
-    paddingTop: 16,
-    shadowColor: "#000",
-    shadowOpacity: 0.08,
-    shadowRadius: 10,
-    shadowOffset: { width: 0, height: -2 },
-    elevation: 5,
-  },
+
   bottomSummaryRow: {
     flexDirection: "row",
     alignItems: "center",
@@ -1448,18 +1830,18 @@ const styles = StyleSheet.create({
 
   // Pay Button
   payButton: {
-    backgroundColor: COLORS.primary,
+    backgroundColor: COLORS.deepBlue,
     borderRadius: 12,
-    paddingVertical: 16,
-    paddingHorizontal: 24,
+    paddingVertical: 12,
+    paddingHorizontal: 12,
     alignItems: "center",
     justifyContent: "center",
-    shadowColor: COLORS.primary,
-    shadowOpacity: 0.25,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 4 },
-    elevation: 4,
-    minWidth: 120,
+    // shadowColor: COLORS.primary,
+    // shadowOpacity: 0.25,
+    // shadowRadius: 8,
+    // shadowOffset: { width: 0, height: 4 },
+    // elevation: 4,
+    minWidth: 160,
   },
   payButtonDisabled: {
     backgroundColor: COLORS.textMuted,
@@ -1495,5 +1877,214 @@ const styles = StyleSheet.create({
     color: "white",
     fontWeight: "700",
     fontSize: 14,
+  },
+
+  savedAddressBtn: {
+    width: 32,
+    height: 32,
+    borderRadius: 8,
+    backgroundColor: COLORS.backgroundSoft,
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 1,
+    borderColor: COLORS.border,
+  },
+  savedAddressBtnText: {
+    fontSize: 14,
+  },
+
+  modalOverlay: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 1000,
+  },
+  modalContent: {
+    backgroundColor: COLORS.background,
+    borderRadius: 20,
+    margin: 20,
+    maxHeight: "85%",
+    width: "90%",
+    shadowColor: "#000",
+    shadowOpacity: 0.15,
+    shadowRadius: 20,
+    shadowOffset: { width: 0, height: 10 },
+    elevation: 8,
+  },
+  modalHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+    padding: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.borderLight,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: "700",
+    color: COLORS.text,
+    marginBottom: 4,
+  },
+  modalSubtitle: {
+    fontSize: 14,
+    color: COLORS.textLight,
+    fontWeight: "500",
+  },
+  modalCloseBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: COLORS.backgroundSoft,
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 1,
+    borderColor: COLORS.borderLight,
+  },
+  modalCloseText: {
+    fontSize: 16,
+    color: COLORS.textMuted,
+    fontWeight: "600",
+  },
+  modalBody: {
+    maxHeight: 400,
+    paddingBottom: 8,
+  },
+  addressOption: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 16,
+    marginHorizontal: 12,
+    marginVertical: 6,
+    borderRadius: 12,
+    backgroundColor: COLORS.backgroundSoft,
+    borderWidth: 1,
+    borderColor: COLORS.borderLight,
+  },
+  addressOptionContent: {
+    flex: 1,
+  },
+
+  addressOptionHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+    marginBottom: 8,
+  },
+  addressTypeContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  addressTypeIcon: {
+    fontSize: 14,
+    marginRight: 6,
+  },
+  addressType: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: COLORS.primary,
+  },
+  badgeContainer: {
+    flexDirection: "row",
+    gap: 6,
+  },
+  selectedBadge: {
+    backgroundColor: COLORS.accent,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 12,
+  },
+  selectedBadgeText: {
+    fontSize: 11,
+    color: "white",
+    fontWeight: "600",
+  },
+  defaultBadge: {
+    backgroundColor: COLORS.success,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 12,
+  },
+  defaultBadgeText: {
+    fontSize: 11,
+    color: "white",
+    fontWeight: "600",
+  },
+  selectIndicator: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: COLORS.primary,
+    alignItems: "center",
+    justifyContent: "center",
+    marginLeft: 12,
+  },
+  selectArrow: {
+    color: "white",
+    fontSize: 12,
+    fontWeight: "600",
+  },
+
+  addNewAddressOption: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 16,
+    marginHorizontal: 12,
+    marginVertical: 6,
+    borderRadius: 12,
+    backgroundColor: COLORS.background,
+  },
+
+  addressName: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: COLORS.text,
+    marginBottom: 2,
+  },
+  addressDetails: {
+    fontSize: 14,
+    color: COLORS.textLight,
+    marginBottom: 2,
+  },
+  addressPhone: {
+    fontSize: 14,
+    color: COLORS.textMuted,
+    marginTop: 4,
+  },
+  addNewAddressContent: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  addNewAddressIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: COLORS.primary,
+    alignItems: "center",
+    justifyContent: "center",
+    marginRight: 12,
+  },
+  addNewAddressPlus: {
+    color: "white",
+    fontSize: 18,
+    fontWeight: "600",
+  },
+  addNewAddressText: {
+    flex: 1,
+  },
+  addNewAddressTitle: {
+    fontSize: 15,
+    fontWeight: "600",
+    color: COLORS.primary,
+    marginBottom: 2,
+  },
+  addNewAddressSubtitle: {
+    fontSize: 13,
+    color: COLORS.textLight,
   },
 });

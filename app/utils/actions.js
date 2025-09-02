@@ -1,4 +1,4 @@
-const BACKEND_URL = "http://192.168.77.137:3000";
+const BACKEND_URL = "http://192.168.100.193:3000";
 export const fetchCartItemsCount = async (authenticatedFetch) => {
   try {
     const res = await authenticatedFetch(`${BACKEND_URL}/cart-items-count`);

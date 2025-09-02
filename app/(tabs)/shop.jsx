@@ -43,7 +43,7 @@ const COLORS = {
   lightGray: "#ddd",
 };
 
-const BACKEND_URL = "http://192.168.77.137:3000";
+const BACKEND_URL = "http://192.168.100.193:3000";
 
 const categories = [
   {

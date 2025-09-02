@@ -12,7 +12,7 @@ import {
 } from "react-native";
 import { logOut, useAuthenticatedFetch } from "../app/utils/authStore";
 
-const BACKEND_URL = "http://192.168.77.137:3000";
+const BACKEND_URL = "http://192.168.100.193:3000";
 
 const Header = ({cartItemCount_}) => {
   const [showProfileMenu, setShowProfileMenu] = useState(false);

@@ -4,7 +4,6 @@ import { Image } from "expo-image";
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
-  ActivityIndicator,
   Alert,
   Animated,
   Dimensions,
@@ -17,7 +16,7 @@ import {
   StyleSheet,
   Text,
   TouchableOpacity,
-  View,
+  View
 } from "react-native";
 
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -31,7 +30,7 @@ import {
 } from "../utils/actions";
 import { useAuthenticatedFetch } from "../utils/authStore";
 const { width, height } = Dimensions.get("window");
-const BACKEND_URL = "http://192.168.77.137:3000";
+const BACKEND_URL = "http://192.168.100.193:3000";
 const CONTAINER_WIDTH = width - 32;
 
 // Product Detail Page Skeleton
