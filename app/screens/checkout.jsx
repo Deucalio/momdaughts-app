@@ -1015,6 +1015,7 @@ export default function CheckoutScreen() {
                 <Pressable
                   onPress={() => {
                     setShowAddressSelector(false);
+                    // router.push("/screens/addresses/cmevjo47e0012ecd8cn90d8gz");
                     router.push("/screens/addresses/new");
                   }}
                   style={styles.addNewAddressOption}
