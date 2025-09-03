@@ -1,6 +1,6 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
+import { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -11,11 +11,12 @@ import {
   StyleSheet,
   SafeAreaView,
   StatusBar,
-} from "react-native"
-import { Ionicons } from "@expo/vector-icons"
-import HeaderWithoutCart from "../../components/HeaderWithoutCart";
+} from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import HeaderWithoutCart from "../../../components/HeaderWithoutCart";
 
-import NavigationSpaceContainer from "../../components/NavigationSpaceContainer"
+import NavigationSpaceContainer from "../../../components/NavigationSpaceContainer";
+import { useRouter } from "expo-router";
 
 const COLORS = {
   lightPink: "#f5b8d0",
@@ -32,7 +33,7 @@ const COLORS = {
   danger: "#dc3545",
   cream: "#faf9f7",
   softGold: "#f4f1ea",
-}
+};
 
 // Mock API data based on Prisma schema
 const mockAddresses = [
@@ -78,14 +79,12 @@ const mockAddresses = [
     isDefault: false,
     type: "Home",
   },
-]
+];
 
-const AddressCard = ({
-  address,
-  onDelete,
-  onSetDefault,
-}) => {
-  const fullName = [address.firstName, address.lastName].filter(Boolean).join(" ")
+const AddressCard = ({ address, onDelete, onSetDefault }) => {
+  const fullName = [address.firstName, address.lastName]
+    .filter(Boolean)
+    .join(" ");
   const fullAddress = [
     address.address1,
     address.address2,
@@ -95,13 +94,17 @@ const AddressCard = ({
     address.country,
   ]
     .filter(Boolean)
-    .join(", ")
+    .join(", ");
 
   return (
     <View style={styles.addressCard}>
       <View style={styles.cardHeader}>
         <View style={styles.nameSection}>
-          <Ionicons name="location-outline" size={20} color={COLORS.mediumPink} />
+          <Ionicons
+            name="location-outline"
+            size={20}
+            color={COLORS.mediumPink}
+          />
           <Text style={styles.nameText}>{fullName || "No Name"}</Text>
           {address.isDefault && (
             <View style={styles.defaultBadge}>
@@ -110,7 +113,10 @@ const AddressCard = ({
             </View>
           )}
         </View>
-        <TouchableOpacity onPress={() => onDelete(address.id)} style={styles.deleteButton}>
+        <TouchableOpacity
+          onPress={() => onDelete(address.id)}
+          style={styles.deleteButton}
+        >
           <Ionicons name="trash-outline" size={18} color={COLORS.danger} />
         </TouchableOpacity>
       </View>
@@ -131,49 +137,57 @@ const AddressCard = ({
       </View>
 
       {!address.isDefault && (
-        <TouchableOpacity style={styles.setDefaultButton} onPress={() => onSetDefault(address.id)}>
+        <TouchableOpacity
+          style={styles.setDefaultButton}
+          onPress={() => onSetDefault(address.id)}
+        >
           <Text style={styles.setDefaultText}>Set as Default</Text>
         </TouchableOpacity>
       )}
     </View>
-  )
-}
+  );
+};
 
 export default function AddressesScreen() {
-  const [addresses, setAddresses] = useState([])
-  const [loading, setLoading] = useState(true)
+  const [addresses, setAddresses] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const router = useRouter();
 
   useEffect(() => {
     // Simulate API call
     setTimeout(() => {
-      setAddresses(mockAddresses)
-      setLoading(false)
-    }, 1000)
-  }, [])
+      setAddresses(mockAddresses);
+      setLoading(false);
+    }, 1000);
+  }, []);
 
   const handleDelete = (id) => {
-    Alert.alert("Delete Address", "Are you sure you want to delete this address?", [
-      { text: "Cancel", style: "cancel" },
-      {
-        text: "Delete",
-        style: "destructive",
-        onPress: () => {
-          setAddresses((prev) => prev.filter((addr) => addr.id !== id))
-          Alert.alert("Success", "Address deleted successfully")
+    Alert.alert(
+      "Delete Address",
+      "Are you sure you want to delete this address?",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: () => {
+            setAddresses((prev) => prev.filter((addr) => addr.id !== id));
+            Alert.alert("Success", "Address deleted successfully");
+          },
         },
-      },
-    ])
-  }
+      ]
+    );
+  };
 
   const handleSetDefault = (id) => {
     setAddresses((prev) =>
       prev.map((addr) => ({
         ...addr,
         isDefault: addr.id === id,
-      })),
-    )
-    Alert.alert("Success", "Default address updated")
-  }
+      }))
+    );
+    Alert.alert("Success", "Default address updated");
+  };
 
   if (loading) {
     return (
@@ -184,22 +198,27 @@ export default function AddressesScreen() {
           <Text style={styles.loadingText}>Loading addresses...</Text>
         </View>
       </SafeAreaView>
-    )
+    );
   }
 
   return (
     <SafeAreaView style={styles.container}>
-      <HeaderWithoutCart/>
+      <HeaderWithoutCart />
 
       <StatusBar barStyle="dark-content" backgroundColor={COLORS.white} />
-      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        style={styles.scrollView}
+        showsVerticalScrollIndicator={false}
+      >
         {/* Header */}
         <View style={styles.header}>
           <View style={styles.titleSection}>
             <Ionicons name="location" size={24} color={COLORS.mediumPink} />
             <Text style={styles.title}>Saved Addresses</Text>
           </View>
-          <Text style={styles.subtitle}>Manage your shipping addresses for faster checkout</Text>
+          <Text style={styles.subtitle}>
+            Manage your shipping addresses for faster checkout
+          </Text>
           <View style={styles.divider} />
         </View>
 
@@ -207,26 +226,40 @@ export default function AddressesScreen() {
         {addresses.length > 0 ? (
           <View style={styles.addressesContainer}>
             {addresses.map((address) => (
-              <AddressCard key={address.id} address={address} onDelete={handleDelete} onSetDefault={handleSetDefault} />
+              <AddressCard
+                key={address.id}
+                address={address}
+                onDelete={handleDelete}
+                onSetDefault={handleSetDefault}
+              />
             ))}
           </View>
         ) : (
           <View style={styles.emptyState}>
-            <Ionicons name="location-outline" size={48} color={COLORS.mediumGray} />
+            <Ionicons
+              name="location-outline"
+              size={48}
+              color={COLORS.mediumGray}
+            />
             <Text style={styles.emptyTitle}>No addresses saved</Text>
-            <Text style={styles.emptySubtitle}>Add your first shipping address to get started</Text>
+            <Text style={styles.emptySubtitle}>
+              Add your first shipping address to get started
+            </Text>
           </View>
         )}
 
         {/* Add Address Button */}
-        <TouchableOpacity style={styles.addButton}>
+        <TouchableOpacity
+          onPress={() => router.push("/screens/addresses/new")}
+          style={styles.addButton}
+        >
           <Ionicons name="add" size={20} color={COLORS.white} />
           <Text style={styles.addButtonText}>Add New Address</Text>
         </TouchableOpacity>
       </ScrollView>
-      <NavigationSpaceContainer/>
+      <NavigationSpaceContainer />
     </SafeAreaView>
-  )
+  );
 }
 
 const styles = StyleSheet.create({
@@ -403,4 +436,4 @@ const styles = StyleSheet.create({
     color: COLORS.white,
     marginLeft: 8,
   },
-})
+});

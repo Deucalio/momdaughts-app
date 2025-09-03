@@ -26,7 +26,7 @@ const CURRENCY_SYMBOL = "PKR ";
 
 import { Ionicons } from "@expo/vector-icons";
 import { createOrder } from "../utils/actions";
-import { useAuthenticatedFetch } from "../utils/authStore";
+import { useAuthenticatedFetch, useAuthStore } from "../utils/authStore";
 import NavigationSpaceContainer from "../../components/NavigationSpaceContainer";
 // Subtle, elegant color palette
 const COLORS = {
@@ -69,6 +69,10 @@ export default function CheckoutScreen() {
   const [appliedDiscount, setAppliedDiscount] = useState(null);
   const [applyingDiscount, setApplyingDiscount] = useState(false);
   const [selectedShippingMethod, setSelectedShippingMethod] = useState(null);
+  const { user } = useAuthStore();
+
+  const [editingAddress, setEditingAddress] = useState(null);
+  const [savingAddress, setSavingAddress] = useState(false);
 
   const router = useRouter();
 
@@ -108,6 +112,28 @@ export default function CheckoutScreen() {
   const [addressSelectorType, setAddressSelectorType] = useState("shipping");
 
   const { authenticatedFetch } = useAuthenticatedFetch();
+
+  const handleSaveAddress = async (address) => {
+    setSavingAddress(true);
+    try {
+      // Simulate API call to save address
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+
+      // Update the savedAddresses array
+      setSavedAddresses((prev) =>
+        prev.map((addr) =>
+          addr.id === address.id ? { ...addr, ...address } : addr
+        )
+      );
+
+      Alert.alert("Success", "Address updated successfully!");
+      setEditingAddress(null);
+    } catch (error) {
+      Alert.alert("Error", "Failed to save address. Please try again.");
+    } finally {
+      setSavingAddress(false);
+    }
+  };
 
   // Animation for accordion
   const animatedHeight = useState(new Animated.Value(1))[0]; // Start expanded
@@ -192,9 +218,6 @@ export default function CheckoutScreen() {
     };
   }, []);
 
-
-
-
   // Animate accordion
   useEffect(() => {
     Animated.parallel([
@@ -229,15 +252,14 @@ export default function CheckoutScreen() {
     [availableItems]
   );
 
-
-    const totalWeight = useMemo(() => {
+  const totalWeight = useMemo(() => {
     return availableItems.reduce((sum, item) => {
       const weight = item.weight?.value || 0;
       return sum + weight * item.quantity;
     }, 0);
   }, [availableItems]);
 
-    const shippingMethods = useMemo(() => {
+  const shippingMethods = useMemo(() => {
     const methods = [
       {
         id: "express",
@@ -253,22 +275,19 @@ export default function CheckoutScreen() {
       },
     ];
     // Auto-select based on weight
-   const defaultMethod = totalWeight > 0.1 ? methods[1] : methods[0];
+    const defaultMethod = totalWeight > 0.1 ? methods[1] : methods[0];
     if (!selectedShippingMethod) {
       setSelectedShippingMethod(defaultMethod);
     }
 
     return methods;
-  }, [
-    totalWeight,
-    selectedShippingMethod,
-    setSelectedShippingMethod,
-  ]);
+  }, [totalWeight, selectedShippingMethod, setSelectedShippingMethod]);
 
   useEffect(() => {
-    const defaultMethod = totalWeight > 0.1 ? shippingMethods[1] : shippingMethods[0];
+    const defaultMethod =
+      totalWeight > 0.1 ? shippingMethods[1] : shippingMethods[0];
     setSelectedShippingMethod(defaultMethod);
-  }, [totalWeight])
+  }, [totalWeight]);
 
   const shipping = selectedShippingMethod?.price || 0;
 
@@ -341,29 +360,29 @@ export default function CheckoutScreen() {
     setDiscountCode("");
   };
 
-const isFormValid = () => {
-  const shipping = shippingAddress;
-  const billing = sameAsBilling ? shipping : billingAddress;
+  const isFormValid = () => {
+    const shipping = shippingAddress;
+    const billing = sameAsBilling ? shipping : billingAddress;
 
-  const addressValid = (addr) =>
-    addr.firstName.trim() &&
-    addr.lastName.trim() &&
-    addr.phone.trim() &&
-    addr.email.trim() &&
-    addr.address1.trim() &&
-    addr.city.trim() &&
-    addr.province.trim() &&
-    addr.postalCode.trim() &&
-    addr.country.trim();
+    const addressValid = (addr) =>
+      addr.firstName.trim() &&
+      addr.lastName.trim() &&
+      addr.phone.trim() &&
+      addr.email.trim() &&
+      addr.address1.trim() &&
+      addr.city.trim() &&
+      addr.province.trim() &&
+      addr.postalCode.trim() &&
+      addr.country.trim();
 
-  return (
-    addressValid(shipping) &&
-    addressValid(billing) &&
-    availableItems.length > 0 &&
-    selectedShippingMethod &&
-    total > 0
-  );
-};
+    return (
+      addressValid(shipping) &&
+      addressValid(billing) &&
+      availableItems.length > 0 &&
+      selectedShippingMethod &&
+      total > 0
+    );
+  };
 
   const handlePay = async () => {
     if (!isFormValid()) {
@@ -376,19 +395,19 @@ const isFormValid = () => {
     const validItems = availableItems.filter(
       (item) => item.quantity > 0 && !item.outOfStock
     );
-const orderData = {
-  shippingAddress,
-  billingAddress,
-  paymentMethod: "cod",
-  shippingMethod: selectedShippingMethod,
-  items: validItems,
-  subtotal,
-  shipping,
-  tax,
-  discountAmount,
-  total,
-  totalWeight,
-};
+    const orderData = {
+      shippingAddress,
+      billingAddress,
+      paymentMethod: "cod",
+      shippingMethod: selectedShippingMethod,
+      items: validItems,
+      subtotal,
+      shipping,
+      tax,
+      discountAmount,
+      total,
+      totalWeight,
+    };
     console.log("data:", orderData);
     setProcessingPayment(true);
     try {
@@ -640,55 +659,62 @@ const orderData = {
             )}
           </View>
 
-
           {/* Shipping Method */}
-<View style={styles.card}>
-  <View style={styles.cardHeader}>
-    <View style={styles.iconContainer}>
-      <Text style={styles.icon}>🚛</Text>
-    </View>
-    <View style={styles.cardTitleContainer}>
-      <Text style={styles.cardTitle}>Shipping Method</Text>
-      <Text style={styles.cardSubtitle}>Total weight: {totalWeight.toFixed(1)}kg</Text>
-    </View>
-  </View>
+          <View style={styles.card}>
+            <View style={styles.cardHeader}>
+              <View style={styles.iconContainer}>
+                <Text style={styles.icon}>🚛</Text>
+              </View>
+              <View style={styles.cardTitleContainer}>
+                <Text style={styles.cardTitle}>Shipping Method</Text>
+                {/* <Text style={styles.cardSubtitle}>
+                  Total weight: {totalWeight.toFixed(1)}kg
+                </Text> */}
+              </View>
+            </View>
 
-  <View style={styles.paymentMethods}>
-    {shippingMethods.map((method) => (
-      <Pressable
-      // If the weight is 0.1 then free-express is disabled, but if the weight is 0.2 then free-express is enabled
-        disabled={method.price === 0 && totalWeight < 0.2}
-        key={method.id}
-        onPress={() => setSelectedShippingMethod(method)}
-        style={[
-          method.price === 0 && totalWeight < 0.2 && {
-            opacity: 0.5,
-          },
-          styles.paymentOption,
-          selectedShippingMethod?.id === method.id && styles.paymentOptionSelected,
-        ]}
-      >
-        <View style={styles.paymentOptionContent}>
-          <Text style={styles.paymentOptionIcon}>
-            {method.price === 0 ? '🆓' : '⚡'}
-          </Text>
-          <View style={styles.paymentOptionText}>
-            <Text style={styles.paymentOptionTitle}>{method.name}</Text>
-            <Text style={styles.paymentOptionSubtitle}>
-              {method.description} • {method.price === 0 ? 'FREE' : fmt(method.price)}
-            </Text>
+            <View style={styles.paymentMethods}>
+              {shippingMethods.map((method) => (
+                <Pressable
+                  // If the weight is 0.1 then free-express is disabled, but if the weight is 0.2 then free-express is enabled
+                  disabled={method.price === 0 && totalWeight < 0.2}
+                  key={method.id}
+                  onPress={() => setSelectedShippingMethod(method)}
+                  style={[
+                    method.price === 0 &&
+                      totalWeight < 0.2 && {
+                        opacity: 0.5,
+                      },
+                    styles.paymentOption,
+                    selectedShippingMethod?.id === method.id &&
+                      styles.paymentOptionSelected,
+                  ]}
+                >
+                  <View style={styles.paymentOptionContent}>
+                    <Text style={styles.paymentOptionIcon}>
+                      {method.price === 0 ? "🆓" : "⚡"}
+                    </Text>
+                    <View style={styles.paymentOptionText}>
+                      <Text style={styles.paymentOptionTitle}>
+                        {method.name}
+                      </Text>
+                      <Text style={styles.paymentOptionSubtitle}>
+                        {method.description} •{" "}
+                        {method.price === 0 ? "FREE" : fmt(method.price)}
+                      </Text>
+                    </View>
+                  </View>
+                  <View
+                    style={[
+                      styles.radioButton,
+                      selectedShippingMethod?.id === method.id &&
+                        styles.radioButtonSelected,
+                    ]}
+                  />
+                </Pressable>
+              ))}
+            </View>
           </View>
-        </View>
-        <View
-          style={[
-            styles.radioButton,
-            selectedShippingMethod?.id === method.id && styles.radioButtonSelected,
-          ]}
-        />
-      </Pressable>
-    ))}
-  </View>
-</View>
 
           <View style={styles.card}>
             <View style={styles.cardHeader}>
@@ -895,7 +921,10 @@ const orderData = {
               <Pressable
                 onPress={handlePay}
                 disabled={!isFormValid() || processingPayment}
-                style={[styles.payButton]}
+                style={[
+                  styles.payButton,
+                  !isFormValid() && styles.payButtonDisabled,
+                ]}
               >
                 {processingPayment ? (
                   <ActivityIndicator color="white" size="small" />
@@ -955,7 +984,7 @@ const orderData = {
                           {address.isDefault && (
                             <View style={styles.defaultBadge}>
                               <Text style={styles.defaultBadgeText}>
-                                Default
+                                Current
                               </Text>
                             </View>
                           )}
@@ -986,7 +1015,7 @@ const orderData = {
                 <Pressable
                   onPress={() => {
                     setShowAddressSelector(false);
-                    router.push("/screens/addresses");
+                    router.push("/screens/addresses/new");
                   }}
                   style={styles.addNewAddressOption}
                 >
@@ -1403,7 +1432,7 @@ const styles = StyleSheet.create({
     color: COLORS.text,
   },
   applyDiscountBtn: {
-    backgroundColor: COLORS.primary,
+    backgroundColor: COLORS.deepBlue,
     paddingHorizontal: 16,
     paddingVertical: 10,
     borderRadius: 8,
@@ -1500,7 +1529,7 @@ const styles = StyleSheet.create({
   },
   totalValue: {
     fontSize: 16,
-    color: COLORS.primary,
+    color: "#000",
     fontWeight: "800",
   },
 
@@ -1714,7 +1743,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     padding: 14,
     borderWidth: 1,
-    borderColor: COLORS.border,
+    borderColor: COLORS.border + "50",
     borderRadius: 10,
     marginBottom: 10,
   },
