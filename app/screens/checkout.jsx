@@ -311,10 +311,8 @@ export default function CheckoutScreen() {
     : 0;
   const total = subtotal + shipping + tax - discountAmount;
   const isAddressSelected = (address, type) => {
-    console.log("address", address);
     const currentAddress =
       type === "shipping" ? shippingAddress : billingAddress;
-    console.log("\n\n currentAddress", currentAddress);
     return (
       currentAddress.id === address.id &&
       currentAddress.firstName === address.firstName &&
@@ -399,6 +397,19 @@ export default function CheckoutScreen() {
     );
   };
 
+  const isAddressComplete = (address) => {
+    return (
+      address.firstName?.trim() &&
+      address.lastName?.trim() &&
+      address.phone?.trim() &&
+      address.address1?.trim() &&
+      address.city?.trim() &&
+      address.province?.trim() &&
+      address.postalCode?.trim() &&
+      address.country?.trim()
+    );
+  };
+
   const handlePay = async () => {
     if (!isFormValid()) {
       Alert.alert(
@@ -463,6 +474,7 @@ export default function CheckoutScreen() {
         city: address.city,
         province: address.province,
         postalCode: address.postalCode,
+        isDefault: address.isDefault,
         country: address.country ? address.country : "Parkistan",
       };
       setShippingAddress(mappedAddress);
@@ -608,7 +620,12 @@ export default function CheckoutScreen() {
                   setAddressSelectorType("shipping");
                   setShowAddressSelector(true);
                 }}
-                style={styles.addressSelectorCard}
+                style={[
+                  styles.addressSelectorCard,
+                  selectedShippingAddress &&
+                    !isAddressComplete(shippingAddress) &&
+                    styles.incompleteAddressCard,
+                ]}
               >
                 {selectedShippingAddress ? (
                   <View style={styles.selectedAddressContainer}>
@@ -622,6 +639,14 @@ export default function CheckoutScreen() {
                         <Text style={styles.addressTypeText}>
                           {selectedShippingAddress.type}
                         </Text>
+
+                        {!isAddressComplete(shippingAddress) && (
+                          <View style={styles.incompleteAddressBadge}>
+                            <Text style={styles.incompleteAddressBadgeText}>
+                              Incomplete
+                            </Text>
+                          </View>
+                        )}
                       </View>
                       <Text style={styles.changeText}>Change</Text>
                     </View>
@@ -1041,6 +1066,7 @@ export default function CheckoutScreen() {
                 </Pressable>
                 {savedAddresses
                   .sort((a, b) => {
+                    // existing sort logic
                     // First, prioritize selected address
                     const aSelected = isAddressSelected(a, addressSelectorType);
                     const bSelected = isAddressSelected(b, addressSelectorType);
@@ -1059,7 +1085,21 @@ export default function CheckoutScreen() {
                         onPress={() =>
                           handleSelectAddress(address, addressSelectorType)
                         }
-                        style={styles.addressOption}
+                        style={[
+                          styles.addressOption,
+                          isAddressSelected(address, addressSelectorType) &&
+                            !isAddressComplete({
+                              firstName: address.firstName,
+                              lastName: address.lastName,
+                              phone: address.phone,
+                              address1: address.address1,
+                              city: address.city,
+                              province: address.province,
+                              postalCode: address.postalCode,
+                              country: address.country,
+                            }) &&
+                            styles.incompleteAddressCard,
+                        ]}
                       >
                         <View style={styles.addressOptionContent}>
                           <View style={styles.addressOptionHeader}>
@@ -1072,13 +1112,36 @@ export default function CheckoutScreen() {
                               </Text>
                             </View>
                             <View style={styles.badgeContainer}>
-                              {/* {address.isDefault && (
-                              <View style={styles.defaultBadge}>
-                                <Text style={styles.defaultBadgeText}>
-                                  Current
-                                </Text>
-                              </View>
-                            )} */}
+                              {address.isDefault && (
+                                <View style={styles.defaultBadge}>
+                                  <Text style={styles.defaultBadgeText}>
+                                    Default
+                                  </Text>
+                                </View>
+                              )}
+
+                              {isAddressSelected(
+                                address,
+                                addressSelectorType
+                              ) &&
+                                !isAddressComplete({
+                                  firstName: address.firstName,
+                                  lastName: address.lastName,
+                                  phone: address.phone,
+                                  address1: address.address1,
+                                  city: address.city,
+                                  province: address.province,
+                                  postalCode: address.postalCode,
+                                  country: address.country,
+                                }) && (
+                                  <View style={styles.incompleteAddressBadge}>
+                                    <Text
+                                      style={styles.incompleteAddressBadgeText}
+                                    >
+                                      Incomplete
+                                    </Text>
+                                  </View>
+                                )}
                               {isAddressSelected(
                                 address,
                                 addressSelectorType
@@ -2087,7 +2150,7 @@ const styles = StyleSheet.create({
   addressOptionWrapper: {
     marginHorizontal: 12,
     marginVertical: 6,
-    borderRadius: 6,
+    borderRadius: 4,
     overflow: "hidden",
   },
 
@@ -2140,6 +2203,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingVertical: 3,
     borderRadius: 12,
+    marginLeft: 30,
   },
   defaultBadgeText: {
     fontSize: 11,
@@ -2231,21 +2295,21 @@ const styles = StyleSheet.create({
     color: COLORS.textLight,
   },
 
-
   // Add these to your styles object
-incompleteAddressBadge: {
-  backgroundColor: COLORS.error,
-  paddingHorizontal: 8,
-  paddingVertical: 3,
-  borderRadius: 12,
-},
-incompleteAddressBadgeText: {
-  fontSize: 11,
-  color: "white",
-  fontWeight: "600",
-},
-incompleteAddressCard: {
-  borderColor: COLORS.error,
-  borderWidth: 1.5,
-},
+  incompleteAddressBadge: {
+    backgroundColor: COLORS.error,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 12,
+    marginLeft: 5,
+  },
+  incompleteAddressBadgeText: {
+    fontSize: 11,
+    color: "white",
+    fontWeight: "600",
+  },
+  incompleteAddressCard: {
+    borderColor: COLORS.error,
+    borderWidth: 1.5,
+  },
 });
