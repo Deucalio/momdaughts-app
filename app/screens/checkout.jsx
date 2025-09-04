@@ -145,10 +145,8 @@ export default function CheckoutScreen() {
       StatusBar.setBarStyle("dark-content");
 
       // Fetch addresses when screen comes into focus
-      if (!loadingAddresses && savedAddresses.length === 0) {
         fetchAddresses();
-      }
-    }, [loadingAddresses, savedAddresses.length])
+    }, [])
   );
 
   const fetchAddresses = async () => {
@@ -173,6 +171,7 @@ export default function CheckoutScreen() {
         isDefault: address.isDefault,
         type: address.type === "home" ? "Home" : "Work", // Capitalize for display
       }));
+
 
       setSavedAddresses(mappedAddresses);
     } catch (e) {
@@ -1079,105 +1078,90 @@ export default function CheckoutScreen() {
 
                     return 0;
                   })
-                  .map((address) => (
-                    <View key={address.id} style={styles.addressOptionWrapper}>
-                      <Pressable
-                        onPress={() =>
-                          handleSelectAddress(address, addressSelectorType)
-                        }
-                        style={[
-                          styles.addressOption,
-                          isAddressSelected(address, addressSelectorType) &&
-                            !isAddressComplete({
-                              firstName: address.firstName,
-                              lastName: address.lastName,
-                              phone: address.phone,
-                              address1: address.address1,
-                              city: address.city,
-                              province: address.province,
-                              postalCode: address.postalCode,
-                              country: address.country,
-                            }) &&
-                            styles.incompleteAddressCard,
-                        ]}
-                      >
-                        <View style={styles.addressOptionContent}>
-                          <View style={styles.addressOptionHeader}>
-                            <View style={styles.addressTypeContainer}>
-                              <Text style={styles.addressTypeIcon}>
-                                {address.type === "Home" ? "🏠" : "🏢"}
-                              </Text>
-                              <Text style={styles.addressType}>
-                                {address.type}
-                              </Text>
-                            </View>
-                            <View style={styles.badgeContainer}>
-                              {address.isDefault && (
-                                <View style={styles.defaultBadge}>
-                                  <Text style={styles.defaultBadgeText}>
-                                    Default
-                                  </Text>
-                                </View>
-                              )}
-
-                              {isAddressSelected(
-                                address,
-                                addressSelectorType
-                              ) &&
-                                !isAddressComplete({
-                                  firstName: address.firstName,
-                                  lastName: address.lastName,
-                                  phone: address.phone,
-                                  address1: address.address1,
-                                  city: address.city,
-                                  province: address.province,
-                                  postalCode: address.postalCode,
-                                  country: address.country,
-                                }) && (
-                                  <View style={styles.incompleteAddressBadge}>
-                                    <Text
-                                      style={styles.incompleteAddressBadgeText}
-                                    >
-                                      Incomplete
-                                    </Text>
-                                  </View>
-                                )}
-                              {isAddressSelected(
-                                address,
-                                addressSelectorType
-                              ) && (
-                                <View style={styles.selectedBadge}>
-                                  <Text style={styles.selectedBadgeText}>
-                                    Selected
-                                  </Text>
-                                </View>
-                              )}
-                            </View>
-                          </View>
-                          <Text style={styles.addressName}>
-                            {address.firstName} {address.lastName}
-                          </Text>
-                          <Text style={styles.addressDetails}>
-                            {address.address1}
-                            {address.address2 && `, ${address.address2}`}
-                          </Text>
-                          <Text style={styles.addressDetails}>
-                            {address.city}, {address.province}{" "}
-                            {address.postalCode}
-                          </Text>
-                          <Text style={styles.addressPhone}>
-                            {address.phone}
-                          </Text>
-                        </View>
-                      </Pressable>
-                      <Pressable
-                        onPress={() => handleEditAddress(address)}
-                        style={styles.editAddressBtn}
-                      >
-                        <Text style={styles.editAddressBtnText}>Edit</Text>
-                      </Pressable>
-                    </View>
-                  ))}
+                 .map((address) => {
+  const isSelected = isAddressSelected(address, addressSelectorType);
+  const isIncomplete = !isAddressComplete({
+    firstName: address.firstName,
+    lastName: address.lastName,
+    phone: address.phone,
+    address1: address.address1,
+    city: address.city,
+    province: address.province,
+    postalCode: address.postalCode,
+    country: address.country
+  });
+  
+  return (
+    <View key={address.id} style={styles.addressOptionWrapper}>
+      <Pressable
+        onPress={() =>
+          handleSelectAddress(address, addressSelectorType)
+        }
+        style={[
+          styles.addressOption,
+          // Error styles take priority
+          isSelected && isIncomplete && styles.incompleteAddressCard,
+          // Selected styles if no error
+          isSelected && !isIncomplete && styles.addressOptionSelected,
+        ]}
+      >
+        {/* Selected tickmark - only show if selected and not incomplete */}
+        {isSelected && !isIncomplete && (
+          <View style={styles.selectedTickmark}>
+            <Text style={styles.selectedTickmarkText}>✓</Text>
+          </View>
+        )}
+        
+        <View style={styles.addressOptionContent}>
+          <View style={styles.addressOptionHeader}>
+            <View style={styles.addressTypeContainer}>
+              <Text style={styles.addressTypeIcon}>
+                {address.type === "Home" ? "🏠" : "🏢"}
+              </Text>
+              <Text style={styles.addressType}>{address.type}</Text>
+            </View>
+            <View style={styles.badgeContainer}>
+              {/* Default badge */}
+              {address.isDefault && (
+                <View style={styles.defaultBadge}>
+                  <Text style={styles.defaultBadgeText}>Default</Text>
+                </View>
+              )}
+              
+              {/* Incomplete badge - only for selected addresses */}
+              {isSelected && isIncomplete && (
+                <View style={styles.incompleteAddressBadge}>
+                  <Text style={styles.incompleteAddressBadgeText}>
+                    Incomplete
+                  </Text>
+                </View>
+              )}
+            </View>
+          </View>
+          
+          {/* Rest of address content remains the same */}
+          <Text style={styles.addressName}>
+            {address.firstName} {address.lastName}
+          </Text>
+          <Text style={styles.addressDetails}>
+            {address.address1}
+            {address.address2 && `, ${address.address2}`}
+          </Text>
+          <Text style={styles.addressDetails}>
+            {address.city}, {address.province} {address.postalCode}
+          </Text>
+          <Text style={styles.addressPhone}>{address.phone}</Text>
+        </View>
+      </Pressable>
+      <Pressable
+        onPress={() => handleEditAddress(address)}
+        style={styles.editAddressBtn}
+      >
+        <Text style={styles.editAddressBtnText}>Edit</Text>
+      </Pressable>
+    </View>
+  );
+})}
               </ScrollView>
             </View>
           </View>
@@ -2312,4 +2296,46 @@ const styles = StyleSheet.create({
     borderColor: COLORS.error,
     borderWidth: 1.5,
   },
+
+  // Add these to your styles object
+addressOptionSelected: {
+  borderColor: "#29bf12", // Light sky blue
+  backgroundColor: "transparent", // Alice blue (very light)
+  borderWidth: 1.5,
+},
+selectedTickmark: {
+  position: "absolute",
+  top: 12,
+  right: 12,
+  width: 20,
+  height: 20,
+  borderRadius: 10,
+  backgroundColor: "#29bf12", // Royal blue
+  alignItems: "center",
+  justifyContent: "center",
+  zIndex: 1,
+},
+selectedTickmarkText: {
+  color: "white",
+  fontSize: 12,
+  fontWeight: "bold",
+},
+defaultBadge: {
+  flexDirection: "row",
+  alignItems: "center",
+  backgroundColor: "transparent",
+  paddingHorizontal: 6,
+  paddingVertical: 2,
+  borderRadius: 10,
+  marginRight: 24,
+},
+defaultBadgeIcon: {
+  fontSize: 10,
+  marginRight: 3
+},
+defaultBadgeText: {
+  fontSize: 12,
+  color: "green",
+  fontWeight: "600",
+},
 });

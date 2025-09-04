@@ -17,7 +17,7 @@ import { Ionicons } from "@expo/vector-icons";
 import Svg, { Path } from "react-native-svg";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { useAuthenticatedFetch, useAuthStore } from "../../utils/authStore";
-
+import {addShippingAddress, updateShippingAddress} from "../../utils/actions"
 const COLORS = {
   lightPink: "#f5b8d0",
   lavender: "#e2c6df",
@@ -122,6 +122,20 @@ export default function App() {
   const router = useRouter();
   const {authenticatedFetch} = useAuthenticatedFetch();
 
+
+    const isFormValid = () => {
+    return (
+      formData.firstName.trim() !== "" &&
+      formData.lastName.trim() !== "" &&
+      formData.phone.trim() !== "" &&
+      formData.address1.trim() !== "" &&
+      formData.province.trim() !== "" &&
+      formData.city.trim() !== "" &&
+      formData.postalCode.trim() !== ""
+    );
+  };
+
+
   // Get ID from route parameters
   const { id } = useLocalSearchParams();
   const isEditMode = id && id !== "new";
@@ -133,6 +147,47 @@ export default function App() {
       fetchAddressData();
     }
   }, [id]);
+
+  const handleUpdateAddress = async () => {
+    const isValid = isFormValid();
+    console.log("isValid:", isValid);
+    if (!isValid) {
+      return;
+    }
+    const updatedAddress = { ...formData, id: id };
+    console.log("updatedAddress:", updatedAddress);
+    try {
+      setLoading(true);
+      await updateShippingAddress(authenticatedFetch, updatedAddress);
+      router.back();
+    } catch (error) {
+      Alert.alert("Error", "Failed to update address. Please try again.");
+      console.error("Error updating address:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSaveAndContinue = async () => {
+    const isValid = isFormValid();
+    if (!isValid) {
+      return;
+    }
+
+    console.log("Form data:", formData);
+    return 1;
+    try {
+      setLoading(true);
+      await addShippingAddress(authenticatedFetch, formData);
+      router.back();
+    } catch (error) {
+      Alert.alert("Error", "Failed to save address. Please try again.");
+      console.error("Error saving address:", error);
+    } finally {
+      setLoading(false);
+    }
+
+  };  
 
   const fetchAddressData = async () => {
     setFetchingAddress(true);
@@ -228,17 +283,6 @@ export default function App() {
   };
 
   // Check if all required fields are filled
-  const isFormValid = () => {
-    return (
-      formData.firstName.trim() !== "" &&
-      formData.lastName.trim() !== "" &&
-      formData.phone.trim() !== "" &&
-      formData.address1.trim() !== "" &&
-      formData.province.trim() !== "" &&
-      formData.city.trim() !== "" &&
-      formData.postalCode.trim() !== ""
-    );
-  };
 
   const handleSubmit = () => {
     if (!isFormValid()) {
@@ -534,11 +578,19 @@ export default function App() {
       {/* Submit Button */}
       <View style={styles.buttonContainer}>
         <TouchableOpacity
+        onPress={() => {
+          console.log("isEditMode:", isEditMode);
+          if (isEditMode) {
+            handleUpdateAddress();
+            return;
+          } else {
+            handleSaveAndContinue();
+          }
+        }}
           style={[
             styles.submitButton,
             (loading || fetchingAddress || !isFormValid()) && styles.submitButtonDisabled,
           ]}
-          onPress={handleSubmit}
           disabled={loading || fetchingAddress || !isFormValid()}
         >
           {loading ? (

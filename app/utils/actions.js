@@ -366,3 +366,58 @@ export const appendShippingAdresses = async (authenticatedFetch, email) => {
   });
   console.log("Shipping addresses appended");
 };
+
+
+export const addShippingAddress = async (authenticatedFetch, data) => {
+  try {
+    const response = await authenticatedFetch(
+      `${BACKEND_URL}/add-shipping-address`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      }
+    ); 
+
+    if (response.ok) {
+      const data = await response.json();
+      return {
+        success: true,
+      };
+    }
+  } catch (error) {
+    console.error("Failed to add shipping address:", error);
+    return {
+      success: false,
+      error: "Failed to add shipping address",
+      details: error.message,
+    };
+  }
+};
+
+export const updateShippingAddress = async (authenticatedFetch, data) => {
+  try {
+    const response = await authenticatedFetch(
+      `${BACKEND_URL}/address/${data.id}`,
+      {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      }
+    );
+
+    if (response.ok) {
+      const data = await response.json();
+      return {
+        success: true,
+      };
+    }
+  } catch (error) {
+    console.error("Failed to update shipping address:", error);
+    return {
+      success: false,
+      error: "Failed to update shipping address",
+      details: error.message,
+    };
+  }
+};
