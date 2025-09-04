@@ -22,7 +22,6 @@ import {
 import { useRouter } from "expo-router";
 // Configure these for your app
 const CART_API = "http://192.168.100.193:3000/cart";
-const ADDRESSES_API = "http://192.168.100.193:3000/addresses";
 const CURRENCY_SYMBOL = "PKR ";
 
 import { Ionicons } from "@expo/vector-icons";
@@ -74,11 +73,39 @@ export default function CheckoutScreen() {
 
   const [editingAddress, setEditingAddress] = useState(null);
   const [savingAddress, setSavingAddress] = useState(false);
-  const [loadingAddresses, setLoadingAddresses] = useState(false);
 
   const router = useRouter();
 
-  const [savedAddresses, setSavedAddresses] = useState([]);
+  const [savedAddresses, setSavedAddresses] = useState([
+    {
+      id: "1",
+      firstName: "John",
+      lastName: "Doe",
+      phone: "+92 300 1234567",
+      address1: "123 Main Street",
+      address2: "Apt 4B",
+      city: "Karachi",
+      province: "Sindh",
+      postalCode: "75500",
+      country: "Pakistan",
+      isDefault: true,
+      type: "Home",
+    },
+    {
+      id: "2",
+      firstName: "John",
+      lastName: "Doe",
+      phone: "+92 300 1234567",
+      address1: "456 Business Ave",
+      address2: "Suite 200",
+      city: "Lahore",
+      province: "Punjab",
+      postalCode: "54000",
+      country: "Pakistan",
+      isDefault: false,
+      type: "Work",
+    },
+  ]);
   const [selectedShippingAddress, setSelectedShippingAddress] = useState(null);
   const [selectedBillingAddress, setSelectedBillingAddress] = useState(null);
   const [showAddressSelector, setShowAddressSelector] = useState(false);
@@ -140,55 +167,16 @@ export default function CheckoutScreen() {
 
   useFocusEffect(
     useCallback(() => {
-      console.log("useFocusEffect called");
       StatusBar.setBackgroundColor("#F5F5F5");
       StatusBar.setBarStyle("dark-content");
-
-      // Fetch addresses when screen comes into focus
-      if (!loadingAddresses && savedAddresses.length === 0) {
-        fetchAddresses();
-      }
-    }, [loadingAddresses, savedAddresses.length])
+    }, [])
   );
-
-  const fetchAddresses = async () => {
-    try {
-      setLoadingAddresses(true);
-      const res = await authenticatedFetch(ADDRESSES_API);
-      if (!res.ok) throw new Error(`Failed to fetch addresses: ${res.status}`);
-      const data = await res.json();
-
-      // Map API response to component format
-      const mappedAddresses = data.addresses.map((address) => ({
-        id: address.id,
-        firstName: address.firstName,
-        lastName: address.lastName,
-        phone: address.phone,
-        address1: address.address1,
-        address2: address.address2,
-        city: address.city,
-        province: address.province,
-        postalCode: address.postalCode,
-        country: address.country,
-        isDefault: address.isDefault,
-        type: address.type === "home" ? "Home" : "Work", // Capitalize for display
-      }));
-
-      setSavedAddresses(mappedAddresses);
-    } catch (e) {
-      console.error("Failed to fetch addresses:", e);
-      // Don't show error alert for addresses as it's not critical for checkout
-    } finally {
-      setLoadingAddresses(false);
-    }
-  };
 
   useEffect(() => {
     const defaultAddress = savedAddresses.find((addr) => addr.isDefault);
     if (defaultAddress) {
       setSelectedShippingAddress(defaultAddress);
       const mappedAddress = {
-        id: defaultAddress.id,
         firstName: defaultAddress.firstName,
         lastName: defaultAddress.lastName,
         phone: defaultAddress.phone,
@@ -205,7 +193,7 @@ export default function CheckoutScreen() {
         setBillingAddress(mappedAddress);
       }
     }
-  }, [savedAddresses]);
+  }, []);
 
   useEffect(() => {
     let mounted = true;
@@ -311,12 +299,9 @@ export default function CheckoutScreen() {
     : 0;
   const total = subtotal + shipping + tax - discountAmount;
   const isAddressSelected = (address, type) => {
-    console.log("address", address);
     const currentAddress =
       type === "shipping" ? shippingAddress : billingAddress;
-    console.log("\n\n currentAddress", currentAddress);
     return (
-      currentAddress.id === address.id &&
       currentAddress.firstName === address.firstName &&
       currentAddress.lastName === address.lastName &&
       currentAddress.address1 === address.address1 &&
@@ -387,8 +372,8 @@ export default function CheckoutScreen() {
       addr.address1.trim() &&
       addr.city.trim() &&
       addr.province.trim() &&
-      addr.postalCode.trim();
-    // addr.country.trim();
+      addr.postalCode.trim() &&
+      addr.country.trim();
 
     return (
       addressValid(shipping) &&
@@ -453,7 +438,6 @@ export default function CheckoutScreen() {
       setSelectedShippingAddress(address);
       // Map to the form format for validation
       const mappedAddress = {
-        id: address.id,
         firstName: address.firstName,
         lastName: address.lastName,
         phone: address.phone,
@@ -463,7 +447,7 @@ export default function CheckoutScreen() {
         city: address.city,
         province: address.province,
         postalCode: address.postalCode,
-        country: address.country ? address.country : "Parkistan",
+        country: address.country,
       };
       setShippingAddress(mappedAddress);
       if (sameAsBilling) {
@@ -472,7 +456,6 @@ export default function CheckoutScreen() {
     } else {
       // Handle billing address selection
       const mappedAddress = {
-        id: address.id,
         firstName: address.firstName,
         lastName: address.lastName,
         phone: address.phone,
@@ -486,11 +469,6 @@ export default function CheckoutScreen() {
       };
       setBillingAddress(mappedAddress);
     }
-    setShowAddressSelector(false);
-  };
-
-  const handleEditAddress = (address) => {
-    router.push(`/screens/addresses/${address.id}`);
     setShowAddressSelector(false);
   };
 
@@ -541,32 +519,6 @@ export default function CheckoutScreen() {
     );
   }
 
-  const AddressSkeletonContent = () => (
-    <View style={styles.addressSelectorCard}>
-      <View style={styles.skeletonContainer}>
-        <View style={[styles.skeletonLine, { width: "30%", height: 16 }]} />
-        <View
-          style={[
-            styles.skeletonLine,
-            { width: "60%", height: 14, marginTop: 8 },
-          ]}
-        />
-        <View
-          style={[
-            styles.skeletonLine,
-            { width: "80%", height: 14, marginTop: 4 },
-          ]}
-        />
-        <View
-          style={[
-            styles.skeletonLine,
-            { width: "40%", height: 14, marginTop: 4 },
-          ]}
-        />
-      </View>
-    </View>
-  );
-
   return (
     <View style={styles.safe}>
       <StatusBar barStyle="dark-content" backgroundColor={COLORS.background} />
@@ -600,67 +552,61 @@ export default function CheckoutScreen() {
               </View>
             </View>
 
-            {loadingAddresses ? (
-              <AddressSkeletonContent />
-            ) : (
-              <Pressable
-                onPress={() => {
-                  setAddressSelectorType("shipping");
-                  setShowAddressSelector(true);
-                }}
-                style={styles.addressSelectorCard}
-              >
-                {selectedShippingAddress ? (
-                  <View style={styles.selectedAddressContainer}>
-                    <View style={styles.selectedAddressHeader}>
-                      <View style={styles.addressTypeIndicator}>
-                        <Text style={styles.addressTypeIcon}>
-                          {selectedShippingAddress.type === "Home"
-                            ? "🏠"
-                            : "🏢"}
-                        </Text>
-                        <Text style={styles.addressTypeText}>
-                          {selectedShippingAddress.type}
-                        </Text>
-                      </View>
-                      <Text style={styles.changeText}>Change</Text>
-                    </View>
-                    <Text style={styles.selectedAddressName}>
-                      {selectedShippingAddress.firstName}{" "}
-                      {selectedShippingAddress.lastName}
-                    </Text>
-                    <Text style={styles.selectedAddressDetails}>
-                      {selectedShippingAddress.address1}
-                      {selectedShippingAddress.address2 &&
-                        `, ${selectedShippingAddress.address2}`}
-                    </Text>
-                    <Text style={styles.selectedAddressDetails}>
-                      {selectedShippingAddress.city},{" "}
-                      {selectedShippingAddress.province}{" "}
-                      {selectedShippingAddress.postalCode}
-                    </Text>
-                    <Text style={styles.selectedAddressPhone}>
-                      {selectedShippingAddress.phone}
-                    </Text>
-                  </View>
-                ) : (
-                  <View style={styles.noAddressContainer}>
-                    <View style={styles.noAddressIcon}>
-                      <Text style={styles.noAddressIconText}>+</Text>
-                    </View>
-                    <View style={styles.noAddressText}>
-                      <Text style={styles.noAddressTitle}>
-                        Select Shipping Address
+            <Pressable
+              onPress={() => {
+                setAddressSelectorType("shipping");
+                setShowAddressSelector(true);
+              }}
+              style={styles.addressSelectorCard}
+            >
+              {selectedShippingAddress ? (
+                <View style={styles.selectedAddressContainer}>
+                  <View style={styles.selectedAddressHeader}>
+                    <View style={styles.addressTypeIndicator}>
+                      <Text style={styles.addressTypeIcon}>
+                        {selectedShippingAddress.type === "Home" ? "🏠" : "🏢"}
                       </Text>
-                      <Text style={styles.noAddressSubtitle}>
-                        Choose from saved addresses or add new
+                      <Text style={styles.addressTypeText}>
+                        {selectedShippingAddress.type}
                       </Text>
                     </View>
-                    <Text style={styles.selectArrow}>→</Text>
+                    <Text style={styles.changeText}>Change</Text>
                   </View>
-                )}
-              </Pressable>
-            )}
+                  <Text style={styles.selectedAddressName}>
+                    {selectedShippingAddress.firstName}{" "}
+                    {selectedShippingAddress.lastName}
+                  </Text>
+                  <Text style={styles.selectedAddressDetails}>
+                    {selectedShippingAddress.address1}
+                    {selectedShippingAddress.address2 &&
+                      `, ${selectedShippingAddress.address2}`}
+                  </Text>
+                  <Text style={styles.selectedAddressDetails}>
+                    {selectedShippingAddress.city},{" "}
+                    {selectedShippingAddress.province}{" "}
+                    {selectedShippingAddress.postalCode}
+                  </Text>
+                  <Text style={styles.selectedAddressPhone}>
+                    {selectedShippingAddress.phone}
+                  </Text>
+                </View>
+              ) : (
+                <View style={styles.noAddressContainer}>
+                  <View style={styles.noAddressIcon}>
+                    <Text style={styles.noAddressIconText}>+</Text>
+                  </View>
+                  <View style={styles.noAddressText}>
+                    <Text style={styles.noAddressTitle}>
+                      Select Shipping Address
+                    </Text>
+                    <Text style={styles.noAddressSubtitle}>
+                      Choose from saved addresses or add new
+                    </Text>
+                  </View>
+                  <Text style={styles.selectArrow}>→</Text>
+                </View>
+              )}
+            </Pressable>
           </View>
 
           {/* Billing Address */}
@@ -1018,9 +964,58 @@ export default function CheckoutScreen() {
                 style={styles.modalBody}
                 showsVerticalScrollIndicator={false}
               >
+                {savedAddresses.map((address) => (
+                  <Pressable
+                    key={address.id}
+                    onPress={() =>
+                      handleSelectAddress(address, addressSelectorType)
+                    }
+                    style={styles.addressOption}
+                  >
+                    <View style={styles.addressOptionContent}>
+                      <View style={styles.addressOptionHeader}>
+                        <View style={styles.addressTypeContainer}>
+                          <Text style={styles.addressTypeIcon}>
+                            {address.type === "Home" ? "🏠" : "🏢"}
+                          </Text>
+                          <Text style={styles.addressType}>{address.type}</Text>
+                        </View>
+                        <View style={styles.badgeContainer}>
+                          {address.isDefault && (
+                            <View style={styles.defaultBadge}>
+                              <Text style={styles.defaultBadgeText}>
+                                Current
+                              </Text>
+                            </View>
+                          )}
+                          {isAddressSelected(address, addressSelectorType) && (
+                            <View style={styles.selectedBadge}>
+                              <Text style={styles.selectedBadgeText}>
+                                Selected
+                              </Text>
+                            </View>
+                          )}
+                        </View>
+                      </View>
+                      <Text style={styles.addressName}>
+                        {address.firstName} {address.lastName}
+                      </Text>
+                      <Text style={styles.addressDetails}>
+                        {address.address1}
+                        {address.address2 && `, ${address.address2}`}
+                      </Text>
+                      <Text style={styles.addressDetails}>
+                        {address.city}, {address.province} {address.postalCode}
+                      </Text>
+                      <Text style={styles.addressPhone}>{address.phone}</Text>
+                    </View>
+                  </Pressable>
+                ))}
+
                 <Pressable
                   onPress={() => {
                     setShowAddressSelector(false);
+                    // router.push("/screens/addresses/cmevjo47e0012ecd8cn90d8gz");
                     router.push("/screens/addresses/new");
                   }}
                   style={styles.addNewAddressOption}
@@ -1038,83 +1033,10 @@ export default function CheckoutScreen() {
                       </Text>
                     </View>
                   </View>
+                  {/* <View style={styles.selectIndicator}>
+            <Text style={styles.selectArrow}>→</Text>
+          </View> */}
                 </Pressable>
-                {savedAddresses
-                  .sort((a, b) => {
-                    // First, prioritize selected address
-                    const aSelected = isAddressSelected(a, addressSelectorType);
-                    const bSelected = isAddressSelected(b, addressSelectorType);
-                    if (aSelected && !bSelected) return -1;
-                    if (!aSelected && bSelected) return 1;
-
-                    // Then, prioritize default address
-                    if (a.isDefault && !b.isDefault) return -1;
-                    if (!a.isDefault && b.isDefault) return 1;
-
-                    return 0;
-                  })
-                  .map((address) => (
-                    <View key={address.id} style={styles.addressOptionWrapper}>
-                      <Pressable
-                        onPress={() =>
-                          handleSelectAddress(address, addressSelectorType)
-                        }
-                        style={styles.addressOption}
-                      >
-                        <View style={styles.addressOptionContent}>
-                          <View style={styles.addressOptionHeader}>
-                            <View style={styles.addressTypeContainer}>
-                              <Text style={styles.addressTypeIcon}>
-                                {address.type === "Home" ? "🏠" : "🏢"}
-                              </Text>
-                              <Text style={styles.addressType}>
-                                {address.type}
-                              </Text>
-                            </View>
-                            <View style={styles.badgeContainer}>
-                              {/* {address.isDefault && (
-                              <View style={styles.defaultBadge}>
-                                <Text style={styles.defaultBadgeText}>
-                                  Current
-                                </Text>
-                              </View>
-                            )} */}
-                              {isAddressSelected(
-                                address,
-                                addressSelectorType
-                              ) && (
-                                <View style={styles.selectedBadge}>
-                                  <Text style={styles.selectedBadgeText}>
-                                    Selected
-                                  </Text>
-                                </View>
-                              )}
-                            </View>
-                          </View>
-                          <Text style={styles.addressName}>
-                            {address.firstName} {address.lastName}
-                          </Text>
-                          <Text style={styles.addressDetails}>
-                            {address.address1}
-                            {address.address2 && `, ${address.address2}`}
-                          </Text>
-                          <Text style={styles.addressDetails}>
-                            {address.city}, {address.province}{" "}
-                            {address.postalCode}
-                          </Text>
-                          <Text style={styles.addressPhone}>
-                            {address.phone}
-                          </Text>
-                        </View>
-                      </Pressable>
-                      <Pressable
-                        onPress={() => handleEditAddress(address)}
-                        style={styles.editAddressBtn}
-                      >
-                        <Text style={styles.editAddressBtnText}>Edit</Text>
-                      </Pressable>
-                    </View>
-                  ))}
               </ScrollView>
             </View>
           </View>
@@ -1363,16 +1285,6 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: 16,
     paddingTop: 12,
-  },
-
-  // Skeleton styles
-  skeletonContainer: {
-    paddingVertical: 8,
-  },
-  skeletonLine: {
-    backgroundColor: COLORS.border,
-    borderRadius: 4,
-    marginBottom: 4,
   },
 
   // Collapsible Summary
@@ -1690,10 +1602,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
   },
-  addressTypeIcon: {
-    fontSize: 14,
-    marginRight: 6,
-  },
   addressTypeText: {
     fontSize: 14,
     fontWeight: "600",
@@ -1759,12 +1667,6 @@ const styles = StyleSheet.create({
   noAddressSubtitle: {
     fontSize: 13,
     color: COLORS.textLight,
-  },
-
-  selectArrow: {
-    fontSize: 16,
-    color: COLORS.textMuted,
-    fontWeight: "600",
   },
 
   savedAddressButton: {
@@ -2082,24 +1984,16 @@ const styles = StyleSheet.create({
     maxHeight: 400,
     paddingBottom: 8,
   },
-
-  // Address option wrapper for edit button
-  addressOptionWrapper: {
-    marginHorizontal: 12,
-    marginVertical: 6,
-    borderRadius: 6,
-    overflow: "hidden",
-  },
-
   addressOption: {
     flexDirection: "row",
     alignItems: "center",
-    padding: 14,
-    // backgroundColor: COLORS.backgroundSoft,
-    backgroundColor: "#f8f9fa",
-    // borderWidth: 1,
+    padding: 16,
+    marginHorizontal: 12,
+    marginVertical: 6,
+    borderRadius: 12,
+    backgroundColor: COLORS.backgroundSoft,
+    borderWidth: 1,
     borderColor: COLORS.borderLight,
-    elevation: 0.25,
   },
   addressOptionContent: {
     flex: 1,
@@ -2114,6 +2008,10 @@ const styles = StyleSheet.create({
   addressTypeContainer: {
     flexDirection: "row",
     alignItems: "center",
+  },
+  addressTypeIcon: {
+    fontSize: 14,
+    marginRight: 6,
   },
   addressType: {
     fontSize: 14,
@@ -2155,18 +2053,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     marginLeft: 12,
   },
-
-  // Edit button for addresses
-  editAddressBtn: {
-    position: "absolute",
-    right: 16,
-    bottom: 16,
-    backgroundColor: COLORS.primary,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 6,
-  },
-  editAddressBtnText: {
+  selectArrow: {
     color: "white",
     fontSize: 12,
     fontWeight: "600",
@@ -2230,22 +2117,4 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: COLORS.textLight,
   },
-
-
-  // Add these to your styles object
-incompleteAddressBadge: {
-  backgroundColor: COLORS.error,
-  paddingHorizontal: 8,
-  paddingVertical: 3,
-  borderRadius: 12,
-},
-incompleteAddressBadgeText: {
-  fontSize: 11,
-  color: "white",
-  fontWeight: "600",
-},
-incompleteAddressCard: {
-  borderColor: COLORS.error,
-  borderWidth: 1.5,
-},
 });
