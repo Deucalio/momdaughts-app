@@ -125,7 +125,13 @@ export default function ArticlePage() {
   if (loading) {
     return (
       <SafeAreaView style={styles.container}>
-        <StatusBar barStyle="light-content" backgroundColor="#2c2a6b" />
+        <StatusBar barStyle="dark-content" backgroundColor="#2c2a6b" />
+             <HeaderWithoutCart 
+        title="Blogs" 
+        onBackPress={() => router.back()}
+        showLogo={true}
+        showBackButton={true}
+      />
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color="#2c2a6b" />
         </View>

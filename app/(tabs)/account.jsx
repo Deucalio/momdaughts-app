@@ -18,6 +18,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { logOut } from "../utils/auth";
 import { useAuthenticatedFetch, useAuthStore } from "../utils/authStore";
+import ScreenWrapper from "../../components/ScreenWrapper";
 
 const BACKEND_URL = "http://192.168.100.193:3000";
 const { width } = Dimensions.get("window");
@@ -656,54 +657,11 @@ export default function AccountScreen() {
   }
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "white" }}>
+    <ScreenWrapper cartItemCount={0}>
+    <ScrollView style={{ flex: 1, backgroundColor: "white", paddingTop: 30  }}>
         <StatusBar barStyle="dark-content" backgroundColor={COLORS.white} />
       {/* Header */}
-      <View
-        style={{
-          flexDirection: "row",
-          alignItems: "center",
-          justifyContent: "space-between",
-          paddingHorizontal: 16,
-          paddingVertical: 12,
-          backgroundColor: COLORS.white,
-          shadowColor: "#000",
-          shadowOffset: { width: 0, height: 1 },
-          shadowOpacity: 0.1,
-          shadowRadius: 2,
-          elevation: 2,
-        }}
-      >
-        <TouchableOpacity
-          onPress={() => router.back()}
-          style={{
-            padding: 4,
-            borderRadius: 6,
-          }}
-        >
-          <Ionicons name="chevron-back" size={24} color={COLORS.darkest} />
-        </TouchableOpacity>
 
-        <Text
-          style={{
-            fontSize: 18,
-            fontWeight: "700",
-            color: COLORS.darkest,
-          }}
-        >
-          Account
-        </Text>
-
-        <TouchableOpacity
-          onPress={() => router.push("/settings")}
-          style={{
-            padding: 4,
-            borderRadius: 6,
-          }}
-        >
-          <Ionicons name="settings-outline" size={20} color={COLORS.gray} />
-        </TouchableOpacity>
-      </View>
 
       <ScrollView
         showsVerticalScrollIndicator={false}
@@ -767,6 +725,7 @@ export default function AccountScreen() {
           Version 1.0.0
         </Text>
       </ScrollView>
-    </SafeAreaView>
+    </ScrollView>
+      </ScreenWrapper>
   );
 }
