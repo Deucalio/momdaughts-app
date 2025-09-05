@@ -303,7 +303,12 @@ export default function CheckoutScreen() {
 
   // const tax = Math.round(subtotal * 0.17); // 17% tax (Pakistan GST)
   // 2% Tax (Pakistan GST)
-  const tax = Math.round(subtotal * 0.02);
+  // const tax = Math.round(subtotal * 0.02);
+
+  // 0% Tax (Pakistan GST)
+  const tax = 0;
+
+  
   const discountAmount = appliedDiscount
     ? Math.round(subtotal * (appliedDiscount.percentage / 100))
     : 0;
