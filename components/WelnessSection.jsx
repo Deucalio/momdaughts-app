@@ -134,6 +134,7 @@ export default function WellnessCollections() {
             onPress={() => router.push(`/screens/collections/${collection.id}?imageUrl=${collection.imageUrl}&title=${collection.title}&description=${collection.description}`)}
             key={collection.id}
             style={styles.card}
+            activeOpacity={0.5}
           >
             <View style={styles.imageContainer}>
               <Image

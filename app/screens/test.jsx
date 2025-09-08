@@ -1,33 +1,31 @@
 "use client";
 
 import { Image } from "expo-image";
-import { useFocusEffect } from "expo-router";
+import { useFocusEffect, useRouter } from "expo-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
-  ActivityIndicator,
-  Alert,
-  Animated,
-  FlatList,
-  KeyboardAvoidingView,
-  Platform,
-  Pressable,
-  SafeAreaView,
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
+    ActivityIndicator,
+    Alert,
+    Animated,
+    FlatList,
+    KeyboardAvoidingView,
+    Platform,
+    Pressable,
+    SafeAreaView,
+    ScrollView,
+    StatusBar,
+    StyleSheet,
+    Text,
+    TextInput,
+    View,
 } from "react-native";
-import { useRouter } from "expo-router";
 // Configure these for your app
 const CART_API = "http://192.168.100.193:3000/cart";
 const CURRENCY_SYMBOL = "PKR ";
 
-import { Ionicons } from "@expo/vector-icons";
+import NavigationSpaceContainer from "../../components/NavigationSpaceContainer";
 import { createOrder } from "../utils/actions";
 import { useAuthenticatedFetch, useAuthStore } from "../utils/authStore";
-import NavigationSpaceContainer from "../../components/NavigationSpaceContainer";
 // Subtle, elegant color palette
 const COLORS = {
   primary: "#6B46C1", // Deep purple

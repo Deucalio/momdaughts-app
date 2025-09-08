@@ -1,34 +1,32 @@
 "use client";
 
 import { Image } from "expo-image";
-import { useFocusEffect } from "expo-router";
+import { useFocusEffect, useRouter } from "expo-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
-  ActivityIndicator,
-  Alert,
-  Animated,
-  FlatList,
-  KeyboardAvoidingView,
-  Platform,
-  Pressable,
-  SafeAreaView,
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
+    ActivityIndicator,
+    Alert,
+    Animated,
+    FlatList,
+    KeyboardAvoidingView,
+    Platform,
+    Pressable,
+    SafeAreaView,
+    ScrollView,
+    StatusBar,
+    StyleSheet,
+    Text,
+    TextInput,
+    View,
 } from "react-native";
-import { useRouter } from "expo-router";
 // Configure these for your app
 const CART_API = "http://192.168.100.193:3000/cart";
 const ADDRESSES_API = "http://192.168.100.193:3000/addresses";
 const CURRENCY_SYMBOL = "PKR ";
 
-import { Ionicons } from "@expo/vector-icons";
+import NavigationSpaceContainer from "../../components/NavigationSpaceContainer";
 import { createOrder } from "../utils/actions";
 import { useAuthenticatedFetch, useAuthStore } from "../utils/authStore";
-import NavigationSpaceContainer from "../../components/NavigationSpaceContainer";
 // Subtle, elegant color palette
 const COLORS = {
   primary: "#6B46C1", // Deep purple
@@ -166,7 +164,7 @@ export default function CheckoutScreen() {
         city: address.city,
         province: address.province,
         postalCode: address.postalCode,
-        country: address.country,
+        country: "Pakistan",
         isDefault: address.isDefault,
         type: address.type === "home" ? "Home" : "Work", // Capitalize for display
         email: user.email,
@@ -196,7 +194,7 @@ export default function CheckoutScreen() {
         city: defaultAddress.city,
         province: defaultAddress.province,
         postalCode: defaultAddress.postalCode,
-        country: defaultAddress.country,
+        country: "Pakistan",
       };
       setShippingAddress(mappedAddress);
       if (sameAsBilling) {
@@ -346,7 +344,7 @@ export default function CheckoutScreen() {
 
       // Mock discount validation
       const mockDiscounts = {
-        SAVE10: { code: "SAVE10", percentage: 10, description: "10% off" },
+        NEWORDER10: { code: "NEWORDER10", percentage: 10, description: "10% off" },
         WELCOME15: {
           code: "WELCOME15",
           percentage: 15,
@@ -1111,7 +1109,7 @@ export default function CheckoutScreen() {
                       city: address.city,
                       province: address.province,
                       postalCode: address.postalCode,
-                      country: address.country,
+                      country: "Pakistan",
                     });
 
                     return (

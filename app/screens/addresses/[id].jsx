@@ -1,23 +1,23 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  StyleSheet,
-  SafeAreaView,
-  StatusBar,
-  ScrollView,
-  Alert,
-  ActivityIndicator,
-} from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { useEffect, useState } from "react";
+import {
+    ActivityIndicator,
+    Alert,
+    SafeAreaView,
+    ScrollView,
+    StatusBar,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
+} from "react-native";
 import Svg, { Path } from "react-native-svg";
-import { useRouter, useLocalSearchParams } from "expo-router";
-import { useAuthenticatedFetch, useAuthStore } from "../../utils/authStore";
-import {addShippingAddress, updateShippingAddress} from "../../utils/actions"
+import { addShippingAddress, updateShippingAddress } from "../../utils/actions";
+import { useAuthenticatedFetch } from "../../utils/authStore";
 const COLORS = {
   lightPink: "#f5b8d0",
   lavender: "#e2c6df",
@@ -174,8 +174,6 @@ export default function App() {
       return;
     }
 
-    console.log("Form data:", formData);
-    return 1;
     try {
       setLoading(true);
       await addShippingAddress(authenticatedFetch, formData);

@@ -2,8 +2,8 @@
 "use client";
 import { Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
-import { router } from "expo-router";
-import { useEffect, useState } from "react";
+import { useFocusEffect, useRouter } from "expo-router";
+import { useCallback, useEffect, useState } from "react";
 import {
   Dimensions,
   RefreshControl,
@@ -16,10 +16,13 @@ import {
 } from "react-native";
 
 import { SafeAreaView } from "react-native-safe-area-context";
+import ScreenWrapper from "../../components/ScreenWrapper";
+import {
+  fetchCartItemsCount,
+  fetchTotalWishlistItemsCount,
+} from "../utils/actions";
 import { logOut } from "../utils/auth";
 import { useAuthenticatedFetch, useAuthStore } from "../utils/authStore";
-import ScreenWrapper from "../../components/ScreenWrapper";
-
 const BACKEND_URL = "http://192.168.100.193:3000";
 const { width } = Dimensions.get("window");
 
@@ -49,9 +52,32 @@ export default function AccountScreen() {
   const [notifications, setNotifications] = useState(true);
   const [darkMode, setDarkMode] = useState(false);
   const [orderHistory, setOrderHistory] = useState([]);
+  const [cartItemCount, setCartItemCount] = useState(0);
+  const [totalWishlistItemsCount, setTotalWishlistItemsCount] = useState(0);
+  const router = useRouter();
 
   const { authenticatedFetch } = useAuthenticatedFetch();
   const { user } = useAuthStore();
+
+  const loadCartItemsCount = async () => {
+    try {
+      const result = await fetchCartItemsCount(authenticatedFetch);
+      if (result.success) {
+        setCartItemCount(result.count);
+      }
+    } catch (error) {
+      console.error("[v0] Failed to load cart count:", error);
+    }
+  };
+
+  const loadWishlistItemsCount = async () => {
+    try {
+      const result = await fetchTotalWishlistItemsCount(authenticatedFetch);
+      setTotalWishlistItemsCount(result);
+    } catch (error) {
+      console.error("[v0] Failed to load wishlist count:", error);
+    }
+  };
 
   const fetchUserProfile = async (isRefresh = false) => {
     try {
@@ -94,7 +120,18 @@ export default function AccountScreen() {
 
   useEffect(() => {
     fetchUserProfile();
+    //  loadCartItemsCount();
   }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      // Use requestAnimationFrame to defer state updates
+      requestAnimationFrame(() => {
+        loadCartItemsCount();
+        loadWishlistItemsCount();
+      });
+    }, [])
+  );
 
   const menuItems = [
     {
@@ -285,7 +322,7 @@ export default function AccountScreen() {
             marginTop: 8,
           }}
         >
-          {userProfile?.wishlistCount || 0}
+          {totalWishlistItemsCount || 0}
         </Text>
         <Text
           style={{
@@ -657,75 +694,74 @@ export default function AccountScreen() {
   }
 
   return (
-    <ScreenWrapper cartItemCount={0}>
-    <ScrollView style={{ flex: 1, backgroundColor: "white", paddingTop: 30  }}>
+    <ScreenWrapper cartItemCount={cartItemCount}>
+      <ScrollView style={{ flex: 1, backgroundColor: "white", paddingTop: 30 }}>
         <StatusBar barStyle="dark-content" backgroundColor={COLORS.white} />
-      {/* Header */}
+        {/* Header */}
 
-
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={handleRefresh}
-            colors={[COLORS.buttonColor]}
-            tintColor={COLORS.buttonColor}
-          />
-        }
-        contentContainerStyle={{ paddingBottom: 32 }}
-      >
-        {renderProfileHeader()}
-        {renderQuickStats()}
-        {renderRecentOrders()}
-        {renderSettings()}
-        {renderMenuSection()}
-
-        {/* Logout Button */}
-        <TouchableOpacity
-          style={{
-            backgroundColor: COLORS.white,
-            marginHorizontal: 16,
-            marginTop: 16,
-            borderRadius: 12,
-            padding: 16,
-            flexDirection: "row",
-            alignItems: "center",
-            justifyContent: "center",
-            shadowColor: "#000",
-            shadowOffset: { width: 0, height: 1 },
-            shadowOpacity: 0.1,
-            shadowRadius: 2,
-            elevation: 2,
-          }}
-          onPress={handleLogout}
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={handleRefresh}
+              colors={[COLORS.buttonColor]}
+              tintColor={COLORS.buttonColor}
+            />
+          }
+          contentContainerStyle={{ paddingBottom: 32 }}
         >
-          <Ionicons name="log-out-outline" size={20} color={COLORS.error} />
+          {renderProfileHeader()}
+          {renderQuickStats()}
+          {renderRecentOrders()}
+          {renderSettings()}
+          {renderMenuSection()}
+
+          {/* Logout Button */}
+          <TouchableOpacity
+            style={{
+              backgroundColor: COLORS.white,
+              marginHorizontal: 16,
+              marginTop: 16,
+              borderRadius: 12,
+              padding: 16,
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "center",
+              shadowColor: "#000",
+              shadowOffset: { width: 0, height: 1 },
+              shadowOpacity: 0.1,
+              shadowRadius: 2,
+              elevation: 2,
+            }}
+            onPress={handleLogout}
+          >
+            <Ionicons name="log-out-outline" size={20} color={COLORS.error} />
+            <Text
+              style={{
+                fontSize: 14,
+                fontWeight: "600",
+                color: COLORS.error,
+                marginLeft: 8,
+              }}
+            >
+              Logout
+            </Text>
+          </TouchableOpacity>
+
+          {/* App Version */}
           <Text
             style={{
-              fontSize: 14,
-              fontWeight: "600",
-              color: COLORS.error,
-              marginLeft: 8,
+              textAlign: "center",
+              fontSize: 12,
+              color: COLORS.gray,
+              marginTop: 20,
             }}
           >
-            Logout
+            Version 1.0.0
           </Text>
-        </TouchableOpacity>
-
-        {/* App Version */}
-        <Text
-          style={{
-            textAlign: "center",
-            fontSize: 12,
-            color: COLORS.gray,
-            marginTop: 20,
-          }}
-        >
-          Version 1.0.0
-        </Text>
+        </ScrollView>
       </ScrollView>
-    </ScrollView>
-      </ScreenWrapper>
+    </ScreenWrapper>
   );
 }

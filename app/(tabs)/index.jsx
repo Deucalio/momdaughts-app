@@ -203,7 +203,7 @@ export default function App() {
   };
 
   useEffect(() => {
-    loadCartCount();
+    // loadCartCount();
     loadProducts();
     loadBlogs();
     // LoadIPLProfileStats();

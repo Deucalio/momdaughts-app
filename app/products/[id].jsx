@@ -4,29 +4,29 @@ import { Image } from "expo-image";
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
-  Alert,
-  Animated,
-  Dimensions,
-  Easing,
-  FlatList,
-  PanResponder,
-  SafeAreaView,
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View
+    Alert,
+    Animated,
+    Dimensions,
+    Easing,
+    FlatList,
+    PanResponder,
+    SafeAreaView,
+    ScrollView,
+    StatusBar,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View
 } from "react-native";
 
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import CartToast from "../../components/CartToast";
 import WishlistToast from "../../components/WishlistToast";
 import {
-  addToCart,
-  addToWishlist,
-  fetchCartItemsCount,
-  removeFromWishlist,
+    addToCart,
+    addToWishlist,
+    fetchCartItemsCount,
+    removeFromWishlist,
 } from "../utils/actions";
 import { useAuthenticatedFetch } from "../utils/authStore";
 const { width, height } = Dimensions.get("window");

@@ -5,23 +5,23 @@ import { Ionicons } from "@expo/vector-icons";
 import { useFocusEffect, useRouter } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import {
-  Dimensions,
-  FlatList,
-  SafeAreaView,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
+    Dimensions,
+    FlatList,
+    SafeAreaView,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import CartToast from "../../components/CartToast";
 import ScreenWrapper from "../../components/ScreenWrapper";
 import {
-  addToCart,
-  fetchCartItemsCount,
-  fetchCollections,
+    addToCart,
+    fetchCartItemsCount,
+    fetchCollections,
 } from "../utils/actions";
 import { useAuthenticatedFetch, useAuthStore } from "../utils/authStore";
 
@@ -192,7 +192,7 @@ export default function App() {
 
   useEffect(() => {
     fetchProducts();
-    loadCartItemsCount();
+    // loadCartItemsCount();
     loadCollections();
   }, []);
 

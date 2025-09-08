@@ -149,6 +149,33 @@ export const removeFromWishlist = async (authenticatedFetch, body) => {
   }
 };
 
+export const removeAddress = async (authenticatedFetch, id) => {
+  try {
+    const res = await authenticatedFetch(`${BACKEND_URL}/address/${id}`, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({}),
+    });
+
+    const data = await res.json();
+
+    if (res.ok) {
+      return {
+        success: true,
+      };
+    }
+    return {
+      success: false,
+      error: data.error || "Failed to remove address",
+    };
+  } catch (e) {
+    console.log("Failed to remove address:", e);
+    return { success: false, error: "Failed to remove address" };
+  }
+};
+
 export const addToCart = async (authenticatedFetch, cartItem) => {
   try {
     const res = await authenticatedFetch(`${BACKEND_URL}/add-to-cart`, {
@@ -238,9 +265,7 @@ export const fetchArticle = async (authenticatedFetch, id) => {
 
 export const fetchDevices = async (authenticatedFetch) => {
   try {
-    const response = await authenticatedFetch(
-      `${BACKEND_URL}/ipl-devices`
-    );
+    const response = await authenticatedFetch(`${BACKEND_URL}/ipl-devices`);
     if (response.ok) {
       const data = await response.json();
       return data.collections;
@@ -263,8 +288,8 @@ export const fetchCollection = async (authenticatedFetch, id) => {
   } catch (error) {
     console.error("Failed to fetch collection:", error);
     return [];
-  } 
-}
+  }
+};
 
 export const fetchCollections = async (authenticatedFetch, ids) => {
   try {
@@ -279,7 +304,7 @@ export const fetchCollections = async (authenticatedFetch, ids) => {
     console.error("Failed to fetch collections:", error);
     return [];
   }
-} 
+};
 
 export const createIPLProfile = async (authenticatedFetch, data) => {
   const { onboardingData } = data;
@@ -367,7 +392,6 @@ export const appendShippingAdresses = async (authenticatedFetch, email) => {
   console.log("Shipping addresses appended");
 };
 
-
 export const addShippingAddress = async (authenticatedFetch, data) => {
   try {
     const response = await authenticatedFetch(
@@ -377,7 +401,7 @@ export const addShippingAddress = async (authenticatedFetch, data) => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
       }
-    ); 
+    );
 
     if (response.ok) {
       const data = await response.json();
@@ -392,6 +416,21 @@ export const addShippingAddress = async (authenticatedFetch, data) => {
       error: "Failed to add shipping address",
       details: error.message,
     };
+  }
+};
+
+export const fetchTotalWishlistItemsCount = async (authenticatedFetch) => {
+  try {
+    const response = await authenticatedFetch(
+      `${BACKEND_URL}/total-wishlist-items-count`
+    );
+    if (response.ok) {
+      const data = await response.json();
+      return data.count;
+    }
+  } catch (error) {
+    console.error("Failed to fetch total wishlist items count:", error);
+    return 0;
   }
 };
 

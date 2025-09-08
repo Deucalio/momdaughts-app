@@ -104,9 +104,9 @@ const WellnessScreen = () => {
     }
   };
 
-  useEffect(() => {
-    loadCartItemsCount();
-  }, []);
+  // useEffect(() => {
+    // loadCartItemsCount();
+  // }, []);
 
   useFocusEffect(
     useCallback(() => {

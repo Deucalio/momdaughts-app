@@ -2,13 +2,13 @@ import { Image } from 'expo-image';
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import {
-  Dimensions,
+    Dimensions,
 
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
 } from "react-native";
 
 import AddSessionSection from "../../../components/AddSessionSection";
