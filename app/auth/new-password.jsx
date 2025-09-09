@@ -1,4 +1,3 @@
-
 "use client";
 
 import { Ionicons } from "@expo/vector-icons";
@@ -22,12 +21,53 @@ export default function NewPasswordPage() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [errors, setErrors] = useState({});
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleResetPassword = () => {
-    if (password && confirmPassword && password === confirmPassword) {
-      // Add password reset logic here
-      router.push("/auth/login");
+const handleResetPassword = async () => {
+  const passwordErrors = validatePassword(password);
+  const newErrors = { ...passwordErrors };
+  
+  if (!confirmPassword) {
+    newErrors.confirmPassword = "Please confirm your password";
+  } else if (password !== confirmPassword) {
+    newErrors.confirmPassword = "Passwords do not match";
+  }
+  // Clear confirmPassword error if passwords match
+  else if (password === confirmPassword && errors.confirmPassword) {
+    delete newErrors.confirmPassword;
+  }
+  
+  setErrors(newErrors);
+  
+  if (Object.keys(newErrors).length > 0) {
+    return;
+  }
+  
+  setIsLoading(true);
+  
+  try {
+    // Simulate API call
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    router.push("/auth/login");
+  } catch (err) {
+    setErrors({ general: "Password reset failed. Please try again." });
+  } finally {
+    setIsLoading(false);
+  }
+};
+
+  const validatePassword = (pwd) => {
+    const errors = {};
+    if (!pwd) {
+      errors.password = "Password is required";
+    } else if (pwd.length < 8) {
+      errors.password = "Password must be at least 8 characters";
+    } else if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(pwd)) {
+      errors.password =
+        "Password must contain uppercase, lowercase, and number";
     }
+    return errors;
   };
 
   return (
@@ -39,7 +79,7 @@ export default function NewPasswordPage() {
         <ScrollView contentContainerStyle={styles.scrollContent}>
           {/* Header */}
           <View style={styles.header}>
-            <TouchableOpacity 
+            <TouchableOpacity
               style={styles.backButton}
               onPress={() => router.back()}
             >
@@ -55,7 +95,7 @@ export default function NewPasswordPage() {
                 style={{
                   marginTop: 20,
                   width: 200,
-                  height: 200 
+                  height: 200,
                 }}
                 contentFit="contain"
                 placeholder="Brand Logo"
@@ -67,7 +107,8 @@ export default function NewPasswordPage() {
           <View style={styles.titleSection}>
             <Text style={styles.title}>Set New Password</Text>
             <Text style={styles.subtitle}>
-              Create a strong password for your account. Make sure it's at least 8 characters long.
+              Create a strong password for your account. Make sure it's at least
+              8 characters long.
             </Text>
           </View>
 
@@ -76,15 +117,31 @@ export default function NewPasswordPage() {
             {/* New Password */}
             <View style={styles.inputGroup}>
               <Text style={styles.inputLabel}>New Password</Text>
-              <View style={styles.passwordContainer}>
-                <Ionicons name="lock-closed" size={16} color="#9ca3af" style={styles.inputIcon} />
+              <View
+                style={[
+                  styles.passwordContainer,
+                  errors.password && styles.inputError,
+                ]}
+              >
+                <Ionicons
+                  name="lock-closed"
+                  size={16}
+                  color="#9ca3af"
+                  style={styles.inputIcon}
+                />
                 <TextInput
                   style={styles.passwordInput}
                   placeholder="Enter new password"
                   value={password}
-                  onChangeText={setPassword}
+                  onChangeText={(text) => {
+                    setPassword(text);
+                    if (errors.password) {
+                      setErrors((prev) => ({ ...prev, password: null }));
+                    }
+                  }}
                   secureTextEntry={!showPassword}
                 />
+
                 <TouchableOpacity
                   style={styles.passwordToggle}
                   onPress={() => setShowPassword(!showPassword)}
@@ -96,18 +153,40 @@ export default function NewPasswordPage() {
                   />
                 </TouchableOpacity>
               </View>
+              {/* ADD ERROR MESSAGE RIGHT HERE */}
+              {errors.password ? (
+                <View style={styles.errorContainer}>
+                  <Ionicons name="alert-circle" size={14} color="#ef4444" />
+                  <Text style={styles.errorText}>{errors.password}</Text>
+                </View>
+              ) : null}
             </View>
 
             {/* Confirm Password */}
             <View style={styles.inputGroup}>
               <Text style={styles.inputLabel}>Confirm Password</Text>
-              <View style={styles.passwordContainer}>
-                <Ionicons name="lock-closed" size={16} color="#9ca3af" style={styles.inputIcon} />
+              <View
+                style={[
+                  styles.passwordContainer,
+                ]}
+              >
+                <Ionicons
+                  name="lock-closed"
+                  size={16}
+                  color="#9ca3af"
+                  style={styles.inputIcon}
+                />
                 <TextInput
                   style={styles.passwordInput}
                   placeholder="Confirm new password"
                   value={confirmPassword}
-                  onChangeText={setConfirmPassword}
+               onChangeText={(text) => {
+  setConfirmPassword(text);
+  // Clear error when passwords match or when user is typing
+  if (errors.confirmPassword && (text === password || !text)) {
+    setErrors(prev => ({ ...prev, confirmPassword: null }));
+  }
+}}
                   secureTextEntry={!showConfirmPassword}
                 />
                 <TouchableOpacity
@@ -121,13 +200,31 @@ export default function NewPasswordPage() {
                   />
                 </TouchableOpacity>
               </View>
+              {/* ADD ERROR MESSAGE RIGHT HERE */}
+              {errors.confirmPassword ? (
+                <View style={styles.errorContainer}>
+                  <Ionicons name="alert-circle" size={14} color="#ef4444" />
+                  <Text style={styles.errorText}>{errors.confirmPassword}</Text>
+                </View>
+              ) : null}
             </View>
 
-            <TouchableOpacity 
-              style={styles.resetButton}
+            {/* General error before the button */}
+            {errors.general ? (
+              <View style={styles.errorContainer}>
+                <Ionicons name="alert-circle" size={16} color="#ef4444" />
+                <Text style={styles.errorText}>{errors.general}</Text>
+              </View>
+            ) : null}
+
+            <TouchableOpacity
+              style={[styles.resetButton, isLoading && styles.buttonDisabled]}
               onPress={handleResetPassword}
+              disabled={isLoading}
             >
-              <Text style={styles.resetButtonText}>Reset Password</Text>
+              <Text style={styles.resetButtonText}>
+                {isLoading ? "Resetting..." : "Reset Password"}
+              </Text>
             </TouchableOpacity>
 
             <View style={styles.signInPrompt}>
@@ -145,11 +242,10 @@ export default function NewPasswordPage() {
   );
 }
 
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f8f9fa"
+    backgroundColor: "#f8f9fa",
   },
   keyboardView: {
     flex: 1,
@@ -335,7 +431,7 @@ const styles = StyleSheet.create({
   signInLink: {
     color: "#df367c",
     fontWeight: "600",
-    fontSize: 12
+    fontSize: 12,
   },
   // OTP specific styles
   otpContainer: {
@@ -377,5 +473,28 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#df367c",
     fontWeight: "600",
+  },
+  inputError: {
+    // borderWidth: 1,
+    borderColor: "#ef4444",
+    backgroundColor: "#fef2f2",
+  },
+  errorContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#fef2f2",
+    borderRadius: 6,
+    paddingVertical: 8,
+    paddingHorizontal: 10,
+    marginTop: 4,
+  },
+  errorText: {
+    fontSize: 12,
+    color: "#ef4444",
+    marginLeft: 4,
+    flex: 1,
+  },
+  buttonDisabled: {
+    opacity: 0.6,
   },
 });

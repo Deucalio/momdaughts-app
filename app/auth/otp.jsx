@@ -30,16 +30,19 @@ const [isLoading, setIsLoading] = useState(false);
     return () => clearInterval(interval);
   }, []);
 
-  const handleOtpChange = (value, index) => {
-    const newOtp = [...otp];
-    newOtp[index] = value;
-    setOtp(newOtp);
+const handleOtpChange = (value, index) => {
+  // Clear error when user starts typing
+  if (error) setError("");
+  
+  const newOtp = [...otp];
+  newOtp[index] = value;
+  setOtp(newOtp);
 
-    // Auto focus next input
-    if (value && index < 5) {
-      inputRefs.current[index + 1]?.focus();
-    }
-  };
+  // Auto focus next input
+  if (value && index < 5) {
+    inputRefs.current[index + 1]?.focus();
+  }
+};
 
   const handleKeyPress = (e, index) => {
     if (e.nativeEvent.key === 'Backspace' && !otp[index] && index > 0) {
@@ -47,12 +50,34 @@ const [isLoading, setIsLoading] = useState(false);
     }
   };
 
-  const handleVerify = () => {
-    const otpCode = otp.join("");
-    if (otpCode.length === 6) {
+const handleVerify = async () => {
+  const otpCode = otp.join("");
+  if (otpCode.length !== 6) {
+    setError("Please enter all 6 digits");
+    return;
+  }
+  
+  setIsLoading(true);
+  setError("");
+  
+  try {
+    // Simulate API call - replace with actual verification logic
+    await new Promise(resolve => setTimeout(resolve, 1500));
+    
+    // For demo: reject if OTP is not "123456"
+    if (otpCode !== "123456") {
+      setError("Invalid verification code. Please try again.");
+    //   setOtp(["", "", "", "", "", ""]);
+    //   inputRefs.current[0]?.focus();
+    } else {
       router.push("/auth/new-password");
     }
-  };
+  } catch (err) {
+    setError("Verification failed. Please try again.");
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   const handleResend = () => {
     setTimer(60);
@@ -92,6 +117,8 @@ const [isLoading, setIsLoading] = useState(false);
             </View>
           </View>
 
+  
+
           {/* Title Section */}
           <View style={styles.titleSection}>
             <Text style={styles.title}>Enter Verification Code</Text>
@@ -119,6 +146,14 @@ const [isLoading, setIsLoading] = useState(false);
               ))}
             </View>
 
+                    {/* Error Message */}
+{error ? (
+  <View style={styles.errorContainer}>
+    <Ionicons name="alert-circle" size={16} color="#ef4444" />
+    <Text style={styles.errorText}>{error}</Text>
+  </View>
+) : null}
+
             {/* Timer and Resend */}
             <View style={styles.timerContainer}>
               {timer > 0 ? (
@@ -133,7 +168,8 @@ const [isLoading, setIsLoading] = useState(false);
             </View>
 
             <TouchableOpacity 
-              style={styles.verifyButton}
+            disabled={isLoading}
+              style={[styles.verifyButton, isLoading ? styles.loadingButton : null]}
               onPress={handleVerify}
             >
               <Text style={styles.verifyButtonText}>Verify Code</Text>
@@ -158,6 +194,9 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#f8f9fa"
+  },
+  loadingButton: {
+    opacity: 0.5
   },
   keyboardView: {
     flex: 1,
@@ -374,6 +413,10 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#2c2a6b",
   },
+  otpInputError: {
+  borderColor: "#ef4444",
+  backgroundColor: "#fef2f2",
+},
   timerContainer: {
     alignItems: "center",
     marginBottom: 20,
@@ -387,4 +430,24 @@ const styles = StyleSheet.create({
     color: "#df367c",
     fontWeight: "600",
   },
+  errorContainer: {
+  flexDirection: "row",
+  alignItems: "center",
+  justifyContent: "center",
+  backgroundColor: "#fef2f2",
+  borderRadius: 8,
+  paddingVertical: 10,
+  paddingHorizontal: 12,
+  marginTop: 10,
+  marginBottom: 10,
+},
+errorText: {
+  fontSize: 13,
+  color: "#ef4444",
+  marginLeft: 6,
+  textAlign: "center",
+},
+buttonDisabled: {
+  opacity: 0.6,
+},
 });
