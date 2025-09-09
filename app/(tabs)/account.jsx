@@ -23,7 +23,7 @@ import {
 } from "../utils/actions";
 import { logOut } from "../utils/auth";
 import { useAuthenticatedFetch, useAuthStore } from "../utils/authStore";
-const BACKEND_URL = "http://192.168.100.193:3000";
+const BACKEND_URL = "http://192.168.100.3:3000";
 const { width } = Dimensions.get("window");
 
 // Color palette matching the cart design
@@ -246,7 +246,7 @@ export default function AccountScreen() {
             borderRadius: 8,
             backgroundColor: COLORS.lightGray,
           }}
-          onPress={() => router.push("/profile/edit")}
+          onPress={() => router.push("/screens/edit-profile")}
         >
           <Ionicons name="pencil" size={18} color={COLORS.buttonColor} />
         </TouchableOpacity>

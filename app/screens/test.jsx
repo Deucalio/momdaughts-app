@@ -20,7 +20,7 @@ import {
     View,
 } from "react-native";
 // Configure these for your app
-const CART_API = "http://192.168.100.193:3000/cart";
+const CART_API = "http://192.168.100.3:3000/cart";
 const CURRENCY_SYMBOL = "PKR ";
 
 import NavigationSpaceContainer from "../../components/NavigationSpaceContainer";

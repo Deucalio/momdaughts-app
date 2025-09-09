@@ -20,6 +20,7 @@ import * as WebBrowser from "expo-web-browser";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuthStore } from "../app/utils/authStore";
 import * as jose from "jose";
+import {Image} from 'expo-image';
 WebBrowser.maybeCompleteAuthSession();
 
 // Our OAuth flow uses a server-side approach for enhanced security:
@@ -61,7 +62,6 @@ const GoogleAuthComponent = () => {
     if (response?.type === "success") {
       const { code } = response.params;
 
-
       setAuthData(code);
     }
   };
@@ -87,8 +87,17 @@ const GoogleAuthComponent = () => {
 
   return (
     <TouchableOpacity onPress={signIn} style={styles.socialButton}>
-      <Ionicons name="logo-google" size={20} color="#4285f4" />
-      <Text style={styles.socialButtonText}>Google</Text>
+      <Image
+        source={require("../assets/images/google-logo.svg")}
+        contentFit="contain"
+        placeholder="Brand Logo"
+        style={{
+          width: 20,
+          height: 20,
+          borderRadius: 12,
+        }}  
+      />
+      <Text style={styles.socialButtonText}>Continue with Google</Text>
     </TouchableOpacity>
   );
 };
@@ -104,11 +113,15 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     gap: 8,
-    paddingVertical: 12,
-    borderWidth: 1,
-    borderColor: "#fce7f3",
+    borderWidth: 0.2,
+    // borderColor: "#ffffff",
+    borderColor: "#000",
+    paddingVertical: 10,
+    paddingHorizontal: 22,
+    // width: "70%",
     borderRadius: 12,
-    backgroundColor: "transparent",
+    // backgroundColor: "#ffffff",
+
   },
   socialButtonText: {
     fontSize: 14,

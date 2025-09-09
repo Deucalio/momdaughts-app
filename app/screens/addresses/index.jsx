@@ -1,23 +1,23 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-  SafeAreaView,
-  StatusBar,
-  ScrollView,
-  Alert,
-  ActivityIndicator,
-  Modal,
-} from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { useFocusEffect, useRouter } from "expo-router";
+import { useCallback, useEffect, useState } from "react";
+import {
+    ActivityIndicator,
+    Alert,
+    Modal,
+    SafeAreaView,
+    ScrollView,
+    StatusBar,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
+} from "react-native";
 import Svg, { Path } from "react-native-svg";
-import { useRouter, useFocusEffect } from "expo-router";
+import { removeAddress, updateShippingAddress } from "../../utils/actions";
 import { useAuthenticatedFetch } from "../../utils/authStore";
-import {removeAddress, updateShippingAddress} from "../../utils/actions"
 
 
 const COLORS = {
@@ -234,7 +234,7 @@ export default function AddressesPage() {
   const fetchAddresses = async () => {
     setLoading(true);
     try {
-      const response = await authenticatedFetch("http://192.168.100.193:3000/addresses");
+      const response = await authenticatedFetch("http://192.168.100.3:3000/addresses");
       if (!response.ok) {
         throw new Error('Failed to fetch addresses');
       }
