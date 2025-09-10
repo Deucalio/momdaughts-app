@@ -460,3 +460,103 @@ export const updateShippingAddress = async (authenticatedFetch, data) => {
     };
   }
 };
+
+// Send OTP for password reset
+export const sendOTP = async (formattedData) => {
+  console.log("formattedData", formattedData);
+  try {
+    const response = await fetch(`${BACKEND_URL}/send-otp`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ formattedData }),
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      return {
+        success: true,
+        message: data.message,
+      };
+    } else {
+      const errorData = await response.json();
+      return {
+        success: false,
+        error: errorData.error || "Failed to send OTP",
+      };
+    }
+  } catch (error) {
+    console.error("Failed to send OTP:", error);
+    return {
+      success: false,
+      error: "Failed to send OTP",
+      details: error.message,
+    };
+  }
+};
+
+// Verify OTP
+export const verifyOTP = async (email,otp) => {
+  try {
+    const response = await fetch(`${BACKEND_URL}/verify-otp`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ userEmail: email,otp }),
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      return {
+        success: true,
+        message: data.message,
+      };
+    } else {
+      const errorData = await response.json();
+      return {
+        success: false,
+        error: errorData.error || "Failed to verify OTP",
+      };
+    }
+  } catch (error) {
+    console.error("Failed to verify OTP:", error);
+    return {
+      success: false,
+      error: "Failed to verify OTP",
+      details: error.message,
+    };
+  }
+};
+
+// Reset Password
+export const resetPassword = async (data) => {
+  try {
+    const response = await fetch(`${BACKEND_URL}/reset-password`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        ...data,
+      }),
+    });
+
+    if (response.ok) {
+      const responseData = await response.json();
+      return {
+        success: true,
+        message: responseData?.message,
+        requiresReLogin: responseData?.requiresReLogin,
+      };
+    } else {
+      const errorData = await response.json();
+      return {
+        success: false,
+        error: errorData.error || "Failed to reset password",
+      };
+    }
+  } catch (error) {
+    console.error("Failed to reset password:", error);
+    return {
+      success: false,
+      error: "Failed to reset password",
+      details: error.message,
+    };
+  }
+};

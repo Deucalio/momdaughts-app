@@ -31,7 +31,8 @@ interface UserState {
     email: string,
     password: string,
     firstName: string,
-    lastName: string
+    lastName: string,
+    phone: string
   ) => Promise<{ success: boolean; error?: string }>;
   logOut: () => Promise<void>;
   completeOnboarding: () => void;
@@ -162,7 +163,7 @@ export const useAuthStore = create(
 
           if (!response.ok) {
             const errorData = await response.json();
-            console.error("Login failed:", errorData);
+            // console.error("Login failed:", errorData);
             return { success: false, error: errorData.error || "Login failed" };
           }
 
@@ -196,7 +197,8 @@ export const useAuthStore = create(
         email: string,
         password: string,
         firstName: string,
-        lastName: string
+        lastName: string,
+        phone: string,
       ) => {
         try {
           const response = await fetch(`${BACKEND_URL}/signup`, {
@@ -204,13 +206,13 @@ export const useAuthStore = create(
             headers: {
               "Content-Type": "application/json",
             },
-            body: JSON.stringify({ email, password, firstName, lastName }),
+            body: JSON.stringify({ email, password, firstName, lastName, phone }),
           });
           console.log("Signup response status:", response);
 
           if (!response.ok) {
             const errorData = await response.json();
-            console.error("Signup failed:", errorData);
+            // console.error("Signup failed:", errorData);
             return {
               success: false,
               error: errorData.error || "Signup failed",
@@ -269,7 +271,7 @@ export const useAuthStore = create(
           user: null,
           isLoggedIn: false,
           authMethod: null,
-          hasCompletedOnboarding: false,
+          hasCompletedOnboarding: true,
         });
       },
       completeOnboarding: () => {

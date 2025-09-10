@@ -8,7 +8,7 @@ export default function NavigationSpaceContainer() {
         left: 0,
         right: 0,
         height: 50, // Adjust height as needed for your navigation buttons
-        backgroundColor: "#ffffff",
+        backgroundColor: "#fff",
         zIndex: 3,
         shadowColor: "#000",
         shadowOffset: {

@@ -1,26 +1,20 @@
 // GoogleAuthComponent.tsx
-import React, { useEffect } from "react";
-import { BASE_URL } from "../constants";
 import {
-  View,
-  TouchableOpacity,
-  Text,
-  StyleSheet,
-  TextInput,
-  Platform,
-} from "react-native";
-import {
-  AuthRequestConfig,
-  DiscoveryDocument,
-  exchangeCodeAsync,
-  makeRedirectUri,
-  useAuthRequest,
+    AuthRequestConfig,
+    DiscoveryDocument,
+    makeRedirectUri,
+    useAuthRequest
 } from "expo-auth-session";
+import { Image } from 'expo-image';
 import * as WebBrowser from "expo-web-browser";
-import { Ionicons } from "@expo/vector-icons";
+import React, { useEffect } from "react";
+import {
+    StyleSheet,
+    Text,
+    TouchableOpacity
+} from "react-native";
 import { useAuthStore } from "../app/utils/authStore";
-import * as jose from "jose";
-import {Image} from 'expo-image';
+import { BASE_URL } from "../constants";
 WebBrowser.maybeCompleteAuthSession();
 
 // Our OAuth flow uses a server-side approach for enhanced security:

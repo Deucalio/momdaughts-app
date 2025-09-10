@@ -2,8 +2,8 @@
 
 import { Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
-import { router } from "expo-router";
-import { useState, useRef, useEffect } from "react";
+import { useRouter, useLocalSearchParams } from "expo-router";
+import { useEffect, useRef, useState } from "react";
 import {
   KeyboardAvoidingView,
   Platform,
@@ -15,73 +15,121 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useAuthStore } from "../utils/authStore";
+import { sendOTP, verifyOTP } from "../utils/actions";
 
 export default function OTPPage() {
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
   const [error, setError] = useState("");
-const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [timer, setTimer] = useState(60);
   const inputRefs = useRef([]);
+  const router = useRouter();
+  const { email } = useLocalSearchParams();
+  console.log("email----:", email);
+
+  const { user, syncUserMetaData } = useAuthStore();
+
+  const sendOTP_ = async () => {
+    setError("");
+    try {
+      const res = await sendOTP({
+        email: user?.email ? user.email : email,
+        is_password_reset: !user ? true : false,
+      });
+      console.log("res:", res);
+      if (!res.success) {
+        setError(res.error);
+        return;
+      }
+    } catch (error) {
+      console.error("Error sending OTP:", error);
+    }
+  };
 
   useEffect(() => {
     const interval = setInterval(() => {
       setTimer((prev) => (prev > 0 ? prev - 1 : 0));
     }, 1000);
+    sendOTP_();
     return () => clearInterval(interval);
   }, []);
 
-const handleOtpChange = (value, index) => {
-  // Clear error when user starts typing
-  if (error) setError("");
-  
-  const newOtp = [...otp];
-  newOtp[index] = value;
-  setOtp(newOtp);
+  const handleOtpChange = (value, index) => {
+    // Clear error when user starts typing
+    if (error) setError("");
 
-  // Auto focus next input
-  if (value && index < 5) {
-    inputRefs.current[index + 1]?.focus();
-  }
-};
+    const newOtp = [...otp];
+    newOtp[index] = value;
+    setOtp(newOtp);
+
+    // Auto focus next input
+    if (value && index < 5) {
+      inputRefs.current[index + 1]?.focus();
+    }
+  };
 
   const handleKeyPress = (e, index) => {
-    if (e.nativeEvent.key === 'Backspace' && !otp[index] && index > 0) {
+    if (e.nativeEvent.key === "Backspace" && !otp[index] && index > 0) {
       inputRefs.current[index - 1]?.focus();
     }
   };
 
-const handleVerify = async () => {
-  const otpCode = otp.join("");
-  if (otpCode.length !== 6) {
-    setError("Please enter all 6 digits");
-    return;
-  }
-  
-  setIsLoading(true);
-  setError("");
-  
-  try {
-    // Simulate API call - replace with actual verification logic
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    
-    // For demo: reject if OTP is not "123456"
-    if (otpCode !== "123456") {
-      setError("Invalid verification code. Please try again.");
-    //   setOtp(["", "", "", "", "", ""]);
-    //   inputRefs.current[0]?.focus();
-    } else {
-      router.push("/auth/new-password");
+  const handleVerify = async () => {
+    const otpCode = otp.join("");
+    if (otpCode.length !== 6) {
+      setError("Please enter all 6 digits");
+      return;
     }
-  } catch (err) {
-    setError("Verification failed. Please try again.");
-  } finally {
-    setIsLoading(false);
-  }
-};
+
+    setIsLoading(true);
+    setError("");
+
+    try {
+      // Simulate API call - replace with actual verification logic
+      // await new Promise((resolve) => setTimeout(resolve, 1500));
+
+      const res = await verifyOTP(user?.email ? user.email : email, otpCode);
+      console.log("verify:", res);
+
+      // For demo: reject if OTP is not "123456"
+      if (!res.success) {
+        // setError("Invalid verification code. Please try again.");
+        setError(res.error);
+        //   setOtp(["", "", "", "", "", ""]);
+        //   inputRefs.current[0]?.focus();
+      } else {
+        if (!user) {
+          // that means he must be using forget password
+          router.push({
+            pathname: "/auth/new-password",
+            params: { email: email, otp: otpCode },
+          });
+          return;
+        }
+        try {
+          const newUserMetaData = {
+            ...user.metaData,
+            is_verified: true,
+          };
+          await syncUserMetaData(user.id, newUserMetaData);
+        } catch (e) {
+          console.error("Failed to sync user meta data:", e);
+          setError("Verification failed. Please try again.");
+          return 1;
+        }
+      }
+    } catch (err) {
+      setError("Verification failed. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleResend = () => {
     setTimer(60);
     setOtp(["", "", "", "", "", ""]);
+    sendOTP_();
   };
 
   return (
@@ -93,9 +141,12 @@ const handleVerify = async () => {
         <ScrollView contentContainerStyle={styles.scrollContent}>
           {/* Header */}
           <View style={styles.header}>
-            <TouchableOpacity 
+            <TouchableOpacity
+              disabled={!user ? true : false}
               style={styles.backButton}
-              onPress={() => router.back()}
+              onPress={() => {
+                router.back();
+              }}
             >
               <Ionicons name="arrow-back" size={24} color="#4a5568" />
             </TouchableOpacity>
@@ -109,7 +160,7 @@ const handleVerify = async () => {
                 style={{
                   marginTop: 20,
                   width: 200,
-                  height: 200 
+                  height: 200,
                 }}
                 contentFit="contain"
                 placeholder="Brand Logo"
@@ -117,13 +168,12 @@ const handleVerify = async () => {
             </View>
           </View>
 
-  
-
           {/* Title Section */}
           <View style={styles.titleSection}>
             <Text style={styles.title}>Enter Verification Code</Text>
             <Text style={styles.subtitle}>
-              We've sent a 6-digit code to your email address. Please enter it below.
+              We've sent a 6-digit code to your email address. Please enter it
+              below.
             </Text>
           </View>
 
@@ -134,8 +184,11 @@ const handleVerify = async () => {
               {otp.map((digit, index) => (
                 <TextInput
                   key={index}
-                  ref={(ref) => inputRefs.current[index] = ref}
-                  style={[styles.otpInput, digit ? styles.otpInputFilled : null]}
+                  ref={(ref) => (inputRefs.current[index] = ref)}
+                  style={[
+                    styles.otpInput,
+                    digit ? styles.otpInputFilled : null,
+                  ]}
                   value={digit}
                   onChangeText={(value) => handleOtpChange(value, index)}
                   onKeyPress={(e) => handleKeyPress(e, index)}
@@ -146,20 +199,18 @@ const handleVerify = async () => {
               ))}
             </View>
 
-                    {/* Error Message */}
-{error ? (
-  <View style={styles.errorContainer}>
-    <Ionicons name="alert-circle" size={16} color="#ef4444" />
-    <Text style={styles.errorText}>{error}</Text>
-  </View>
-) : null}
+            {/* Error Message */}
+            {error ? (
+              <View style={styles.errorContainer}>
+                <Ionicons name="alert-circle" size={16} color="#ef4444" />
+                <Text style={styles.errorText}>{error}</Text>
+              </View>
+            ) : null}
 
             {/* Timer and Resend */}
             <View style={styles.timerContainer}>
               {timer > 0 ? (
-                <Text style={styles.timerText}>
-                  Resend code in {timer}s
-                </Text>
+                <Text style={styles.timerText}>Resend code in {timer}s</Text>
               ) : (
                 <TouchableOpacity onPress={handleResend}>
                   <Text style={styles.resendText}>Resend Code</Text>
@@ -167,9 +218,12 @@ const handleVerify = async () => {
               )}
             </View>
 
-            <TouchableOpacity 
-            disabled={isLoading}
-              style={[styles.verifyButton, isLoading ? styles.loadingButton : null]}
+            <TouchableOpacity
+              disabled={isLoading}
+              style={[
+                styles.verifyButton,
+                isLoading ? styles.loadingButton : null,
+              ]}
               onPress={handleVerify}
             >
               <Text style={styles.verifyButtonText}>Verify Code</Text>
@@ -193,10 +247,10 @@ const handleVerify = async () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f8f9fa"
+    backgroundColor: "#f8f9fa",
   },
   loadingButton: {
-    opacity: 0.5
+    opacity: 0.5,
   },
   keyboardView: {
     flex: 1,
@@ -382,7 +436,7 @@ const styles = StyleSheet.create({
   signInLink: {
     color: "#df367c",
     fontWeight: "600",
-    fontSize: 12
+    fontSize: 12,
   },
   // OTP specific styles
   otpContainer: {
@@ -414,9 +468,9 @@ const styles = StyleSheet.create({
     borderColor: "#2c2a6b",
   },
   otpInputError: {
-  borderColor: "#ef4444",
-  backgroundColor: "#fef2f2",
-},
+    borderColor: "#ef4444",
+    backgroundColor: "#fef2f2",
+  },
   timerContainer: {
     alignItems: "center",
     marginBottom: 20,
@@ -431,23 +485,23 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
   errorContainer: {
-  flexDirection: "row",
-  alignItems: "center",
-  justifyContent: "center",
-  backgroundColor: "#fef2f2",
-  borderRadius: 8,
-  paddingVertical: 10,
-  paddingHorizontal: 12,
-  marginTop: 10,
-  marginBottom: 10,
-},
-errorText: {
-  fontSize: 13,
-  color: "#ef4444",
-  marginLeft: 6,
-  textAlign: "center",
-},
-buttonDisabled: {
-  opacity: 0.6,
-},
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#fef2f2",
+    borderRadius: 8,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    marginTop: 10,
+    marginBottom: 10,
+  },
+  errorText: {
+    fontSize: 13,
+    color: "#ef4444",
+    marginLeft: 6,
+    textAlign: "center",
+  },
+  buttonDisabled: {
+    opacity: 0.6,
+  },
 });

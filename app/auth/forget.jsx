@@ -3,6 +3,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import { router } from "expo-router";
+import { StatusBar } from "expo-status-bar";
 import { useState } from "react";
 import {
   KeyboardAvoidingView,
@@ -20,9 +21,15 @@ export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
 
   const handleSendCode = () => {
+    console.log("Email:", email);
     // Add email validation logic here
     if (email) {
-      router.push("/auth/otp");
+      // router.push("/auth/otp");
+
+       router.push({
+      pathname: '/auth/otp',
+      params: { email: email }
+    });
     }
   };
 

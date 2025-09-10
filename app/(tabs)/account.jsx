@@ -110,7 +110,10 @@ export default function AccountScreen() {
 
   const handleLogout = async () => {
     console.log("Logging out...");
-    await logOut();
+    const res = await logOut();
+    if (res){
+      router.push("/auth/login");
+    }
   };
 
   const handleRefresh = async () => {

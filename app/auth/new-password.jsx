@@ -2,7 +2,7 @@
 
 import { Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
-import { router } from "expo-router";
+import { useRouter, useLocalSearchParams } from "expo-router";
 import { useState } from "react";
 import {
   KeyboardAvoidingView,
@@ -15,6 +15,8 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { resetPassword } from "../utils/actions";
+import { useAuthenticatedFetch } from "../utils/authStore";
 
 export default function NewPasswordPage() {
   const [password, setPassword] = useState("");
@@ -23,39 +25,53 @@ export default function NewPasswordPage() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
+  const { authenticatedFetch } = useAuthenticatedFetch();
+  const router = useRouter();
+  const {email, otp } = useLocalSearchParams();
+  const handleResetPassword = async () => {
+    const passwordErrors = validatePassword(password);
+    const newErrors = { ...passwordErrors };
 
-const handleResetPassword = async () => {
-  const passwordErrors = validatePassword(password);
-  const newErrors = { ...passwordErrors };
-  
-  if (!confirmPassword) {
-    newErrors.confirmPassword = "Please confirm your password";
-  } else if (password !== confirmPassword) {
-    newErrors.confirmPassword = "Passwords do not match";
-  }
-  // Clear confirmPassword error if passwords match
-  else if (password === confirmPassword && errors.confirmPassword) {
-    delete newErrors.confirmPassword;
-  }
-  
-  setErrors(newErrors);
-  
-  if (Object.keys(newErrors).length > 0) {
-    return;
-  }
-  
-  setIsLoading(true);
-  
-  try {
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    router.push("/auth/login");
-  } catch (err) {
-    setErrors({ general: "Password reset failed. Please try again." });
-  } finally {
-    setIsLoading(false);
-  }
-};
+    if (!confirmPassword) {
+      newErrors.confirmPassword = "Please confirm your password";
+    } else if (password !== confirmPassword) {
+      newErrors.confirmPassword = "Passwords do not match";
+    }
+    // Clear confirmPassword error if passwords match
+    else if (password === confirmPassword && errors.confirmPassword) {
+      delete newErrors.confirmPassword;
+    }
+
+    setErrors(newErrors);
+
+    if (Object.keys(newErrors).length > 0) {
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      // Simulate API call
+      // await new Promise(resolve => setTimeout(resolve, 2000));
+
+      const resetResult = await resetPassword({
+        email: email,
+        otp: otp,
+        newPassword: password
+
+      });
+      if (resetResult.success) {
+        router.push("/auth/login");
+        return;
+      }
+
+      setErrors({ general: resetResult.error });
+    } catch (err) {
+      setErrors({ general: "Password reset failed. Please try again." });
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const validatePassword = (pwd) => {
     const errors = {};
@@ -63,10 +79,11 @@ const handleResetPassword = async () => {
       errors.password = "Password is required";
     } else if (pwd.length < 8) {
       errors.password = "Password must be at least 8 characters";
-    } else if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(pwd)) {
-      errors.password =
-        "Password must contain uppercase, lowercase, and number";
-    }
+    } 
+    // else if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(pwd)) {
+      // errors.password =
+        // "Password must contain uppercase, lowercase, and number";
+    // }
     return errors;
   };
 
@@ -165,11 +182,7 @@ const handleResetPassword = async () => {
             {/* Confirm Password */}
             <View style={styles.inputGroup}>
               <Text style={styles.inputLabel}>Confirm Password</Text>
-              <View
-                style={[
-                  styles.passwordContainer,
-                ]}
-              >
+              <View style={[styles.passwordContainer]}>
                 <Ionicons
                   name="lock-closed"
                   size={16}
@@ -180,13 +193,16 @@ const handleResetPassword = async () => {
                   style={styles.passwordInput}
                   placeholder="Confirm new password"
                   value={confirmPassword}
-               onChangeText={(text) => {
-  setConfirmPassword(text);
-  // Clear error when passwords match or when user is typing
-  if (errors.confirmPassword && (text === password || !text)) {
-    setErrors(prev => ({ ...prev, confirmPassword: null }));
-  }
-}}
+                  onChangeText={(text) => {
+                    setConfirmPassword(text);
+                    // Clear error when passwords match or when user is typing
+                    if (
+                      errors.confirmPassword &&
+                      (text === password || !text)
+                    ) {
+                      setErrors((prev) => ({ ...prev, confirmPassword: null }));
+                    }
+                  }}
                   secureTextEntry={!showConfirmPassword}
                 />
                 <TouchableOpacity

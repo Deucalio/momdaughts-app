@@ -17,10 +17,14 @@ export const signInWithCustom = async (email, password) => {
       .getState()
       .logIn(email, password);
 
+      
     if (!success) {
-      console.error("Custom login failed", error);
+      // console.error("Custom login failed", error);
+      return {success: false, error: error}
     }
+    return {success: true, error: null}
   } catch (error) {
+    return {success: false, error: error}
     console.error("Error during custom login", error);
   }
 };
@@ -29,17 +33,21 @@ export const signUpWithCustom = async (
   email,
   password,
   firstName,
-  lastName
+  lastName,
+  phone
 ) => {
   try {
     const { success, error } = await useAuthStore
       .getState()
-      .signUp(email, password, firstName, lastName);
+      .signUp(email, password, firstName, lastName,phone);
 
     if (!success) {
-      console.error("Custom signup failed", error);
+      return {success: false, error: error}
+      // console.error("Custom signup failed", error);
     }
+    return {success: true, error: null}
   } catch (error) {
+    return {success: false, error: error}
     console.error("Error during custom signup", error);
   }
 };
@@ -49,7 +57,9 @@ export const logOut = async () => {
   try {
     console.log("loging out");
     await useAuthStore.getState().logOut();
+    return true;
   } catch (error) {
+    return false
     console.error("Error during log out", error);
   }
 };
