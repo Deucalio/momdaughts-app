@@ -66,7 +66,7 @@ export default function AccountScreen() {
         setCartItemCount(result.count);
       }
     } catch (error) {
-      console.error("[v0] Failed to load cart count:", error);
+      // console.error("[v0] Failed to load cart count:", error);
     }
   };
 
@@ -75,7 +75,7 @@ export default function AccountScreen() {
       const result = await fetchTotalWishlistItemsCount(authenticatedFetch);
       setTotalWishlistItemsCount(result);
     } catch (error) {
-      console.error("[v0] Failed to load wishlist count:", error);
+      // console.error("[v0] Failed to load wishlist count:", error);
     }
   };
 
@@ -101,7 +101,7 @@ export default function AccountScreen() {
         setOrderHistory(ordersData.orders || []);
       }
     } catch (error) {
-      console.error("Error fetching profile:", error);
+      // console.error("Error fetching profile:", error);
     } finally {
       setLoading(false);
       if (isRefresh) setRefreshing(false);

@@ -429,7 +429,7 @@ export const fetchTotalWishlistItemsCount = async (authenticatedFetch) => {
       return data.count;
     }
   } catch (error) {
-    console.error("Failed to fetch total wishlist items count:", error);
+    // console.error("Failed to fetch total wishlist items count:", error);
     return 0;
   }
 };
