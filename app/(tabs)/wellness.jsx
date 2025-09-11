@@ -15,6 +15,7 @@ import { fetchCartItemsCount } from "../utils/actions";
 import ScreenWrapper from "../../components/ScreenWrapper";
 import { useRouter, useFocusEffect } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
+
 const COLORS = {
   lightPink: "#f5b8d0",
   lavender: "#e2c6df",
@@ -29,62 +30,61 @@ const COLORS = {
   border: "#e9ecef",
   success: "#28a745",
   danger: "#dc3545",
+  softPurple: "#e8d5ff",
+  mintGreen: "#d1fae5",
+  peachOrange: "#fed7aa",
+  lightishPink: "#f596bb"
 };
+
 const WellnessScreen = () => {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const [cartItemCount, setCartItemCount] = useState(0);
-  const {authenticatedFetch} = useAuthenticatedFetch();
+  const { authenticatedFetch } = useAuthenticatedFetch();
+
   const menstrualReliefExercises = [
     {
       id: 1,
-      title: "Period pain \nrelief",
+      title: "Period pain relief",
+      subtitle: "Gentle stretches & poses",
       image: "https://i.ibb.co/kF3J0B7/image.png",
-      gradientColors: [COLORS.lightPink, COLORS.mediumPink, COLORS.lavender],
+      gradientColors: [COLORS.lightishPink , COLORS.mediumPink, COLORS.lightPink],
+      duration: "10-15 min",
     },
     {
       id: 2,
-      title: "Foot massage \nrelieve",
+      title: "Foot massage relief",
+      subtitle: "Pressure point therapy",
       image: "https://i.ibb.co/CKVJp6gn/woman-relaxing-spa-min.jpg",
       gradientColors: ["#333333", "#dd1818"],
+      duration: "5-10 min",
     },
-    // {
-    //   id: 3,
-    //   title: "Breathing exercises",
-    //   image: require("../public/woman-doing-breathing-exercises-for-cramp-relief.png"),
-    // },
+
+
   ];
 
-  const programs = [
+  const personalizedTips = [
     {
       id: 1,
-      title: "Kegel \nexercises",
-      subtitle: "Day 1",
-      image:
-        "https://images.pexels.com/photos/2038556/pexels-photo-2038556.jpeg",
+      title: "Stay hydrated",
+      description: "Drink plenty of water to reduce bloating and support your body during menstruation",
+      icon: "💧",
+      backgroundColor: COLORS.softPurple,
     },
-  ];
-
-  const soundscapes = [
     {
       id: 2,
-      title: "Forest Rain",
-      image: "https://images.pexels.com/photos/86543/pexels-photo-86543.jpeg",
-      backgroundColor: "#2563eb",
+      title: "Gentle movement",
+      description: "Light exercise like walking or yoga can help reduce cramps and improve mood",
+      icon: "🚶‍♀️",
+      backgroundColor: COLORS.mintGreen,
     },
-    // {
-    //   id: 2,
-    //   title: "Forest Adventure",
-    //   image: "https://i.ibb.co/sdXj0P5y/16526.jpg",
-    //   backgroundColor: "#10b981",
-    // },
-
-    // {
-    //   id: 3,
-    //   title: "Peaceful Night",
-    //   image: "https://i.ibb.co/sdXj0P5y/16526.jpg",
-    //   backgroundColor: "#8b5cf6",
-    // },
+    {
+      id: 3,
+      title: "Nutrition matters",
+      description: "Eat iron-rich foods and reduce caffeine to help manage period symptoms",
+      icon: "🥗",
+      backgroundColor: COLORS.peachOrange,
+    },
   ];
 
   const PlayButton = ({ size = 48 }) => (
@@ -104,13 +104,8 @@ const WellnessScreen = () => {
     }
   };
 
-  // useEffect(() => {
-    // loadCartItemsCount();
-  // }, []);
-
   useFocusEffect(
     useCallback(() => {
-      // Use requestAnimationFrame to defer state updates
       requestAnimationFrame(() => {
         loadCartItemsCount();
       });
@@ -128,110 +123,89 @@ const WellnessScreen = () => {
         ]}
         showsVerticalScrollIndicator={false}
       >
+        {/* Menstrual Relief Section - Now Vertical */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Menstrual cramps relief</Text>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            style={styles.horizontalScroll}
-          >
-            {menstrualReliefExercises.map((exercise) => (
-              <TouchableOpacity
-                onPress={() =>
-                  router.push(`/screens/exercise?exercise_id=${exercise.id}`)
-                }
-                key={exercise.id}
-                activeOpacity={0.8}
-                style={styles.exerciseCard}
-              >
-                <LinearGradient
-                  colors={exercise.gradientColors}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 1 }}
-                  style={styles.exerciseOverlay}
-                />
-
-                <Image
-                  source={{ uri: exercise.image }}
-                  style={styles.exerciseImage}
-                />
-                <View style={styles.exerciseContent}>
-                  <Text style={styles.exerciseTitle}>{exercise.title}</Text>
-                  <PlayButton size={32} />
-                </View>
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
-        </View>
-
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Programs for you</Text>
-          {programs.map((program) => (
-            <TouchableOpacity key={program.id} style={styles.programCard}>
-              {/* Gradient background behind everything */}
+          {menstrualReliefExercises.map((exercise) => (
+            <TouchableOpacity
+              key={exercise.id}
+              onPress={() =>
+                router.push(`/screens/exercise?exercise_id=${exercise.id}`)
+              }
+              activeOpacity={0.8}
+              style={styles.exerciseCardVertical}
+            >
               <LinearGradient
-                colors={["#a855f7", "#8b5cf6", "#7c3aed"]}
+                colors={exercise.gradientColors}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
-                style={styles.programGradient}
+                style={styles.exerciseOverlay}
               />
 
-              {/* Program image on top of gradient */}
               <Image
-                source={{ uri: program.image }}
-                style={styles.programImage}
+                source={{ uri: exercise.image }}
+                style={styles.exerciseImageVertical}
               />
-
-              <View style={styles.programContent}>
-                <Text style={styles.programTitle}>{program.title}</Text>
-                <TouchableOpacity style={styles.programButton}>
-                  <View style={styles.playTriangleSmall} />
-                  <Text style={styles.programButtonText}>
-                    {program.subtitle}
-                  </Text>
-                </TouchableOpacity>
+              
+              <View style={styles.exerciseContentVertical}>
+                <View style={styles.exerciseTextContainer}>
+                  <Text style={styles.exerciseTitleVertical}>{exercise.title}</Text>
+                  <Text style={styles.exerciseSubtitle}>{exercise.subtitle}</Text>
+                  <Text style={styles.exerciseDuration}>{exercise.duration}</Text>
+                </View>
+                <PlayButton size={40} />
               </View>
             </TouchableOpacity>
           ))}
         </View>
 
-        <View
-          style={[
-            styles.section,
-            {
-              marginBottom: 47,
-            },
-          ]}
-        >
-          <Text style={styles.sectionTitle}>Soundscapes</Text>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            style={styles.horizontalScroll}
-          >
-            {soundscapes.map((soundscape) => (
-              <TouchableOpacity
-                key={soundscape.id}
-                style={styles.soundscapeItem}
+        {/* Personalized Tips Section */}
+        <View style={[styles.section, { marginBottom: 47 }]}>
+          <Text style={styles.sectionTitle}>Personalized tips for you</Text>
+          {personalizedTips.map((tip) => (
+            <TouchableOpacity key={tip.id} style={styles.tipCard}>
+              <View
+                style={[
+                  styles.tipIconContainer,
+                  { backgroundColor: tip.backgroundColor },
+                ]}
               >
-                <View
-                  style={[
-                    styles.soundscapeCircle,
-                    { backgroundColor: soundscape.backgroundColor },
-                  ]}
-                >
-                  <Image
-                    source={{ uri: soundscape.image }}
-                    style={styles.soundscapeImage}
-                  />
-                  <View style={styles.soundscapePlayButton}>
-                    <PlayButton size={40} />
-                  </View>
+                <Text style={styles.tipIcon}>{tip.icon}</Text>
+              </View>
+              <View style={styles.tipContent}>
+                <Text style={styles.tipTitle}>{tip.title}</Text>
+                <Text style={styles.tipDescription}>{tip.description}</Text>
+              </View>
+            </TouchableOpacity>
+          ))}
+          
+          {/* Quick Stats Card */}
+          <View style={[styles.statsCard, {
+            display: "none"
+          }]}>
+            <LinearGradient
+              colors={
+                [COLORS.lightPink , COLORS.mediumPink, "#f596bb"]
+
+              }
+              
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.statsGradient}
+            >
+              <Text style={styles.statsTitle}>Your wellness journey</Text>
+              <View style={styles.statsRow}>
+                <View style={styles.statItem}>
+                  <Text style={styles.statNumber}>7</Text>
+                  <Text style={styles.statLabel}>Days tracked</Text>
                 </View>
-                <Text style={styles.soundscapeTitle}>{soundscape.title}</Text>
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
+                <View style={styles.statItem}>
+                  <Text style={styles.statNumber}>3</Text>
+                  <Text style={styles.statLabel}>Exercises completed</Text>
+                </View>
+              </View>
+            </LinearGradient>
+          </View>
         </View>
       </ScrollView>
     </ScreenWrapper>
@@ -245,36 +219,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: 24,
   },
-  header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 32,
-  },
-  headerTitle: {
-    fontSize: 24,
-    fontWeight: "bold",
-    color: "#111827",
-  },
-  proBadge: {
-    backgroundColor: "#8b5cf6",
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  proIcon: {
-    color: "white",
-    fontSize: 14,
-    fontWeight: "bold",
-    marginRight: 4,
-  },
-  proText: {
-    color: "white",
-    fontSize: 14,
-    fontWeight: "bold",
-  },
   section: {
     marginBottom: 32,
   },
@@ -284,140 +228,134 @@ const styles = StyleSheet.create({
     color: "#111827",
     marginBottom: 16,
   },
-  horizontalScroll: {
-    paddingBottom: 8,
-  },
-  exerciseCard: {
-    width: 280,
-    height: 192,
+  
+  // Vertical Exercise Cards
+  exerciseCardVertical: {
+    width: "100%",
+    height: 160,
     borderRadius: 16,
-    marginRight: 16,
+    marginBottom: 16,
     overflow: "hidden",
     position: "relative",
   },
   exerciseOverlay: {
     ...StyleSheet.absoluteFillObject,
     borderRadius: 16,
+    opacity: 0.7,
   },
-
-  exerciseImage: {
+  exerciseImageVertical: {
     ...StyleSheet.absoluteFillObject,
     resizeMode: "cover",
     borderRadius: 16,
   },
-
-  exerciseContent: {
+  exerciseContentVertical: {
     position: "absolute",
-    bottom: 16,
-    // top: 0,
-    left: 16,
-    right: 16,
+    bottom: 0,
+    left: 0,
+    right: 0,
+    top: 0,
     flexDirection: "row",
     justifyContent: "space-between",
-    alignItems: "flex-end",
+    alignItems: "center",
+    paddingHorizontal: 16,
   },
-  exerciseTitle: {
-    color: "white",
-    fontSize: 18,
-    fontWeight: "bold",
+  exerciseTextContainer: {
     flex: 1,
     marginRight: 16,
   },
-  programCard: {
-    width: "100%",
-    height: 206,
-    borderRadius: 16,
-    marginBottom: 16,
-    overflow: "hidden",
-    position: "relative",
-  },
-  programGradient: {
-    ...StyleSheet.absoluteFillObject,
-    borderRadius: 16,
-  },
-  programImage: {
-    position: "absolute",
-    // right: 16,
-    // top: 16,
-    // width: 128,
-    // height: 128,
-    width: "100%",
-    height: "100%",
-    resizeMode: "cover",
-    borderRadius: 12,
-    zIndex: 1,
-  },
-  programOverlay: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: "rgba(139, 92, 246, 0.9)",
-  },
-  programContent: {
-    position: "absolute",
-    bottom: 16,
-    left: 16,
-    right: 16,
-    zIndex: 1,
-  },
-  programTitle: {
+  exerciseTitleVertical: {
     color: "white",
-    fontSize: 24,
+    fontSize: 18,
     fontWeight: "bold",
-    marginBottom: 16,
-    maxWidth: 200,
+    marginBottom: 4,
   },
-  programButton: {
-    backgroundColor: "white",
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 24,
+  exerciseSubtitle: {
+    color: "rgba(255, 255, 255, 0.9)",
+    fontSize: 14,
+    marginBottom: 2,
+  },
+  exerciseDuration: {
+    color: "rgba(255, 255, 255, 0.8)",
+    fontSize: 12,
+    fontWeight: "500",
+  },
+
+  // Tips Section
+  tipCard: {
     flexDirection: "row",
-    alignItems: "center",
-    alignSelf: "flex-start",
+    backgroundColor: "white",
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 12,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
-  programButtonText: {
-    color: "#111827",
-    fontSize: 16,
-    fontWeight: "600",
-    marginLeft: 8,
-  },
-  soundscapeItem: {
-    alignItems: "center",
-    marginRight: 16,
-    width: 120,
-  },
-  soundscapeCircle: {
-    width: 112,
-    height: 112,
-    borderRadius: 56,
-    overflow: "hidden",
-    position: "relative",
-    marginBottom: 8,
-  },
-  soundscapeImage: {
-    width: "100%",
-    height: "100%",
-    resizeMode: "cover",
-  },
-  soundscapePlayButton: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
+  tipIconContainer: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
     justifyContent: "center",
     alignItems: "center",
+    marginRight: 16,
   },
-  soundscapeTitle: {
+  tipIcon: {
+    fontSize: 24,
+  },
+  tipContent: {
+    flex: 1,
+  },
+  tipTitle: {
+    fontSize: 16,
+    fontWeight: "600",
     color: "#111827",
-    fontSize: 14,
-    fontWeight: "500",
-    textAlign: "center",
-    lineHeight: 18,
+    marginBottom: 4,
   },
+  tipDescription: {
+    fontSize: 14,
+    color: "#6b7280",
+    lineHeight: 20,
+  },
+
+  // Stats Card - FIXED
+  statsCard: {
+    borderRadius: 16,
+    overflow: "hidden",
+    marginTop: 8,
+  },
+  statsGradient: {
+    padding: 20, // Reduced from 60 to 20
+    paddingVertical: 24, // Added specific vertical padding
+  },
+  statsTitle: {
+    fontSize: 18,
+    fontWeight: "600",
+    color: "white",
+    marginBottom: 16,
+    textAlign: "center",
+  },
+  statsRow: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+  },
+  statItem: {
+    alignItems: "center",
+  },
+  statNumber: {
+    fontSize: 24,
+    fontWeight: "bold",
+    color: "white",
+    marginBottom: 4,
+  },
+  statLabel: {
+    fontSize: 12,
+    color: "rgba(255, 255, 255, 0.9)",
+    textAlign: "center",
+  },
+
+  // Play Button
   playButton: {
     backgroundColor: "white",
     borderRadius: 24,
@@ -440,16 +378,6 @@ const styles = StyleSheet.create({
     borderBottomColor: "transparent",
     marginLeft: 2,
   },
-  playTriangleSmall: {
-    width: 0,
-    height: 0,
-    borderLeftWidth: 6,
-    borderLeftColor: "#374151",
-    borderTopWidth: 4,
-    borderTopColor: "transparent",
-    borderBottomWidth: 4,
-    borderBottomColor: "transparent",
-  },
 });
 
-export default WellnessScreen;
+export default WellnessScreen

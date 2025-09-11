@@ -1,4 +1,4 @@
-const BACKEND_URL = "http://192.168.100.3:3000";
+const BACKEND_URL = "http://192.168.18.5:3000";
 export const fetchCartItemsCount = async (authenticatedFetch) => {
   try {
     const res = await authenticatedFetch(`${BACKEND_URL}/cart-items-count`);
@@ -560,3 +560,23 @@ export const resetPassword = async (data) => {
     };
   }
 };
+
+export const fetchRecentOrders = async (authenticatedFetch) => {
+  try {
+    const response = await authenticatedFetch(
+      `${BACKEND_URL}/recent-orders`
+    );
+    if (response.ok) {
+      const data = await response.json();
+      return {success:true, orders: data.formattedOrders};
+    }
+    return {
+      success: false,
+    }
+  } catch (error) {
+    
+    return {
+      success: false,
+    }
+  }
+}

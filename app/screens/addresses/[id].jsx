@@ -191,7 +191,7 @@ export default function App() {
     setFetchingAddress(true);
     try {
       // Replace with your actual API endpoint
-      const response = await authenticatedFetch(`http://192.168.100.3:3000/address/${id}`);
+      const response = await authenticatedFetch(`http://192.168.18.5:3000/address/${id}`);
       if (!response.ok) {
         throw new Error('Failed to fetch address');
       }

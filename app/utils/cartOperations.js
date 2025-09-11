@@ -1,6 +1,6 @@
 import { Alert } from "react-native";
 
-const BACKEND_URL = "http://192.168.100.3:3000";
+const BACKEND_URL = "http://192.168.18.5:3000";
 
 // Utility function for debouncing
 function debounce(fn, delay) {

@@ -20,10 +20,11 @@ import ScreenWrapper from "../../components/ScreenWrapper";
 import {
   fetchCartItemsCount,
   fetchTotalWishlistItemsCount,
+  fetchRecentOrders,
 } from "../utils/actions";
 import { logOut } from "../utils/auth";
 import { useAuthenticatedFetch, useAuthStore } from "../utils/authStore";
-const BACKEND_URL = "http://192.168.100.3:3000";
+const BACKEND_URL = "http://192.168.18.5:3000";
 const { width } = Dimensions.get("window");
 
 // Color palette matching the cart design
@@ -44,6 +45,44 @@ const COLORS = {
   lightGray: "#f3f4f6",
   border: "#e5e7eb",
 };
+
+// const orderHistory_ = [
+//   {
+//     id: 1,
+//     orderNumber: "ORD12345",
+//     itemsCount: 3,
+//     total: 1200,
+//     status: "delivered",
+//   },
+//   {
+//     id: 2,
+//     orderNumber: "ORD67890",
+//     itemsCount: 2,
+//     total: 800,
+//     status: "processing",
+//   },
+//   {
+//     id: 3,
+//     orderNumber: "ORD11223",
+//     itemsCount: 5,
+//     total: 2500,
+//     status: "delivered",
+//   },
+//   {
+//     id: 4,
+//     orderNumber: "ORD44556",
+//     itemsCount: 1,
+//     total: 350,
+//     status: "delivered",
+//   },
+//   {
+//     id: 5,
+//     orderNumber: "ORD78901",
+//     itemsCount: 4,
+//     total: 1500,
+//     status: "processing",
+//   },
+// ];
 
 export default function AccountScreen() {
   const [userProfile, setUserProfile] = useState(null);
@@ -69,6 +108,17 @@ export default function AccountScreen() {
       // console.error("[v0] Failed to load cart count:", error);
     }
   };
+
+  const loadRecentOrders = async() => {
+    try {
+      const result = await fetchRecentOrders(authenticatedFetch);
+      if (result.success) {
+        setOrderHistory(result.orders);
+      }
+    } catch (error) {
+      // console.error("[v0] Failed to load recent orders:", error);
+    }
+  }
 
   const loadWishlistItemsCount = async () => {
     try {
@@ -132,6 +182,7 @@ export default function AccountScreen() {
       requestAnimationFrame(() => {
         loadCartItemsCount();
         loadWishlistItemsCount();
+        loadRecentOrders()
       });
     }, [])
   );
@@ -151,6 +202,7 @@ export default function AccountScreen() {
       subtitle: "Your saved items",
       icon: "heart-outline",
       onPress: () => router.push("/screens/wishlist"),
+      badge: totalWishlistItemsCount > 0 ? totalWishlistItemsCount.toString() : null,
     },
     {
       id: "addresses",
@@ -164,14 +216,14 @@ export default function AccountScreen() {
       title: "Help & Support",
       subtitle: "Get help when you need it",
       icon: "help-circle-outline",
-      onPress: () => router.push("/support"),
+      onPress: () => router.push("/screens/helpsupport"),
     },
     {
       id: "about",
       title: "About",
       subtitle: "App info & terms",
       icon: "information-circle-outline",
-      onPress: () => router.push("/about"),
+      onPress: () => router.push("/screens/aboutus"),
     },
   ];
 
@@ -447,7 +499,7 @@ export default function AccountScreen() {
                 marginRight: 12,
               }}
             >
-              <Ionicons name="bag" size={20} color={COLORS.buttonColor} />
+              <Ionicons name="bag-outline" size={20} color={COLORS.buttonColor} />
             </View>
 
             <View style={{ flex: 1 }}>
@@ -459,7 +511,7 @@ export default function AccountScreen() {
                   marginBottom: 2,
                 }}
               >
-                Order #{order.orderNumber || `ORD${order.id}`}
+              {order.orderNumber || `ORD${order.id}`}
               </Text>
               <Text
                 style={{
@@ -476,7 +528,7 @@ export default function AccountScreen() {
             <View
               style={{
                 backgroundColor:
-                  order.status === "delivered" ? "#dcfce7" : "#fef3c7",
+                  order.status === "Fulfilled" ? "#dcfce7" : "#fef3c7",
                 paddingHorizontal: 8,
                 paddingVertical: 4,
                 borderRadius: 12,
@@ -487,7 +539,7 @@ export default function AccountScreen() {
                   fontSize: 10,
                   fontWeight: "600",
                   color:
-                    order.status === "delivered"
+                    order.status === "Fulfilled"
                       ? COLORS.success
                       : COLORS.warning,
                   textTransform: "capitalize",

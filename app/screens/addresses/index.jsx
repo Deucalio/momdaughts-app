@@ -234,7 +234,7 @@ export default function AddressesPage() {
   const fetchAddresses = async () => {
     setLoading(true);
     try {
-      const response = await authenticatedFetch("http://192.168.100.3:3000/addresses");
+      const response = await authenticatedFetch("http://192.168.18.5:3000/addresses");
       if (!response.ok) {
         throw new Error('Failed to fetch addresses');
       }
