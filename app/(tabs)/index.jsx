@@ -309,7 +309,7 @@ const styles = StyleSheet.create({
   },
   greetingTitle: {
     fontSize: 24,
-    fontWeight: "bold",
+    fontFamily: "Outfit-Bold",
     color: COLORS.darkBlue,
   },
   greetingSubtitle: {

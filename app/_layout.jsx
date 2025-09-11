@@ -1,5 +1,3 @@
-// Fixed _layout.jsx with proper routing logic
-
 import { useFonts } from "expo-font";
 import * as SplashScreen from "expo-splash-screen";
 import { Stack } from "expo-router";
@@ -11,6 +9,7 @@ import { useEffect, useCallback } from "react";
 import { Platform, AppState } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
 import { logOut } from "./utils/auth";
+
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
@@ -23,6 +22,16 @@ export default function RootLayout() {
 
   const [loaded, error] = useFonts({
     "BadlocICG-Regular": require("./../assets/fonts/BadlocICG-Regular.ttf"),
+    // Load all Outfit font weights
+    "Outfit-Thin": require("./../assets/fonts/Outfit-Thin.ttf"),
+    "Outfit-ExtraLight": require("./../assets/fonts/Outfit-ExtraLight.ttf"),
+    "Outfit-Light": require("./../assets/fonts/Outfit-Light.ttf"),
+    "Outfit-Regular": require("./../assets/fonts/Outfit-Regular.ttf"),
+    "Outfit-Medium": require("./../assets/fonts/Outfit-Medium.ttf"),
+    "Outfit-SemiBold": require("./../assets/fonts/Outfit-SemiBold.ttf"),
+    "Outfit-Bold": require("./../assets/fonts/Outfit-Bold.ttf"),
+    "Outfit-ExtraBold": require("./../assets/fonts/Outfit-ExtraBold.ttf"),
+    "Outfit-Black": require("./../assets/fonts/Outfit-Black.ttf"),
   });
 
   // Function to set navigation bar style
@@ -106,7 +115,6 @@ export default function RootLayout() {
           <Stack.Screen name="auth/login" options={{ headerShown: false }} />
           <Stack.Screen name="auth/signup" options={{ headerShown: false }} />
           <Stack.Screen name="auth/forget" options={{ headerShown: false }} />
-          {/* <Stack.Screen name="auth/otp" options={{ headerShown: false }} /> */}
           <Stack.Screen
             name="auth/new-password"
             options={{ headerShown: false }}
