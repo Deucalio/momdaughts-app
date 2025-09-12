@@ -1,4 +1,4 @@
-import { View, Text } from 'react-native';
+import { View, Text, ActivityIndicator, StyleSheet } from 'react-native';
 import { Redirect } from 'expo-router';
 import { useAuthStore } from './utils/authStore';
 
@@ -15,15 +15,11 @@ export default function Index() {
 
   // Wait for store to hydrate before making routing decisions
   if (!_hasHydrated) {
-    console.log("⏳ Waiting for auth store to hydrate...");
+    console.log("⏳ INDEX: Waiting for auth store to hydrate...");
     return (
-      <View style={{ 
-        flex: 1, 
-        justifyContent: 'center', 
-        alignItems: 'center',
-        backgroundColor: 'white'
-      }}>
-        <Text style={{ fontFamily: 'Outfit-Regular' }}>
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#007AFF" />
+        <Text style={styles.loadingText}>
           Loading...
         </Text>
       </View>
@@ -50,3 +46,18 @@ export default function Index() {
   console.log("🔄 INDEX: Redirecting to /(tabs)");
   return <Redirect href="/(tabs)" />;
 }
+
+const styles = StyleSheet.create({
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'white',
+  },
+  loadingText: {
+    fontFamily: 'Outfit-Regular',
+    fontSize: 16,
+    marginTop: 16,
+    color: '#666',
+  },
+});

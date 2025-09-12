@@ -7,57 +7,22 @@ import { useAuthStore } from "./utils/authStore";
 import { useEffect, useCallback, useState } from "react";
 import { Platform, AppState, View, Text } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
-import { logOut } from "./utils/auth";
 
 // Override React Native's Text with your custom one globally
-import { AppRegistry, Text as RNText } from 'react-native';
+import { Text as RNText } from 'react-native';
 RNText.defaultProps = RNText.defaultProps || {};
 RNText.defaultProps.style = { fontFamily: 'Outfit-Regular' };
 
+// Keep the native splash screen visible while we fetch resources
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
-  const { isLoggedIn, hasCompletedOnboarding, user } = useAuthStore();
-  const [authInitialized, setAuthInitialized] = useState(false);
-
+  const { isLoggedIn, hasCompletedOnboarding, user, _hasHydrated } = useAuthStore();
+  
   // Check if user's email is verified
   const isEmailVerified = user?.metaData?.is_verified === true;
   
-  // Wait for auth store to be properly initialized
-  useEffect(() => {
-    // Check if auth store has been hydrated
-    const checkAuthInit = () => {
-      // In development builds, the store might take longer to initialize
-      if (isLoggedIn !== undefined && hasCompletedOnboarding !== undefined) {
-        console.log("✅ Auth store initialized");
-        setAuthInitialized(true);
-      } else {
-        console.log("⏳ Auth store not yet initialized...");
-        console.log("isLoggedIn:", isLoggedIn);
-        console.log("hasCompletedOnboarding:", hasCompletedOnboarding);
-        console.log("user:", user);
-      }
-    };
-
-    // Initial check
-    checkAuthInit();
-
-    // If not initialized, keep checking
-    if (!authInitialized) {
-      const interval = setInterval(checkAuthInit, 100);
-      return () => clearInterval(interval);
-    }
-  }, [isLoggedIn, hasCompletedOnboarding, authInitialized, user]);
-  
-  console.log("\n=== DETAILED DEBUG ===");
-  console.log("authInitialized:", authInitialized);
-  console.log("isLoggedIn:", isLoggedIn, typeof isLoggedIn);
-  console.log("hasCompletedOnboarding:", hasCompletedOnboarding, typeof hasCompletedOnboarding);
-  console.log("isEmailVerified:", isEmailVerified, typeof isEmailVerified);
-  console.log("user:", user);
-  console.log("====================\n");
-
-  const [loaded, error] = useFonts({
+  const [loaded, fontError] = useFonts({
     "BadlocICG-Regular": require("./../assets/fonts/BadlocICG-Regular.ttf"),
     "Outfit-Thin": require("./../assets/fonts/Outfit-Thin.ttf"),
     "Outfit-ExtraLight": require("./../assets/fonts/Outfit-ExtraLight.ttf"),
@@ -105,96 +70,82 @@ export default function RootLayout() {
     }, [setNavigationBarStyle])
   );
 
-  useEffect(() => {
-    if (loaded || error) {
-      SplashScreen.hideAsync().then(() => {
+  // Hide splash screen when everything is ready
+  const hideSplashScreen = useCallback(async () => {
+    const areResourcesReady = (loaded || fontError) && _hasHydrated;
+    
+    if (areResourcesReady) {
+      console.log("\n=== HIDING SPLASH SCREEN ===");
+      console.log("Fonts loaded:", loaded);
+      console.log("Auth hydrated:", _hasHydrated);
+      console.log("isLoggedIn:", isLoggedIn);
+      console.log("============================\n");
+      
+      try {
+        await SplashScreen.hideAsync();
+        // Set navigation bar style after splash is hidden
         setTimeout(() => {
           setNavigationBarStyle();
         }, 100);
-      });
+      } catch (error) {
+        console.warn("Error hiding splash screen:", error);
+      }
     }
-  }, [loaded, error, setNavigationBarStyle]);
+  }, [loaded, fontError, _hasHydrated, isLoggedIn, setNavigationBarStyle]);
 
-  // Show loading until fonts are loaded
-  if (!loaded && !error) {
+  useEffect(() => {
+    hideSplashScreen();
+  }, [hideSplashScreen]);
+
+  // Don't render anything until resources are ready
+  if (!loaded && !fontError) {
+    console.log("⏳ Waiting for fonts to load...");
     return null;
   }
 
-  // Show loading until auth is initialized
-  if (!authInitialized) {
-    console.log("🔄 Showing auth loading screen");
-    return (
-      <View style={{ 
-        flex: 1, 
-        justifyContent: 'center', 
-        alignItems: 'center', 
-        backgroundColor: 'white' 
-      }}>
-        <Text style={{ fontFamily: 'Outfit-Regular' }}>
-          Initializing Auth...
-        </Text>
-        <Text style={{ 
-          fontSize: 12, 
-          marginTop: 10, 
-          fontFamily: 'Outfit-Regular',
-          color: '#666' 
-        }}>
-          isLoggedIn: {String(isLoggedIn)}{'\n'}
-          hasCompletedOnboarding: {String(hasCompletedOnboarding)}
-        </Text>
-      </View>
-    );
+  if (!_hasHydrated) {
+    console.log("⏳ Waiting for auth store to hydrate...");
+    return null;
   }
 
-  // Now that auth is initialized, render based on state
-  if (isLoggedIn === false) {
-    console.log("📱 RENDERING: Auth screens only (isLoggedIn === false)");
-    return (
-      <>
-        <StatusBar style="dark" backgroundColor="#ffffff" translucent={false} />
+  console.log("\n=== RENDERING APP ===");
+  console.log("isLoggedIn:", isLoggedIn);
+  console.log("isEmailVerified:", isEmailVerified);
+  console.log("hasCompletedOnboarding:", hasCompletedOnboarding);
+  console.log("====================\n");
+
+  return (
+    <>
+      <StatusBar style="dark" backgroundColor="#ffffff" translucent={false} />
+      
+      {/* Not logged in - show auth screens */}
+      {isLoggedIn === false && (
         <Stack screenOptions={{ headerShown: false }}>
           <Stack.Screen name="auth/login" options={{ headerShown: false }} />
           <Stack.Screen name="auth/signup" options={{ headerShown: false }} />
           <Stack.Screen name="auth/forget" options={{ headerShown: false }} />
           <Stack.Screen name="auth/new-password" options={{ headerShown: false }} />
         </Stack>
-      </>
-    );
-  }
-  
-  if (isLoggedIn === true && !isEmailVerified) {
-    console.log("📱 RENDERING: OTP screen only");
-    return (
-      <>
-        <StatusBar style="dark" backgroundColor="#ffffff" translucent={false} />
+      )}
+      
+      {/* Logged in but email not verified - show OTP */}
+      {isLoggedIn === true && !isEmailVerified && (
         <Stack screenOptions={{ headerShown: false }}>
           <Stack.Screen name="auth/otp" options={{ headerShown: false }} />
-          {/* Include auth screens for navigation */}
           <Stack.Screen name="auth/login" options={{ headerShown: false }} />
         </Stack>
-      </>
-    );
-  }
-  
-  if (isLoggedIn === true && isEmailVerified && hasCompletedOnboarding === false) {
-    console.log("📱 RENDERING: Onboarding screen only");
-    return (
-      <>
-        <StatusBar style="dark" backgroundColor="#ffffff" translucent={false} />
+      )}
+      
+      {/* Logged in, email verified but onboarding not complete */}
+      {isLoggedIn === true && isEmailVerified && hasCompletedOnboarding === false && (
         <Stack screenOptions={{ headerShown: false }}>
           <Stack.Screen name="onboarding" options={{ headerShown: false }} />
-          {/* Include auth screens for navigation */}
           <Stack.Screen name="auth/login" options={{ headerShown: false }} />
         </Stack>
-      </>
-    );
-  }
-  
-  if (isLoggedIn === true && isEmailVerified && hasCompletedOnboarding === true) {
-    console.log("📱 RENDERING: Main app screens");
-    return (
-      <>
-        <StatusBar style="dark" backgroundColor="#ffffff" translucent={false} />
+      )}
+      
+      {/* Fully authenticated - show main app */}
+      {isLoggedIn === true && isEmailVerified && hasCompletedOnboarding === true && (
         <Stack screenOptions={{ headerShown: false }}>
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
           <Stack.Screen name="cart" options={{ headerShown: false }} />
@@ -202,26 +153,9 @@ export default function RootLayout() {
           <Stack.Screen name="screens" options={{ headerShown: false }} />
           <Stack.Screen name="products" options={{ headerShown: false }} />
           <Stack.Screen name="articles" options={{ headerShown: false }} />
-          {/* Keep auth screens available for logout */}
           <Stack.Screen name="auth/login" options={{ headerShown: false }} />
         </Stack>
-      </>
-    );
-  }
-
-  // Fallback - should never reach here if auth store is working correctly
-  console.log("❌ FALLBACK: Unexpected auth state, showing login");
-  console.log("Final state - isLoggedIn:", isLoggedIn, "hasCompletedOnboarding:", hasCompletedOnboarding, "isEmailVerified:", isEmailVerified);
-  
-  return (
-    <>
-      <StatusBar style="dark" backgroundColor="#ffffff" translucent={false} />
-      <Stack screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="auth/login" options={{ headerShown: false }} />
-        <Stack.Screen name="auth/signup" options={{ headerShown: false }} />
-        <Stack.Screen name="auth/forget" options={{ headerShown: false }} />
-        <Stack.Screen name="auth/new-password" options={{ headerShown: false }} />
-      </Stack>
+      )}
     </>
   );
 }
