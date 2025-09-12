@@ -1,18 +1,19 @@
-import { Tabs } from "expo-router";
+import { Tabs, router } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { TouchableOpacity, Platform } from "react-native";
 import { useEffect } from "react";
 import * as NavigationBar from "expo-navigation-bar";
+import { useAuthStore } from "../utils/authStore";
 
 export default function TabLayout() {
   const insets = useSafeAreaInsets();
+  const { user } = useAuthStore();
 
-  // // Apply navigation bar style when tab layout mounts
+  // Apply navigation bar style when tab layout mounts
   // useEffect(() => {
-  //   if (Platform.OS === "android") {
-  //     NavigationBar.setBackgroundColorAsync("#21152B");
-  //     NavigationBar.setButtonStyleAsync("dark");
+  //   if (!user){
+  //     router.push("/auth/login");
   //   }
   // }, []);
 

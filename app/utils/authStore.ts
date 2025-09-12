@@ -198,7 +198,7 @@ export const useAuthStore = create(
         password: string,
         firstName: string,
         lastName: string,
-        phone: string,
+        phone: string
       ) => {
         try {
           const response = await fetch(`${BACKEND_URL}/signup`, {
@@ -206,7 +206,13 @@ export const useAuthStore = create(
             headers: {
               "Content-Type": "application/json",
             },
-            body: JSON.stringify({ email, password, firstName, lastName, phone }),
+            body: JSON.stringify({
+              email,
+              password,
+              firstName,
+              lastName,
+              phone,
+            }),
           });
           console.log("Signup response status:", response);
 

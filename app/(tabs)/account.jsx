@@ -280,8 +280,8 @@ export default function AccountScreen() {
             }}
           >
             {/* {userProfile?.name || user?.name || 'User Name'} */}
-            {user.firstName
-              ? `${user.firstName} ${user.lastName}`
+            {user?.firstName
+              ? `${user?.firstName} ${user?.lastName}`
               : "User Name"}
           </Text>
 
