@@ -9,11 +9,21 @@
     "scheme": "momdaughts",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/images/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.momdaughts",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
+      },
+      "splash": {
+        "image": "./assets/images/splash-icon.png",
+        "resizeMode": "contain",
+        "backgroundColor": "#ffffff"
       }
     },
     "android": {
@@ -22,8 +32,17 @@
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
-      "package": "com.momdaughts"
-  
+      "package": "com.momdaughts",
+      "splash": {
+        "image": "./assets/images/splash-icon.png",
+        "resizeMode": "contain",
+        "backgroundColor": "#ffffff",
+        "mdpi": "./assets/images/splash-icon.png",
+        "hdpi": "./assets/images/splash-icon.png",
+        "xhdpi": "./assets/images/splash-icon.png",
+        "xxhdpi": "./assets/images/splash-icon.png",
+        "xxxhdpi": "./assets/images/splash-icon.png"
+      }
     },
     "web": {
       "bundler": "metro",
@@ -42,7 +61,6 @@
         }
       ],
       "expo-secure-store"
-    
     ],
     "experiments": {
       "typedRoutes": true
