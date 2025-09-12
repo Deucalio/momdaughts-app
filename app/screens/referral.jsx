@@ -1,5 +1,5 @@
-import { View, Text, StyleSheet, StatusBar, ScrollView, TouchableOpacity, Image } from "react-native"
 import { LinearGradient } from "expo-linear-gradient"
+import { Image, ScrollView, StatusBar, StyleSheet, Text, TouchableOpacity, View } from "react-native"
 
 export default function App() {
   return (
@@ -254,7 +254,7 @@ const styles = StyleSheet.create({
   },
   membershipTitle: {
     fontSize: 18, // Reduced from 20
-    fontWeight: "700",
+    fontFamily: "Outfit-Bold",
     color: "#333333",
   },
   benefitsButton: {
@@ -264,17 +264,17 @@ const styles = StyleSheet.create({
   benefitsText: {
     fontSize: 14, // Reduced from 16
     color: "#FF6B35",
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
     marginRight: 4,
   },
   arrow: {
     fontSize: 18,
     color: "#FF6B35",
-    fontWeight: "bold",
+    fontFamily: "Outfit-Bold",
   },
   userName: {
     fontSize: 24, // Reduced from 28
-    fontWeight: "700",
+    fontFamily: "Outfit-Bold",
     color: "#333333",
     marginBottom: 12,
   },
@@ -283,7 +283,7 @@ const styles = StyleSheet.create({
   },
   pointsValue: {
     fontSize: 32, // Reduced from 36
-    fontWeight: "800",
+    fontFamily: "Outfit-ExtraBold",
     color: "#333333",
     marginBottom: 6,
   },
@@ -319,7 +319,7 @@ const styles = StyleSheet.create({
   },
   outlineButtonText: {
     fontSize: 14, // Reduced from 16
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
     color: "#333333",
   },
   primaryButton: {
@@ -334,7 +334,7 @@ const styles = StyleSheet.create({
   },
   primaryButtonText: {
     fontSize: 14, // Reduced from 16
-    fontWeight: "700",
+    fontFamily: "Outfit-Bold",
     color: "#FFFFFF",
   },
   recentSection: {
@@ -348,13 +348,13 @@ const styles = StyleSheet.create({
   },
   recentTitle: {
     fontSize: 18, // Reduced from 20
-    fontWeight: "700",
+    fontFamily: "Outfit-Bold",
     color: "#333333",
   },
   seeAllText: {
     fontSize: 13, // Reduced from 15
     color: "#FF6B35",
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
   },
   recentItem: {
     flexDirection: "row",
@@ -384,7 +384,7 @@ const styles = StyleSheet.create({
   },
   recentItemTitle: {
     fontSize: 15, // Reduced from 17
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
     color: "#333333",
     marginBottom: 4,
   },
@@ -400,7 +400,7 @@ const styles = StyleSheet.create({
   },
   pointsEarned: {
     fontSize: 13, // Reduced from 15
-    fontWeight: "700",
+    fontFamily: "Outfit-Bold",
     color: "#FF6B35",
   },
   groceryIcon: {
@@ -420,7 +420,7 @@ const styles = StyleSheet.create({
   },
   promotionsTitle: {
     fontSize: 18,
-    fontWeight: "700",
+    fontFamily: "Outfit-Bold",
     color: "#333333",
     marginBottom: 16,
   },
@@ -442,7 +442,7 @@ const styles = StyleSheet.create({
   },
   promotionTitle: {
     fontSize: 16,
-    fontWeight: "700",
+    fontFamily: "Outfit-Bold",
     color: "#FFFFFF",
     marginBottom: 4,
   },
@@ -510,7 +510,7 @@ const styles = StyleSheet.create({
   },
   promotionItemTitle: {
     fontSize: 14,
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
     color: "#333333",
     marginBottom: 2,
   },
@@ -526,7 +526,7 @@ const styles = StyleSheet.create({
   },
   claimButtonText: {
     fontSize: 12,
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
     color: "#FFFFFF",
   },
 })

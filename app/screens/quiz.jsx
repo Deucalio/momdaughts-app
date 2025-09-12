@@ -1,22 +1,21 @@
 "use client";
 
+import { Ionicons } from "@expo/vector-icons";
+import { Image } from 'expo-image';
 import { LinearGradient } from "expo-linear-gradient";
-import { useState } from "react";
 import { useRouter } from "expo-router";
+import { useState } from "react";
 import {
   ActivityIndicator,
   Dimensions,
-  
+
   SafeAreaView,
   ScrollView,
   StyleSheet,
-  Text,
   TouchableOpacity,
   View,
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import { Image } from 'expo-image';
-
+import Text from "../../components/Text";
 const { width, height } = Dimensions.get("window");
 
 // Your custom color theme
@@ -412,7 +411,7 @@ const styles = StyleSheet.create({
   },
   exitButtonText: {
     fontSize: 20,
-    fontWeight: "bold",
+    fontFamily: "Outfit-Bold",
     color: colors.dark,
   },
   progressContainer: {
@@ -423,7 +422,7 @@ const styles = StyleSheet.create({
   },
   progressText: {
     fontSize: 14,
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
     color: colors.black,
     marginRight: 8,
   },
@@ -450,7 +449,7 @@ const styles = StyleSheet.create({
   },
   backButtonText: {
     fontSize: 18,
-    fontWeight: "bold",
+    fontFamily: "Outfit-Bold",
     color: colors.dark,
   },
   cardSection: {
@@ -465,7 +464,7 @@ const styles = StyleSheet.create({
   },
   questionText: {
     fontSize: 20,
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
     color: colors.dark,
     marginBottom: 20, // Reduced from 32 to 20
     lineHeight: 28,
@@ -505,7 +504,7 @@ const styles = StyleSheet.create({
   },
   optionLetterText: {
     fontSize: 16,
-    fontWeight: "bold",
+    fontFamily: "Outfit-Bold",
     color: colors.white,
   },
   selectedOptionLetterText: {
@@ -514,12 +513,12 @@ const styles = StyleSheet.create({
   optionText: {
     flex: 1,
     fontSize: 16,
-    fontWeight: "500",
+    fontFamily: "Outfit-Medium",
     color: colors.black,
   },
   selectedOptionText: {
     color: colors.dark,
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
   },
   radioButton: {
     width: 24,
@@ -554,7 +553,7 @@ const styles = StyleSheet.create({
   },
   nextButtonText: {
     fontSize: 18,
-    fontWeight: "bold",
+    fontFamily: "Outfit-Bold",
     color: colors.white,
   },
   // Results styles
@@ -563,7 +562,7 @@ const styles = StyleSheet.create({
   },
   resultsTitle: {
     fontSize: 28,
-    fontWeight: "bold",
+    fontFamily: "Outfit-Bold",
     color: colors.dark,
     textAlign: "center",
     marginBottom: 8,
@@ -577,7 +576,7 @@ const styles = StyleSheet.create({
   },
   recommendedSizeText: {
     fontSize: 24,
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
     color: "#9b59b6",
     textAlign: "center",
     marginBottom: 16,
@@ -632,7 +631,7 @@ const styles = StyleSheet.create({
   },
   productName: {
     fontSize: 14,
-    fontWeight: "bold",
+    fontFamily: "Outfit-Bold",
     color: colors.dark,
     marginBottom: 2,
   },
@@ -645,7 +644,7 @@ const styles = StyleSheet.create({
   },
   productPrice: {
     fontSize: 16,
-    fontWeight: "bold",
+    fontFamily: "Outfit-Bold",
     color: colors.black,
     marginBottom: 8,
   },
@@ -658,7 +657,7 @@ const styles = StyleSheet.create({
   },
   buyButtonText: {
     fontSize: 12,
-    fontWeight: "bold",
+    fontFamily: "Outfit-Bold",
     color: colors.white,
   },
   retakeButton: {
@@ -673,7 +672,7 @@ const styles = StyleSheet.create({
   },
   retakeButtonText: {
     fontSize: 16,
-    fontWeight: "bold",
+    fontFamily: "Outfit-Bold",
     color: colors.accent,
   },
   gradient: {

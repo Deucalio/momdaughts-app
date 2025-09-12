@@ -1,13 +1,11 @@
-import {
-  View,
-  Text,
-
-  TouchableOpacity,
-  StyleSheet,
-  Dimensions,
-} from "react-native";
 import { Image } from 'expo-image';
-
+import {
+  Dimensions,
+  StyleSheet,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import Text from "../components/Text";
 const { width } = Dimensions.get("window");
 
 const FeaturedProduct = () => {
@@ -58,7 +56,7 @@ const styles = StyleSheet.create({
   },
   confidenceText: {
     fontSize: 24,
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
     color: "#000000",
     textAlign: "center",
     marginBottom: 20,
@@ -84,18 +82,18 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: "#666666",
     marginBottom: 8,
-    fontWeight: "500",
+    fontFamily: "Outfit-Medium",
   },
   productTitle: {
     fontSize: 25,
-    fontWeight: "bold",
+    fontFamily: "Outfit-Bold",
     color: "#000000",
     lineHeight: 34,
     marginBottom: 16,
   },
   price: {
     fontSize: 18,
-    fontWeight: "700",
+    fontFamily: "Outfit-Bold",
     color: "#000000",
     marginBottom: 16,
   },
@@ -106,7 +104,7 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   boldText: {
-    fontWeight: "700",
+    fontFamily: "Outfit-Bold",
     color: "#000000",
   },
   buyButton: {
@@ -127,7 +125,7 @@ const styles = StyleSheet.create({
   buyButtonText: {
     color: "#ffffff",
     fontSize: 18,
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
     letterSpacing: 0.5,
   },
 });

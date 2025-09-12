@@ -11,7 +11,6 @@ import {
     ScrollView,
     StatusBar,
     StyleSheet,
-    Text,
     TouchableOpacity,
     View,
 } from "react-native";
@@ -19,7 +18,7 @@ import Svg, { Path } from "react-native-svg";
 import { removeAddress, updateShippingAddress } from "../../utils/actions";
 import { useAuthenticatedFetch } from "../../utils/authStore";
 
-
+import Text from "../../../components/Text";
 const COLORS = {
   lightPink: "#f5b8d0",
   lavender: "#e2c6df",
@@ -234,7 +233,7 @@ export default function AddressesPage() {
   const fetchAddresses = async () => {
     setLoading(true);
     try {
-      const response = await authenticatedFetch("http://192.168.18.5:3000/addresses");
+      const response = await authenticatedFetch("https://076d27aa8a97.ngrok-free.app/addresses");
       if (!response.ok) {
         throw new Error('Failed to fetch addresses');
       }
@@ -438,7 +437,7 @@ const styles = StyleSheet.create({
     right: 0,
     textAlign: "center",
     fontSize: 18,
-    fontWeight: "500",
+    fontFamily: "Outfit-Medium",
     color: COLORS.almostBlack,
     zIndex: 5,
   },
@@ -465,7 +464,7 @@ const styles = StyleSheet.create({
   },
   addAddressText: {
     fontSize: 14,
-    fontWeight: '500',
+    fontFamily: "Outfit-Medium",
     color: COLORS.deepBlue,
     marginLeft: 8,
   },
@@ -544,7 +543,7 @@ const styles = StyleSheet.create({
   },
   addressTitle: {
     fontSize: 16,
-    fontWeight: '600',
+    fontFamily: "Outfit-SemiBold",
     color: COLORS.almostBlack,
     marginRight: 8,
   },
@@ -558,7 +557,7 @@ const styles = StyleSheet.create({
   defaultBadgeText: {
     color: COLORS.white,
     fontSize: 10,
-    fontWeight: '500',
+    fontFamily: "Outfit-Medium",
   },
   activeBadge: {
     backgroundColor: COLORS.success,
@@ -570,11 +569,11 @@ const styles = StyleSheet.create({
   activeBadgeText: {
     color: COLORS.white,
     fontSize: 10,
-    fontWeight: '500',
+    fontFamily: "Outfit-Medium",
   },
   addressPersonName: {
     fontSize: 14,
-    fontWeight: '500',
+    fontFamily: "Outfit-Medium",
     color: COLORS.almostBlack,
     marginBottom: 2,
   },
@@ -596,12 +595,12 @@ const styles = StyleSheet.create({
   phoneText: {
     fontSize: 12,
     color: COLORS.mediumGray,
-    fontWeight: '500',
+    fontFamily: "Outfit-Medium",
   },
   preciseLocationText: {
     fontSize: 12,
     color: COLORS.deepBlue,
-    fontWeight: '500',
+    fontFamily: "Outfit-Medium",
     marginTop: 4,
   },
   actionIcons: {
@@ -625,12 +624,12 @@ const styles = StyleSheet.create({
   setDefaultText: {
     fontSize: 12,
     color: COLORS.deepBlue,
-    fontWeight: '500',
+    fontFamily: "Outfit-Medium",
     textAlign: 'center',
   },
   sectionTitle: {
     fontSize: 16,
-    fontWeight: '600',
+    fontFamily: "Outfit-SemiBold",
     color: COLORS.almostBlack,
     marginBottom: 16,
     marginTop: 8,
@@ -664,7 +663,7 @@ const styles = StyleSheet.create({
   },
   modalTitle: {
     fontSize: 18,
-    fontWeight: '600',
+    fontFamily: "Outfit-SemiBold",
     color: COLORS.almostBlack,
     marginLeft: 8,
   },
@@ -692,12 +691,12 @@ const styles = StyleSheet.create({
   },
   cancelButtonText: {
     fontSize: 14,
-    fontWeight: '500',
+    fontFamily: "Outfit-Medium",
     color: COLORS.almostBlack,
   },
   deleteButtonText: {
     fontSize: 14,
-    fontWeight: '500',
+    fontFamily: "Outfit-Medium",
     color: COLORS.white,
   },
   // Skeleton loading styles
@@ -749,7 +748,7 @@ setDefaultButtonDisabled: {
 setDefaultButtonText: {
   fontSize: 14,
   color: COLORS.white,
-  fontWeight: '600',
+  fontFamily: "Outfit-SemiBold",
 },
 
 });

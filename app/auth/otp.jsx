@@ -2,21 +2,21 @@
 
 import { Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
-import { useRouter, useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useRef, useState } from "react";
 import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
   StyleSheet,
-  Text,
   TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useAuthStore } from "../utils/authStore";
+import Text from "../../components/Text";
 import { sendOTP, verifyOTP } from "../utils/actions";
+import { useAuthStore } from "../utils/authStore";
 
 export default function OTPPage() {
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
@@ -289,7 +289,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 28,
-    fontWeight: "bold",
+    fontFamily: "Outfit-Bold",
     color: "#2d3748",
     marginBottom: 12,
     textAlign: "center",
@@ -313,7 +313,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#4a5568",
     marginBottom: 4,
-    fontWeight: "500",
+    fontFamily: "Outfit-Medium",
   },
   inputContainer: {
     flexDirection: "row",
@@ -383,7 +383,7 @@ const styles = StyleSheet.create({
   sendCodeButtonText: {
     color: "#ffffff",
     fontSize: 16,
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
   },
   verifyButton: {
     backgroundColor: "#2c2a6b",
@@ -403,7 +403,7 @@ const styles = StyleSheet.create({
   verifyButtonText: {
     color: "#ffffff",
     fontSize: 16,
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
   },
   resetButton: {
     backgroundColor: "#2c2a6b",
@@ -423,7 +423,7 @@ const styles = StyleSheet.create({
   resetButtonText: {
     color: "#ffffff",
     fontSize: 16,
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
   },
   signInPrompt: {
     alignItems: "center",
@@ -435,7 +435,7 @@ const styles = StyleSheet.create({
   },
   signInLink: {
     color: "#df367c",
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
     fontSize: 12,
   },
   // OTP specific styles
@@ -451,7 +451,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     backgroundColor: "#ffffff",
     fontSize: 18,
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
     color: "#2d3748",
     borderWidth: 0.2,
     // shadowColor: "#000",
@@ -482,7 +482,7 @@ const styles = StyleSheet.create({
   resendText: {
     fontSize: 14,
     color: "#df367c",
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
   },
   errorContainer: {
     flexDirection: "row",

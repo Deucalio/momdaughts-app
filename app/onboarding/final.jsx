@@ -1,8 +1,10 @@
-import { View, Button, Text } from "react-native";
+import { View, Button } from "react-native";
 // import { Button } from "@/components/Button";
 import { useAuthStore, useAuthenticatedFetch } from "../utils/authStore";
 import { appendShippingAdresses } from "../utils/actions";
 import { useEffect } from "react";
+import Text from "../../components/Text";
+
 export default function OnboardingFinalScreen() {
   const { completeOnboarding } = useAuthStore();
   const { authenticatedFetch } = useAuthenticatedFetch();

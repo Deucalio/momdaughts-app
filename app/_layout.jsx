@@ -10,6 +10,13 @@ import { Platform, AppState } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
 import { logOut } from "./utils/auth";
 
+// Import your custom Text component
+
+// Override React Native's Text with your custom one globally
+import { AppRegistry, Text as RNText } from 'react-native';
+RNText.defaultProps = RNText.defaultProps || {};
+RNText.defaultProps.style = { fontFamily: 'Outfit-Regular' };
+
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {

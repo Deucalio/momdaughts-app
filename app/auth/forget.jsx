@@ -3,19 +3,18 @@
 import { Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import { router } from "expo-router";
-import { StatusBar } from "expo-status-bar";
 import { useState } from "react";
 import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
   StyleSheet,
-  Text,
   TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import Text from "../../components/Text";
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
@@ -26,10 +25,10 @@ export default function ForgotPasswordPage() {
     if (email) {
       // router.push("/auth/otp");
 
-       router.push({
-      pathname: '/auth/otp',
-      params: { email: email }
-    });
+      router.push({
+        pathname: "/auth/otp",
+        params: { email: email },
+      });
     }
   };
 
@@ -42,7 +41,7 @@ export default function ForgotPasswordPage() {
         <ScrollView contentContainerStyle={styles.scrollContent}>
           {/* Header */}
           <View style={styles.header}>
-            <TouchableOpacity 
+            <TouchableOpacity
               style={styles.backButton}
               onPress={() => router.back()}
             >
@@ -58,7 +57,7 @@ export default function ForgotPasswordPage() {
                 style={{
                   marginTop: 20,
                   width: 200,
-                  height: 200 
+                  height: 200,
                 }}
                 contentFit="contain"
                 placeholder="Brand Logo"
@@ -70,7 +69,8 @@ export default function ForgotPasswordPage() {
           <View style={styles.titleSection}>
             <Text style={styles.title}>Forgot Password?</Text>
             <Text style={styles.subtitle}>
-              Don't worry! Enter your email address and we'll send you a verification code.
+              Don't worry! Enter your email address and we'll send you a
+              verification code.
             </Text>
           </View>
 
@@ -79,7 +79,12 @@ export default function ForgotPasswordPage() {
             <View style={styles.inputGroup}>
               <Text style={styles.inputLabel}>Email</Text>
               <View style={styles.inputContainer}>
-                <Ionicons name="mail" size={16} color="#9ca3af" style={styles.inputIcon} />
+                <Ionicons
+                  name="mail"
+                  size={16}
+                  color="#9ca3af"
+                  style={styles.inputIcon}
+                />
                 <TextInput
                   style={styles.textInput}
                   placeholder="Enter your email"
@@ -91,7 +96,7 @@ export default function ForgotPasswordPage() {
               </View>
             </View>
 
-            <TouchableOpacity 
+            <TouchableOpacity
               style={styles.sendCodeButton}
               onPress={handleSendCode}
             >
@@ -116,7 +121,7 @@ export default function ForgotPasswordPage() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f8f9fa"
+    backgroundColor: "#f8f9fa",
   },
   keyboardView: {
     flex: 1,
@@ -155,7 +160,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 28,
-    fontWeight: "bold",
+    fontFamily: "Outfit-Bold",
     color: "#2d3748",
     marginBottom: 12,
     textAlign: "center",
@@ -179,7 +184,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#4a5568",
     marginBottom: 4,
-    fontWeight: "500",
+    fontFamily: "Outfit-Medium",
   },
   inputContainer: {
     flexDirection: "row",
@@ -224,7 +229,7 @@ const styles = StyleSheet.create({
   sendCodeButtonText: {
     color: "#ffffff",
     fontSize: 16,
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
   },
   signInPrompt: {
     alignItems: "center",
@@ -236,7 +241,8 @@ const styles = StyleSheet.create({
   },
   signInLink: {
     color: "#df367c",
-    fontWeight: "600",
-    fontSize: 12
+    fontFamily: "Outfit-SemiBold",
+    fontSize: 12,
+    transform: "translateY(2px)",
   },
 });

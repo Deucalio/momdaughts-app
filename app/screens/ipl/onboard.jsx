@@ -1,22 +1,19 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { Image } from 'expo-image';
+import { useRouter } from "expo-router";
+import { useEffect, useState } from "react";
 import {
-  View,
-  Text,
+  Dimensions,
+  ScrollView,
   StyleSheet,
   TouchableOpacity,
-  ScrollView,
-  Dimensions,
-
+  View,
 } from "react-native";
-import { Image } from 'expo-image';
-
-import { fetchDevices } from "../../utils/actions";
+import Text from "../../../components/Text";
+import { createIPLProfile, fetchDevices } from "../../utils/actions";
 import { useAuthenticatedFetch, useAuthStore } from "../../utils/authStore";
 const { width, height } = Dimensions.get("window");
-import { useRouter } from "expo-router";
-import { createIPLProfile } from "../../utils/actions";
 
 // Scaling functions
 const scale = (size) => (width / 375) * size; // Base width: iPhone 11
@@ -427,7 +424,7 @@ const styles = StyleSheet.create({
   },
   onboardingTitle: {
     fontSize: 28,
-    fontWeight: "700",
+    fontFamily: "Outfit-Bold",
     color: "#333",
     textAlign: "center",
     marginBottom: 12,
@@ -483,14 +480,14 @@ const styles = StyleSheet.create({
   },
   deviceName: {
     fontSize: moderateScale(16),
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
     color: "#333",
     marginBottom: verticalScale(4),
   },
   popularBadge: {
     fontSize: moderateScale(12),
     color: "#2c2a6b",
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
   },
   deviceSelector: {
     width: moderateScale(24),
@@ -504,7 +501,7 @@ const styles = StyleSheet.create({
   checkmark: {
     fontSize: moderateScale(16),
     color: "#2c2a6b",
-    fontWeight: "700",
+    fontFamily: "Outfit-Bold",
   },
   customizeContent: {
     flex: 1,
@@ -515,7 +512,7 @@ const styles = StyleSheet.create({
   },
   selectionTitle: {
     fontSize: 18,
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
     color: "#333",
     marginBottom: 15,
   },
@@ -543,7 +540,7 @@ const styles = StyleSheet.create({
   },
   skinToneText: {
     fontSize: 12,
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
     color: "#333",
     textAlign: "center",
   },
@@ -559,7 +556,7 @@ const styles = StyleSheet.create({
     right: 5,
     fontSize: 14,
     color: "#2c2a6b",
-    fontWeight: "700",
+    fontFamily: "Outfit-Bold",
   },
   hairTypeGrid: {
     flexDirection: "row",
@@ -595,7 +592,7 @@ const styles = StyleSheet.create({
   },
   hairTypeText: {
     fontSize: 14,
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
     color: "#333",
     textAlign: "center",
   },
@@ -605,7 +602,7 @@ const styles = StyleSheet.create({
     right: 8,
     fontSize: 14,
     color: "#2c2a6b",
-    fontWeight: "700",
+    fontFamily: "Outfit-Bold",
   },
   treatmentGrid: {
     flexDirection: "row",
@@ -638,7 +635,7 @@ const styles = StyleSheet.create({
   },
   treatmentText: {
     fontSize: 12,
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
     color: "#333",
     textAlign: "center",
   },
@@ -648,7 +645,7 @@ const styles = StyleSheet.create({
     right: 5,
     fontSize: 12,
     color: "#2c2a6b",
-    fontWeight: "700",
+    fontFamily: "Outfit-Bold",
   },
   frequencyContent: {
     flex: 1,
@@ -684,14 +681,14 @@ const styles = StyleSheet.create({
   },
   frequencyTitle: {
     fontSize: 18,
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
     color: "#333",
     flex: 1,
   },
   recommendedBadge: {
     fontSize: 12,
     color: "#2c2a6b",
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
     backgroundColor: "#F8F4FF",
     paddingHorizontal: 8,
     paddingVertical: 4,
@@ -708,7 +705,7 @@ const styles = StyleSheet.create({
     right: 15,
     fontSize: 18,
     color: "#2c2a6b",
-    fontWeight: "700",
+    fontFamily: "Outfit-Bold",
   },
   onboardingNavigation: {
     paddingHorizontal: 20,
@@ -755,12 +752,12 @@ const styles = StyleSheet.create({
   },
   navButtonText: {
     fontSize: 16,
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
     color: "#666",
   },
   continueButtonText: {
     fontSize: 16,
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
     color: "#ffffff",
   },
 });

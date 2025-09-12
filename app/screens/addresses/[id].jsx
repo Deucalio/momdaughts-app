@@ -10,12 +10,12 @@ import {
     ScrollView,
     StatusBar,
     StyleSheet,
-    Text,
     TextInput,
     TouchableOpacity,
     View,
 } from "react-native";
 import Svg, { Path } from "react-native-svg";
+import Text from "../../../components/Text";
 import { addShippingAddress, updateShippingAddress } from "../../utils/actions";
 import { useAuthenticatedFetch } from "../../utils/authStore";
 const COLORS = {
@@ -191,7 +191,7 @@ export default function App() {
     setFetchingAddress(true);
     try {
       // Replace with your actual API endpoint
-      const response = await authenticatedFetch(`http://192.168.18.5:3000/address/${id}`);
+      const response = await authenticatedFetch(`https://076d27aa8a97.ngrok-free.app/address/${id}`);
       if (!response.ok) {
         throw new Error('Failed to fetch address');
       }
@@ -640,7 +640,7 @@ const styles = StyleSheet.create({
     right: 0,
     textAlign: "center",
     fontSize: 18,
-    fontWeight: "500",
+    fontFamily: "Outfit-Medium",
     color: COLORS.almostBlack,
     zIndex: 5,
   },
@@ -676,13 +676,13 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 12,
-    fontWeight: "500",
+    fontFamily: "Outfit-Medium",
     color: COLORS.almostBlack,
     marginBottom: 6,
   },
   labelSmall: {
     fontSize: 12,
-    fontWeight: "500",
+    fontFamily: "Outfit-Medium",
     color: COLORS.almostBlack,
   },
   inputContainer: {
@@ -756,12 +756,12 @@ const styles = StyleSheet.create({
   },
   categoryTextSmall: {
     fontSize: 14,
-    fontWeight: "500",
+    fontFamily: "Outfit-Medium",
     color: COLORS.mediumGray,
   },
   categoryText: {
     fontSize: 16,
-    fontWeight: "500",
+    fontFamily: "Outfit-Medium",
     color: COLORS.mediumGray,
   },
   categoryTextActive: {
@@ -791,7 +791,7 @@ const styles = StyleSheet.create({
   submitButtonText: {
     color: COLORS.white,
     fontSize: 15,
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
   },
   // Skeleton loading styles
   skeletonLabel: {

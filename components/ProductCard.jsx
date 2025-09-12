@@ -1,14 +1,11 @@
-import React from "react";
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  
-  StyleSheet,
-  Dimensions,
-} from "react-native";
 import { Image } from 'expo-image';
-
+import {
+  Dimensions,
+  StyleSheet,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import Text from "../components/Text";
 const { width } = Dimensions.get("window");
 
 // Enhanced Image Gallery Component
@@ -366,14 +363,14 @@ const styles = StyleSheet.create({
   counterText: {
     color: "white",
     fontSize: 12,
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
   },
   productInfo: {
     padding: 24,
   },
   productTitle: {
     fontSize: 24,
-    fontWeight: "bold",
+    fontFamily: "Outfit-Bold",
     color: "#1F2937",
     marginBottom: 4,
   },
@@ -392,7 +389,7 @@ const styles = StyleSheet.create({
   },
   variantBadgeText: {
     fontSize: 12,
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
     color: "#2c2a6b",
   },
   ratingContainer: {
@@ -410,7 +407,7 @@ const styles = StyleSheet.create({
   ratingText: {
     marginLeft: 4,
     fontSize: 14,
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
     color: "#1F2937",
   },
   reviewCount: {
@@ -425,7 +422,7 @@ const styles = StyleSheet.create({
   },
   price: {
     fontSize: 32,
-    fontWeight: "bold",
+    fontFamily: "Outfit-Bold",
     color: "#1F2937",
   },
   compareAtPrice: {
@@ -442,12 +439,12 @@ const styles = StyleSheet.create({
   unavailableText: {
     fontSize: 16,
     color: "#EF4444",
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
   },
   availableText: {
     fontSize: 16,
     color: "#059669",
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
   },
   inventoryText: {
     fontSize: 14,
@@ -459,7 +456,7 @@ const styles = StyleSheet.create({
   },
   optionTitle: {
     fontSize: 16,
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
     color: "#1F2937",
     marginBottom: 8,
   },
@@ -482,12 +479,12 @@ const styles = StyleSheet.create({
   },
   optionButtonText: {
     fontSize: 14,
-    fontWeight: "500",
+    fontFamily: "Outfit-Medium",
     color: "#6B7280",
   },
   optionButtonTextSelected: {
     color: "#ffffff",
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
   },
   quantitySection: {
     flexDirection: "row",
@@ -497,7 +494,7 @@ const styles = StyleSheet.create({
   },
   quantityLabel: {
     fontSize: 16,
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
     color: "#1F2937",
   },
   quantityContainer: {
@@ -521,14 +518,14 @@ const styles = StyleSheet.create({
   quantityButtonText: {
     color: "white",
     fontSize: 18,
-    fontWeight: "bold",
+    fontFamily: "Outfit-Bold",
   },
   quantityDisplay: {
     paddingHorizontal: 20,
   },
   quantityText: {
     fontSize: 16,
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
     color: "#1F2937",
   },
   actionButtons: {
@@ -549,7 +546,7 @@ const styles = StyleSheet.create({
   buyButtonText: {
     color: "white",
     fontSize: 18,
-    fontWeight: "bold",
+    fontFamily: "Outfit-Bold",
   },
   addToCartButton: {
     backgroundColor: "transparent",
@@ -562,7 +559,7 @@ const styles = StyleSheet.create({
   addToCartButtonText: {
     color: "#2c2a6b",
     fontSize: 16,
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
   },
   disabledButton: {
     backgroundColor: "#9CA3AF",
@@ -582,7 +579,7 @@ const styles = StyleSheet.create({
   },
   descriptionTitle: {
     fontSize: 18,
-    fontWeight: "bold",
+    fontFamily: "Outfit-Bold",
     color: "#1F2937",
     marginBottom: 8,
   },
@@ -603,9 +600,6 @@ const styles = StyleSheet.create({
 });
 
 export {
-  ProductCard,
-  ImageGallery,
-  StarRating,
-  QuantitySelector,
-  OptionSelector,
+  ImageGallery, OptionSelector, ProductCard, QuantitySelector, StarRating
 };
+

@@ -1,8 +1,8 @@
 import { Ionicons } from "@expo/vector-icons";
+import { Image } from 'expo-image';
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import {
- 
   Pressable,
   StyleSheet,
   Text,
@@ -11,7 +11,6 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { logOut, useAuthenticatedFetch } from "../app/utils/authStore";
-import { Image } from 'expo-image';
 
 const Header = ({ cartItemCount }) => {
   const [showProfileMenu, setShowProfileMenu] = useState(false);
@@ -181,7 +180,7 @@ const styles = StyleSheet.create({
   badgeText: {
     color: "white",
     fontSize: 10,
-    fontWeight: "bold",
+    fontFamily: "Outfit-Bold",
   },
   profileContainer: {
     position: "relative",
@@ -216,7 +215,7 @@ const styles = StyleSheet.create({
   dropdownText: {
     fontSize: 14,
     color: "#333",
-    fontWeight: "500",
+    fontFamily: "Outfit-Medium",
   },
   dropdownDivider: {
     height: 1,

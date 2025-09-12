@@ -6,17 +6,17 @@ import { Image } from "expo-image";
 import { router } from "expo-router";
 import { useState } from "react";
 import {
+  ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
   StyleSheet,
-  Text,
   TextInput,
   TouchableOpacity,
   View,
-  ActivityIndicator,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import Text from "../../components/Text";
 import { signUpWithCustom } from "../utils/auth";
 
 export default function SignUpPage() {
@@ -50,7 +50,7 @@ export default function SignUpPage() {
 
     if (!phone.trim()) {
       newErrors.phone = "Phone number is required";
-    } else if (!/^\+?[\d\s-()]+$/.test(phone.replace(/\s/g, ''))) {
+    } else if (!/^\+?[\d\s-()]+$/.test(phone.replace(/\s/g, ""))) {
       newErrors.phone = "Please enter a valid phone number";
     }
 
@@ -79,8 +79,14 @@ export default function SignUpPage() {
     setErrors({});
 
     try {
-      const result = await signUpWithCustom(email, password, firstName, lastName, phone);
-    
+      const result = await signUpWithCustom(
+        email,
+        password,
+        firstName,
+        lastName,
+        phone
+      );
+
       console.log("Sign up result:", result);
       if (result.success) {
         // Alert.alert(
@@ -115,7 +121,7 @@ export default function SignUpPage() {
         <ScrollView contentContainerStyle={styles.scrollContent}>
           {/* Header */}
           <View style={styles.header}>
-            <TouchableOpacity 
+            <TouchableOpacity
               style={styles.backButton}
               onPress={() => router.back()}
             >
@@ -131,7 +137,7 @@ export default function SignUpPage() {
                 style={{
                   marginTop: 20,
                   width: 200,
-                  height: 200 
+                  height: 200,
                 }}
                 contentFit="contain"
                 placeholder="Brand Logo"
@@ -147,8 +153,18 @@ export default function SignUpPage() {
             {/* First Name */}
             <View style={styles.inputGroup}>
               <Text style={styles.inputLabel}>First Name</Text>
-              <View style={[styles.inputContainer, errors.firstName && styles.inputError]}>
-                <Ionicons name="person" size={16} color="#9ca3af" style={styles.inputIcon} />
+              <View
+                style={[
+                  styles.inputContainer,
+                  errors.firstName && styles.inputError,
+                ]}
+              >
+                <Ionicons
+                  name="person"
+                  size={16}
+                  color="#9ca3af"
+                  style={styles.inputIcon}
+                />
                 <TextInput
                   style={styles.textInput}
                   placeholder="Enter your first name"
@@ -157,14 +173,26 @@ export default function SignUpPage() {
                   autoCapitalize="words"
                 />
               </View>
-              {errors.firstName && <Text style={styles.errorText}>{errors.firstName}</Text>}
+              {errors.firstName && (
+                <Text style={styles.errorText}>{errors.firstName}</Text>
+              )}
             </View>
 
             {/* Last Name */}
             <View style={styles.inputGroup}>
               <Text style={styles.inputLabel}>Last Name</Text>
-              <View style={[styles.inputContainer, errors.lastName && styles.inputError]}>
-                <Ionicons name="person" size={16} color="#9ca3af" style={styles.inputIcon} />
+              <View
+                style={[
+                  styles.inputContainer,
+                  errors.lastName && styles.inputError,
+                ]}
+              >
+                <Ionicons
+                  name="person"
+                  size={16}
+                  color="#9ca3af"
+                  style={styles.inputIcon}
+                />
                 <TextInput
                   style={styles.textInput}
                   placeholder="Enter your last name"
@@ -173,14 +201,26 @@ export default function SignUpPage() {
                   autoCapitalize="words"
                 />
               </View>
-              {errors.lastName && <Text style={styles.errorText}>{errors.lastName}</Text>}
+              {errors.lastName && (
+                <Text style={styles.errorText}>{errors.lastName}</Text>
+              )}
             </View>
 
             {/* Email */}
             <View style={styles.inputGroup}>
               <Text style={styles.inputLabel}>Email</Text>
-              <View style={[styles.inputContainer, errors.email && styles.inputError]}>
-                <Ionicons name="mail" size={16} color="#9ca3af" style={styles.inputIcon} />
+              <View
+                style={[
+                  styles.inputContainer,
+                  errors.email && styles.inputError,
+                ]}
+              >
+                <Ionicons
+                  name="mail"
+                  size={16}
+                  color="#9ca3af"
+                  style={styles.inputIcon}
+                />
                 <TextInput
                   style={styles.textInput}
                   placeholder="Enter your email"
@@ -190,14 +230,26 @@ export default function SignUpPage() {
                   autoCapitalize="none"
                 />
               </View>
-              {errors.email && <Text style={styles.errorText}>{errors.email}</Text>}
+              {errors.email && (
+                <Text style={styles.errorText}>{errors.email}</Text>
+              )}
             </View>
 
             {/* Phone */}
             <View style={styles.inputGroup}>
               <Text style={styles.inputLabel}>Phone Number</Text>
-              <View style={[styles.inputContainer, errors.phone && styles.inputError]}>
-                <Ionicons name="call" size={16} color="#9ca3af" style={styles.inputIcon} />
+              <View
+                style={[
+                  styles.inputContainer,
+                  errors.phone && styles.inputError,
+                ]}
+              >
+                <Ionicons
+                  name="call"
+                  size={16}
+                  color="#9ca3af"
+                  style={styles.inputIcon}
+                />
                 <TextInput
                   style={styles.textInput}
                   placeholder="Enter your phone number"
@@ -206,14 +258,26 @@ export default function SignUpPage() {
                   keyboardType="phone-pad"
                 />
               </View>
-              {errors.phone && <Text style={styles.errorText}>{errors.phone}</Text>}
+              {errors.phone && (
+                <Text style={styles.errorText}>{errors.phone}</Text>
+              )}
             </View>
 
             {/* Password */}
             <View style={styles.inputGroup}>
               <Text style={styles.inputLabel}>Password</Text>
-              <View style={[styles.passwordContainer, errors.password && styles.inputError]}>
-                <Ionicons name="lock-closed" size={16} color="#9ca3af" style={styles.inputIcon} />
+              <View
+                style={[
+                  styles.passwordContainer,
+                  errors.password && styles.inputError,
+                ]}
+              >
+                <Ionicons
+                  name="lock-closed"
+                  size={16}
+                  color="#9ca3af"
+                  style={styles.inputIcon}
+                />
                 <TextInput
                   style={styles.passwordInput}
                   placeholder="Enter your password"
@@ -232,14 +296,26 @@ export default function SignUpPage() {
                   />
                 </TouchableOpacity>
               </View>
-              {errors.password && <Text style={styles.errorText}>{errors.password}</Text>}
+              {errors.password && (
+                <Text style={styles.errorText}>{errors.password}</Text>
+              )}
             </View>
 
             {/* Confirm Password */}
             <View style={styles.inputGroup}>
               <Text style={styles.inputLabel}>Confirm Password</Text>
-              <View style={[styles.passwordContainer, errors.confirmPassword && styles.inputError]}>
-                <Ionicons name="lock-closed" size={16} color="#9ca3af" style={styles.inputIcon} />
+              <View
+                style={[
+                  styles.passwordContainer,
+                  errors.confirmPassword && styles.inputError,
+                ]}
+              >
+                <Ionicons
+                  name="lock-closed"
+                  size={16}
+                  color="#9ca3af"
+                  style={styles.inputIcon}
+                />
                 <TextInput
                   style={styles.passwordInput}
                   placeholder="Confirm your password"
@@ -258,11 +334,13 @@ export default function SignUpPage() {
                   />
                 </TouchableOpacity>
               </View>
-              {errors.confirmPassword && <Text style={styles.errorText}>{errors.confirmPassword}</Text>}
+              {errors.confirmPassword && (
+                <Text style={styles.errorText}>{errors.confirmPassword}</Text>
+              )}
             </View>
 
             {/* Sign Up Button */}
-            <TouchableOpacity 
+            <TouchableOpacity
               style={[styles.signUpButton, loading && styles.disabledButton]}
               onPress={handleSignUp}
               disabled={loading}
@@ -293,7 +371,7 @@ export default function SignUpPage() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f8f9fa"
+    backgroundColor: "#f8f9fa",
   },
   keyboardView: {
     flex: 1,
@@ -333,7 +411,7 @@ const styles = StyleSheet.create({
   },
   welcomeText: {
     fontSize: 28,
-    fontWeight: "bold",
+    fontFamily: "Outfit-Bold",
     color: "#2d3748",
     textAlign: "center",
     marginBottom: 4,
@@ -351,7 +429,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#4a5568",
     marginBottom: 4,
-    fontWeight: "500",
+    fontFamily: "Outfit-Medium",
   },
   inputContainer: {
     flexDirection: "row",
@@ -434,7 +512,7 @@ const styles = StyleSheet.create({
   signUpButtonText: {
     color: "#ffffff",
     fontSize: 16,
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
   },
   signInPrompt: {
     alignItems: "center",
@@ -446,8 +524,7 @@ const styles = StyleSheet.create({
   },
   signInLink: {
     color: "#df367c",
-    fontWeight: "600",
-    fontSize: 12
+    fontFamily: "Outfit-SemiBold",
+    fontSize: 12,
   },
 });
-

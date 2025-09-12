@@ -10,21 +10,21 @@ import {
   ScrollView,
   StatusBar,
   Switch,
-  Text,
   TouchableOpacity,
   View,
 } from "react-native";
 
 import { SafeAreaView } from "react-native-safe-area-context";
 import ScreenWrapper from "../../components/ScreenWrapper";
+import Text from "../../components/Text";
 import {
   fetchCartItemsCount,
-  fetchTotalWishlistItemsCount,
   fetchRecentOrders,
+  fetchTotalWishlistItemsCount,
 } from "../utils/actions";
 import { logOut } from "../utils/auth";
 import { useAuthenticatedFetch, useAuthStore } from "../utils/authStore";
-const BACKEND_URL = "http://192.168.18.5:3000";
+const BACKEND_URL = "https://076d27aa8a97.ngrok-free.app";
 const { width } = Dimensions.get("window");
 
 // Color palette matching the cart design
@@ -109,7 +109,7 @@ export default function AccountScreen() {
     }
   };
 
-  const loadRecentOrders = async() => {
+  const loadRecentOrders = async () => {
     try {
       const result = await fetchRecentOrders(authenticatedFetch);
       if (result.success) {
@@ -118,7 +118,7 @@ export default function AccountScreen() {
     } catch (error) {
       // console.error("[v0] Failed to load recent orders:", error);
     }
-  }
+  };
 
   const loadWishlistItemsCount = async () => {
     try {
@@ -161,7 +161,7 @@ export default function AccountScreen() {
   const handleLogout = async () => {
     console.log("Logging out...");
     const res = await logOut();
-    if (res){
+    if (res) {
       router.push("/auth/login");
     }
   };
@@ -182,7 +182,7 @@ export default function AccountScreen() {
       requestAnimationFrame(() => {
         loadCartItemsCount();
         loadWishlistItemsCount();
-        loadRecentOrders()
+        loadRecentOrders();
       });
     }, [])
   );
@@ -202,7 +202,8 @@ export default function AccountScreen() {
       subtitle: "Your saved items",
       icon: "heart-outline",
       onPress: () => router.push("/screens/wishlist"),
-      badge: totalWishlistItemsCount > 0 ? totalWishlistItemsCount.toString() : null,
+      badge:
+        totalWishlistItemsCount > 0 ? totalWishlistItemsCount.toString() : null,
     },
     {
       id: "addresses",
@@ -225,6 +226,7 @@ export default function AccountScreen() {
       icon: "information-circle-outline",
       onPress: () => router.push("/screens/aboutus"),
     },
+ 
   ];
 
   const renderProfileHeader = () => (
@@ -468,7 +470,7 @@ export default function AccountScreen() {
               style={{
                 fontSize: 12,
                 color: COLORS.buttonColor,
-                fontWeight: "600",
+                fontFamily: "Outfit-SemiBold",
               }}
             >
               View All
@@ -499,19 +501,23 @@ export default function AccountScreen() {
                 marginRight: 12,
               }}
             >
-              <Ionicons name="bag-outline" size={20} color={COLORS.buttonColor} />
+              <Ionicons
+                name="bag-outline"
+                size={20}
+                color={COLORS.buttonColor}
+              />
             </View>
 
             <View style={{ flex: 1 }}>
               <Text
                 style={{
                   fontSize: 14,
-                  fontWeight: "600",
+                  fontFamily: "Outfit-SemiBold",
                   color: COLORS.darkest,
                   marginBottom: 2,
                 }}
               >
-              {order.orderNumber || `ORD${order.id}`}
+                {order.orderNumber || `ORD${order.id}`}
               </Text>
               <Text
                 style={{
@@ -528,7 +534,7 @@ export default function AccountScreen() {
             <View
               style={{
                 backgroundColor:
-                  order.status === "Fulfilled" ? "#dcfce7" : "#fef3c7",
+                  order.financialStatus === "Voided" ? "#dee2e6" : order.status === "Fulfilled" ? "#dcfce7" : "#fef3c7",
                 paddingHorizontal: 8,
                 paddingVertical: 4,
                 borderRadius: 12,
@@ -537,15 +543,18 @@ export default function AccountScreen() {
               <Text
                 style={{
                   fontSize: 10,
-                  fontWeight: "600",
+                  fontFamily: "Outfit-SemiBold",
                   color:
-                    order.status === "Fulfilled"
+                order.financialStatus === "Voided" ? COLORS.darkest : order.status === "Fulfilled"
                       ? COLORS.success
                       : COLORS.warning,
                   textTransform: "capitalize",
                 }}
               >
-                {order.status || "Processing"}
+                {/* {order.status || "Processing"} */}
+                {
+                  order.financialStatus === "Voided" ? "Cancelled" : order.status ||  "Processing"
+                }
               </Text>
             </View>
           </TouchableOpacity>
@@ -647,7 +656,7 @@ export default function AccountScreen() {
         <Text
           style={{
             fontSize: 14,
-            fontWeight: "600",
+            fontFamily: "Outfit-SemiBold",
             color: COLORS.darkest,
             marginBottom: 2,
           }}
@@ -730,7 +739,7 @@ export default function AccountScreen() {
           <Text
             style={{
               fontSize: 18,
-              fontWeight: "700",
+              fontFamily: "Outfit-Bold",
               color: COLORS.darkest,
             }}
           >
@@ -795,7 +804,7 @@ export default function AccountScreen() {
             <Text
               style={{
                 fontSize: 14,
-                fontWeight: "600",
+                fontFamily: "Outfit-SemiBold",
                 color: COLORS.error,
                 marginLeft: 8,
               }}

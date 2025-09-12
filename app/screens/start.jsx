@@ -1,19 +1,18 @@
 "use client";
-import { useState, useEffect } from "react";
-import { Image } from "expo-image";
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-  Dimensions,
-  StatusBar,
-  Modal,
-} from "react-native";
-import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
+import { Image } from "expo-image";
+import { LinearGradient } from "expo-linear-gradient";
 import { useLocalSearchParams, useRouter } from "expo-router";
-
+import { useEffect, useState } from "react";
+import {
+  Dimensions,
+  Modal,
+  StatusBar,
+  StyleSheet,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import Text from "../../components/Text";
 const COLORS = {
   lightPink: "#f5b8d0",
   lavender: "#e2c6df",
@@ -334,7 +333,7 @@ const styles = StyleSheet.create({
   },
   progressText: {
     color: "#7c3aed",
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
     fontSize: 18,
   },
   illustrationContainer: {
@@ -349,14 +348,14 @@ const styles = StyleSheet.create({
   },
   poseName: {
     fontSize: 24,
-    fontWeight: "bold",
+    fontFamily: "Outfit-Bold",
     color: "#1f2937",
     textAlign: "center",
     marginTop: 16,
   },
   timer: {
     fontSize: 48,
-    fontWeight: "bold",
+    fontFamily: "Outfit-Bold",
     color: "#1f2937",
   },
   controls: {
@@ -419,7 +418,7 @@ const styles = StyleSheet.create({
   },
   modalTitle: {
     fontSize: 20,
-    fontWeight: "bold",
+    fontFamily: "Outfit-Bold",
     color: "#1f2937",
     marginBottom: 12,
   },
@@ -441,7 +440,7 @@ const styles = StyleSheet.create({
   },
   statNumber: {
     fontSize: 32,
-    fontWeight: "bold",
+    fontFamily: "Outfit-Bold",
     color: "#1f2937",
   },
   statLabel: {
@@ -455,7 +454,7 @@ const styles = StyleSheet.create({
   },
   dayText: {
     fontSize: 16,
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
     color: "#1f2937",
     marginBottom: 4,
   },
@@ -475,7 +474,7 @@ const styles = StyleSheet.create({
 },
 ratingText: {
   fontSize: 16,
-  fontWeight: "600",
+  fontFamily: "Outfit-SemiBold",
   color: "#1f2937",
   marginBottom: 16,
 },
@@ -496,7 +495,7 @@ starButton: {
   submitButtonText: {
     color: "white",
     fontSize: 16,
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
     textAlign: "center",
   },
   errorContainer: {

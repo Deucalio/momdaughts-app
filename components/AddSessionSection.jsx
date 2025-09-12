@@ -1,7 +1,7 @@
 // File: AddSessionSection.js
-import { View, Text, ScrollView, TouchableOpacity, StyleSheet } from "react-native"
-import { useState } from "react"
-
+import { useState } from "react";
+import { ScrollView, StyleSheet, TouchableOpacity, View } from "react-native";
+import Text from "../components/Text";
 const AddSessionSection = ({
   isSessionActive,
   currentSession,
@@ -237,7 +237,7 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     fontSize: 20,
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
     color: "#333",
   },
   menuButton: {
@@ -260,7 +260,7 @@ const styles = StyleSheet.create({
   },
   sectionTitleLocal: {
     fontSize: 18,
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
     color: "#333",
     marginBottom: 15,
   },
@@ -327,12 +327,12 @@ const styles = StyleSheet.create({
   },
   areaCardText: {
     fontSize: 16,
-    fontWeight: "500",
+    fontFamily: "Outfit-Medium",
     color: "#333",
   },
   areaCardTextSelected: {
     color: "#2c2a6b",
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
   },
 
   /* Intensity selection styles */
@@ -363,7 +363,7 @@ const styles = StyleSheet.create({
   },
   intensityCardNumber: {
     fontSize: 20,
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
     color: "#333",
   },
   intensityCardNumberSelected: {
@@ -396,7 +396,7 @@ const styles = StyleSheet.create({
   },
   startSessionButtonText: {
     fontSize: 18,
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
     color: "#FFFFFF",
   },
   startSessionButtonTextDisabled: {
@@ -412,7 +412,7 @@ const styles = StyleSheet.create({
   },
   customSessionButtonText: {
     fontSize: 16,
-    fontWeight: "500",
+    fontFamily: "Outfit-Medium",
     color: "#2c2a6b",
   },
 
@@ -429,7 +429,7 @@ const styles = StyleSheet.create({
   },
   sessionTitle: {
     fontSize: 24,
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
     color: "#FFFFFF",
     marginBottom: 8,
   },
@@ -443,7 +443,7 @@ const styles = StyleSheet.create({
   },
   timerText: {
     fontSize: 72,
-    fontWeight: "300",
+    fontFamily: "Outfit-Light",
     color: "#FFFFFF",
     marginBottom: 8,
   },
@@ -459,7 +459,7 @@ const styles = StyleSheet.create({
   },
   intensityLabel: {
     fontSize: 18,
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
     color: "#FFFFFF",
     marginBottom: 20,
   },
@@ -486,7 +486,7 @@ const styles = StyleSheet.create({
   },
   intensityButtonText: {
     fontSize: 18,
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
     color: "#FFFFFF",
   },
   intensityButtonTextActive: {
@@ -521,7 +521,7 @@ const styles = StyleSheet.create({
   },
   sessionDetailValue: {
     fontSize: 16,
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
     color: "#FFFFFF",
   },
 
@@ -538,7 +538,7 @@ const styles = StyleSheet.create({
   },
   stopButtonText: {
     fontSize: 18,
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
     color: "#2c2a6b",
   },
 })

@@ -8,15 +8,15 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
   StatusBar,
+  StyleSheet,
+  TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import GoogleAuthComponent from "../../components/GoogleAuthComponent";
+import Text from "../../components/Text";
 import { signInWithCustom } from "../utils/auth";
 
 export default function LoginPage() {
@@ -24,22 +24,22 @@ export default function LoginPage() {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-const [error, setError] = useState("");
+  const [error, setError] = useState("");
 
-const handleLogin = async () => {
-  setIsLoading(true);
-  setError("");
-  const {success, error} = await signInWithCustom(phoneNumber, password);
-  if (success) {
-    router.push("/(tabs)");
-  }
+  const handleLogin = async () => {
+    setIsLoading(true);
+    setError("");
+    const { success, error } = await signInWithCustom(phoneNumber, password);
+    if (success) {
+      router.push("/(tabs)");
+    }
 
-  setIsLoading(false);
-  
-  if (!success) {
-    setError(error);
-  }
-};
+    setIsLoading(false);
+
+    if (!success) {
+      setError(error);
+    }
+  };
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#fff" />
@@ -137,19 +137,22 @@ const handleLogin = async () => {
             </TouchableOpacity>
 
             {error ? (
-  <View style={styles.errorContainer}>
-    <Text style={styles.errorText}>{error}</Text>
-  </View>
-) : null}
-<TouchableOpacity 
-  style={[styles.loginButton, isLoading && styles.loginButtonDisabled]} 
-  onPress={handleLogin}
-  disabled={isLoading}
->
-  <Text style={styles.loginButtonText}>
-    {isLoading ? "Logging in..." : "Login"}
-  </Text>
-</TouchableOpacity>
+              <View style={styles.errorContainer}>
+                <Text style={styles.errorText}>{error}</Text>
+              </View>
+            ) : null}
+            <TouchableOpacity
+              style={[
+                styles.loginButton,
+                isLoading && styles.loginButtonDisabled,
+              ]}
+              onPress={handleLogin}
+              disabled={isLoading}
+            >
+              <Text style={styles.loginButtonText}>
+                {isLoading ? "Logging in..." : "Login"}
+              </Text>
+            </TouchableOpacity>
 
             <View style={styles.signUpPrompt}>
               <Text style={styles.signUpText}>
@@ -226,7 +229,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#4a5568",
     marginBottom: 4,
-    fontWeight: "500",
+    fontFamily: "Outfit-Medium",
   },
   phoneContainer: {
     flexDirection: "row",
@@ -261,7 +264,7 @@ const styles = StyleSheet.create({
   countryCode: {
     fontSize: 14,
     color: "#2d3748",
-    fontWeight: "500",
+    fontFamily: "Outfit-Medium",
   },
   phoneInput: {
     flex: 1,
@@ -319,7 +322,7 @@ const styles = StyleSheet.create({
   loginButtonText: {
     color: "#ffffff",
     fontSize: 16,
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
   },
   orText: {
     textAlign: "center",
@@ -341,8 +344,9 @@ const styles = StyleSheet.create({
   },
   signUpLink: {
     color: "#df367c",
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
     fontSize: 12,
+    transform: "translateY(2px)",
   },
 
   dividerContainer: {
@@ -386,18 +390,18 @@ const styles = StyleSheet.create({
     marginRight: 0,
   },
   errorContainer: {
-  backgroundColor: "#fee2e2",
-  borderRadius: 8,
-  padding: 12,
-  marginTop: 8,
-},
-errorText: {
-  color: "#dc2626",
-  fontSize: 14,
-  textAlign: "center",
-},
-loginButtonDisabled: {
-  backgroundColor: "#9ca3af",
-  shadowOpacity: 0,
-},
+    backgroundColor: "#fee2e2",
+    borderRadius: 8,
+    padding: 12,
+    marginTop: 8,
+  },
+  errorText: {
+    color: "#dc2626",
+    fontSize: 14,
+    textAlign: "center",
+  },
+  loginButtonDisabled: {
+    backgroundColor: "#9ca3af",
+    shadowOpacity: 0,
+  },
 });

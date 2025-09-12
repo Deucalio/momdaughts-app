@@ -1,24 +1,23 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-  Dimensions,
-  Image,
-} from "react-native";
+import { useAuthenticatedFetch } from "@/app/utils/authStore";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import { useAuthenticatedFetch } from "@/app/utils/authStore";
+import { useEffect, useRef, useState } from "react";
+import {
+  Dimensions,
+  Image,
+  ScrollView,
+  StyleSheet,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import Text from "../components/Text";
+import { fetchCollections } from "./../app/utils/actions";
 
 const { width } = Dimensions.get("window");
 const CARD_WIDTH = width * 0.65;
 const CARD_SPACING = 16;
-import { fetchCollections } from "./../app/utils/actions";
-
 const COLLECTIONS = [
   {
     id: "426340712740",
@@ -197,13 +196,13 @@ const styles = StyleSheet.create({
   subtitle: {
     fontSize: 14,
     color: "#6b7280",
-    fontWeight: "500",
+    fontFamily: "Outfit-Medium",
     marginBottom: 8,
     textAlign: "center",
   },
   title: {
     fontSize: 24,
-    fontWeight: "700",
+    fontFamily: "Outfit-Bold",
     color: "#1f2937",
     textAlign: "center",
     lineHeight: 32,
@@ -244,7 +243,7 @@ const styles = StyleSheet.create({
   },
   cardTitle: {
     fontSize: 15,
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
     color: "#1f2937",
     marginBottom: 4,
     lineHeight: 18,
@@ -252,7 +251,7 @@ const styles = StyleSheet.create({
   itemCount: {
     fontSize: 13,
     color: "#6b7280",
-    fontWeight: "500",
+    fontFamily: "Outfit-Medium",
   },
   pagination: {
     flexDirection: "row",
@@ -283,6 +282,6 @@ const styles = StyleSheet.create({
   arrowText: {
     fontSize: 14,
     color: "#ffffff",
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
   },
 });

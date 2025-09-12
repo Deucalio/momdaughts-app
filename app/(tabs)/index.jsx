@@ -2,7 +2,6 @@
 
 import {
   View,
-  Text,
   ScrollView,
   TouchableOpacity,
   StyleSheet,
@@ -10,7 +9,7 @@ import {
   StatusBar,
   Platform,
 } from "react-native";
-import { Image } from 'expo-image';
+import { Image } from "expo-image";
 
 import {
   fetchProducts,
@@ -29,6 +28,8 @@ import WelnessSection from "../../components/WelnessSection";
 import AboutSection from "../../components/AboutSection";
 import IPLSessionsTrackerSection from "../../components/IPLSessionsTrackerSection";
 import FeaturedProduct from "../../components/FeaturedProduct";
+
+import Text from "../../components/Text";
 
 const COLORS = {
   lightPink: "#f5b8d0",

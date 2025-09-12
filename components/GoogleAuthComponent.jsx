@@ -1,22 +1,19 @@
 // GoogleAuthComponent.tsx
 import {
-    AuthRequestConfig,
-    DiscoveryDocument,
-    makeRedirectUri,
-    useAuthRequest
+  makeRedirectUri,
+  useAuthRequest
 } from "expo-auth-session";
 import { Image } from 'expo-image';
 import * as WebBrowser from "expo-web-browser";
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 import {
-    StyleSheet,
-    Text,
-    TouchableOpacity
+  StyleSheet,
+  TouchableOpacity
 } from "react-native";
 import { useAuthStore } from "../app/utils/authStore";
 import { BASE_URL } from "../constants";
+import Text from "./Text";
 WebBrowser.maybeCompleteAuthSession();
-
 // Our OAuth flow uses a server-side approach for enhanced security:
 // 1. Client initiates OAuth flow with Google through our server
 // 2. Google redirects to our server's /api/auth/authorize endpoint
@@ -24,7 +21,7 @@ WebBrowser.maybeCompleteAuthSession();
 // 4. Client receives an authorization code from our server
 // 5. Client exchanges the code for tokens through our server
 // 6. Server uses its credentials to get tokens from Google and returns them to the client
-const discovery: DiscoveryDocument = {
+const discovery = {
   // URL where users are redirected to log in and grant authorization.
   // Our server handles the OAuth flow with Google and returns the authorization code
   authorizationEndpoint: `${BASE_URL}/api/auth/authorize`,
@@ -38,7 +35,7 @@ const GoogleAuthComponent = () => {
   // const { logInWithGoogle } = useAuthStore();
   const { setAuthData } = useAuthStore();
 
-  const config: AuthRequestConfig = {
+  const config = {
     clientId: "google",
     scopes: ["openid", "profile", "email"],
     // redirectUri: "momdaughts://",
@@ -119,7 +116,7 @@ const styles = StyleSheet.create({
   },
   socialButtonText: {
     fontSize: 14,
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
     color: "#1f2937",
   },
 });

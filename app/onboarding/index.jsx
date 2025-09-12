@@ -1,7 +1,8 @@
-import { View, Button, Text } from "react-native";
+import { View, Button } from "react-native";
 // import { AppText } from "@/components/AppText";
 // import { Button } from "@/components/Button";
 import { router } from "expo-router";
+import Text from "../../components/Text";
 
 export default function OnboardingFirstScreen() {
   return (

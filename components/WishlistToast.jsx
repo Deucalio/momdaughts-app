@@ -1,17 +1,16 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
+import { useEffect, useRef, useState } from 'react';
 import {
-  View,
-  Text,
-  StyleSheet,
   Animated,
   Dimensions,
   Easing,
   PanResponder,
+  StyleSheet,
   TouchableOpacity,
+  View,
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
-
+import Text from "../components/Text";
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const SWIPE_THRESHOLD = SCREEN_WIDTH * 0.25;
 
@@ -316,14 +315,14 @@ const styles = StyleSheet.create({
   },
   mainText: {
     fontSize: 15,
-    fontWeight: '600',
+    fontFamily: "Outfit-SemiBold",
     color: '#2c3e50',
     marginBottom: 2,
   },
   subText: {
     fontSize: 13,
     color: '#7f8c8d',
-    fontWeight: '400',
+    fontFamily: "Outfit-Regular",
   },
   swipeIndicator: {
     marginLeft: 8,

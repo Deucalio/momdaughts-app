@@ -1,19 +1,17 @@
+import { useRouter } from 'expo-router';
 import {
-  View,
-  Text,
- 
+  Dimensions,
+  SafeAreaView,
   ScrollView,
   StyleSheet,
-  Dimensions,
   TouchableOpacity,
-  SafeAreaView,
+  View,
 } from "react-native";
-import { useRouter } from 'expo-router';
 // Alternative imports if not using Expo Router:
 // import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from "@expo/vector-icons";
 import { Image } from 'expo-image';
-
+import Text from "../../components/Text";
 const { width, height } = Dimensions.get("window");
 
 export default function AboutUsPage() {
@@ -186,7 +184,7 @@ const styles = StyleSheet.create({
   },
   backButtonText: {
     fontSize: 16,
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
     color: "#1a1a1a",
     marginLeft: -2, // Slight adjustment for visual centering
   },
@@ -218,7 +216,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 28,
-    fontWeight: "700",
+    fontFamily: "Outfit-Bold",
     color: "#1a1a1a",
     textAlign: "center",
     marginBottom: 24,
@@ -233,7 +231,7 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 24,
-    fontWeight: "700",
+    fontFamily: "Outfit-Bold",
     color: "#1a1a1a",
     marginTop: 32,
     marginBottom: 5,
@@ -250,7 +248,7 @@ const styles = StyleSheet.create({
     textAlign: "left",
   },
   brandName: {
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
     color: "#1a1a1a",
   },
   bannerContainers: {
@@ -291,7 +289,7 @@ const styles = StyleSheet.create({
   },
   bannerTitle: {
     fontSize: 24,
-    fontWeight: "700",
+    fontFamily: "Outfit-Bold",
     color: "#ffffff",
     textAlign: "center",
     marginBottom: 8,
@@ -301,7 +299,7 @@ const styles = StyleSheet.create({
   },
   bannerSubtitle: {
     fontSize: 16,
-    fontWeight: "500",
+    fontFamily: "Outfit-Medium",
     color: "#ffffff",
     textAlign: "center",
     opacity: 0.9,

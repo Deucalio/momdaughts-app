@@ -1,10 +1,10 @@
 "use client"
-import { useState } from "react"
-import { View, Text, ScrollView, StyleSheet, TouchableOpacity, TextInput, Dimensions, Modal } from "react-native"
-import { LinearGradient } from "expo-linear-gradient"
 import { Ionicons } from "@expo/vector-icons"
+import { LinearGradient } from "expo-linear-gradient"
+import { useState } from "react"
+import { Dimensions, Modal, ScrollView, StyleSheet, TextInput, TouchableOpacity, View } from "react-native"
 import { SafeAreaView } from "react-native-safe-area-context"
-
+import Text from "../../components/Text"
 const { width } = Dimensions.get("window")
 
 export default function PeriodTrackerScreen() {
@@ -387,7 +387,7 @@ const styles = StyleSheet.create({
   },
   heroTitle: {
     fontSize: 24,
-    fontWeight: "700",
+    fontFamily: "Outfit-Bold",
     color: "#ec4899",
     marginBottom: 4,
   },
@@ -423,7 +423,7 @@ const styles = StyleSheet.create({
   },
   cycleDay: {
     fontSize: 28,
-    fontWeight: "800",
+    fontFamily: "Outfit-ExtraBold",
     color: "#1f2937",
     marginBottom: 2,
   },
@@ -441,7 +441,7 @@ const styles = StyleSheet.create({
   },
   nextPeriodDate: {
     fontSize: 18,
-    fontWeight: "700",
+    fontFamily: "Outfit-Bold",
     color: "#ec4899",
   },
   summaryStats: {
@@ -459,7 +459,7 @@ const styles = StyleSheet.create({
   },
   statNumber: {
     fontSize: 20,
-    fontWeight: "700",
+    fontFamily: "Outfit-Bold",
     color: "#ec4899",
     marginBottom: 2,
   },
@@ -486,7 +486,7 @@ const styles = StyleSheet.create({
   },
   cardTitle: {
     fontSize: 18,
-    fontWeight: "700",
+    fontFamily: "Outfit-Bold",
     color: "#1f2937",
   },
   calendarNav: {
@@ -504,7 +504,7 @@ const styles = StyleSheet.create({
   },
   weekDay: {
     fontSize: 12,
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
     color: "#6b7280",
     textAlign: "center",
     width: (width - 72) / 7,
@@ -548,17 +548,17 @@ const styles = StyleSheet.create({
   normalDayText: {
     fontSize: 14,
     color: "#1f2937",
-    fontWeight: "500",
+    fontFamily: "Outfit-Medium",
   },
   highlightedDayText: {
     fontSize: 14,
     color: "white",
-    fontWeight: "700",
+    fontFamily: "Outfit-Bold",
   },
   predictedDayText: {
     fontSize: 14,
     color: "#be185d",
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
   },
   legend: {
     flexDirection: "row",
@@ -587,7 +587,7 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 16,
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
     color: "#1f2937",
     marginBottom: 12,
   },
@@ -623,7 +623,7 @@ const styles = StyleSheet.create({
   flowLabel: {
     fontSize: 12,
     color: "#6b7280",
-    fontWeight: "500",
+    fontFamily: "Outfit-Medium",
   },
   moodSection: {
     marginBottom: 24,
@@ -648,7 +648,7 @@ const styles = StyleSheet.create({
     fontSize: 10,
     color: "#6b7280",
     marginTop: 4,
-    fontWeight: "500",
+    fontFamily: "Outfit-Medium",
   },
   symptomsSection: {
     marginBottom: 24,
@@ -680,7 +680,7 @@ const styles = StyleSheet.create({
   },
   symptomLabel: {
     fontSize: 11,
-    fontWeight: "500",
+    fontFamily: "Outfit-Medium",
     color: "#1f2937",
     textAlign: "center",
   },
@@ -708,7 +708,7 @@ const styles = StyleSheet.create({
   saveButtonText: {
     color: "white",
     fontSize: 16,
-    fontWeight: "700",
+    fontFamily: "Outfit-Bold",
   },
   fab: {
     position: "absolute",
@@ -752,7 +752,7 @@ const styles = StyleSheet.create({
   },
   modalTitle: {
     fontSize: 18,
-    fontWeight: "700",
+    fontFamily: "Outfit-Bold",
     color: "#1f2937",
   },
   modalText: {
@@ -778,7 +778,7 @@ const styles = StyleSheet.create({
   },
   modalButtonText: {
     fontSize: 14,
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
     color: "#6b7280",
   },
   modalButtonTextPrimary: {

@@ -1,13 +1,11 @@
+import { Image } from 'expo-image';
 import {
-  View,
-  Text,
-  
+  Dimensions,
   ScrollView,
   StyleSheet,
-  Dimensions,
+  View,
 } from "react-native";
-import { Image } from 'expo-image';
-
+import Text from "../../components/Text";
 const { width, height } = Dimensions.get("window");
 
 export default function AboutUsPage() {
@@ -146,7 +144,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 28,
-    fontWeight: "700",
+    fontFamily: "Outfit-Bold",
     color: "#1a1a1a",
     textAlign: "center",
     marginBottom: 24,
@@ -161,7 +159,7 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 24,
-    fontWeight: "700",
+    fontFamily: "Outfit-Bold",
     color: "#1a1a1a",
     marginTop: 32,
     marginBottom: 5,
@@ -178,7 +176,7 @@ const styles = StyleSheet.create({
     textAlign: "left",
   },
   brandName: {
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
     color: "#1a1a1a",
   },
   bannerContainers: {
@@ -220,7 +218,7 @@ const styles = StyleSheet.create({
   },
   bannerTitle: {
     fontSize: 24,
-    fontWeight: "700",
+    fontFamily: "Outfit-Bold",
     color: "#ffffff",
     textAlign: "center",
     marginBottom: 8,
@@ -230,7 +228,7 @@ const styles = StyleSheet.create({
   },
   bannerSubtitle: {
     fontSize: 16,
-    fontWeight: "500",
+    fontFamily: "Outfit-Medium",
     color: "#ffffff",
     textAlign: "center",
     opacity: 0.9,

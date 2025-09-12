@@ -14,13 +14,13 @@ import {
     ScrollView,
     StatusBar,
     StyleSheet,
-    Text,
     TouchableOpacity,
     View
 } from "react-native";
 
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import CartToast from "../../components/CartToast";
+import Text from "../../components/Text";
 import WishlistToast from "../../components/WishlistToast";
 import {
     addToCart,
@@ -30,7 +30,7 @@ import {
 } from "../utils/actions";
 import { useAuthenticatedFetch } from "../utils/authStore";
 const { width, height } = Dimensions.get("window");
-const BACKEND_URL = "http://192.168.18.5:3000";
+const BACKEND_URL = "https://076d27aa8a97.ngrok-free.app";
 const CONTAINER_WIDTH = width - 32;
 
 // Product Detail Page Skeleton
@@ -1134,7 +1134,7 @@ const styles = StyleSheet.create({
   retryButtonText: {
     color: "white",
     fontSize: 14,
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
   },
   header: {
     backgroundColor: "#F5F5F5",
@@ -1172,11 +1172,11 @@ const styles = StyleSheet.create({
   cartBadgeText: {
     color: "white",
     fontSize: 10,
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
   },
   headerTitle: {
     fontSize: 18,
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
     color: "#000",
   },
   scrollView: {
@@ -1260,7 +1260,7 @@ const styles = StyleSheet.create({
   },
   productTitle: {
     fontSize: 18,
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
     color: "#000",
     flex: 1,
   },
@@ -1295,7 +1295,7 @@ const styles = StyleSheet.create({
   },
   variantTitle: {
     fontSize: 14,
-    fontWeight: "500",
+    fontFamily: "Outfit-Medium",
     color: "#2c2a6b",
   },
   variantSku: {
@@ -1305,7 +1305,7 @@ const styles = StyleSheet.create({
   },
   price: {
     fontSize: 20,
-    fontWeight: "700",
+    fontFamily: "Outfit-Bold",
     color: "#000",
     marginBottom: 12,
   },
@@ -1318,7 +1318,7 @@ const styles = StyleSheet.create({
   stockText: {
     fontSize: 12,
     color: "#22C55E",
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
   },
   outOfStockText: {
     color: "#EF4444",
@@ -1348,7 +1348,7 @@ const styles = StyleSheet.create({
   },
   optionTitle: {
     fontSize: 14,
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
     color: "#000",
   },
   optionButtons: {
@@ -1370,7 +1370,7 @@ const styles = StyleSheet.create({
   },
   optionButtonText: {
     fontSize: 14,
-    fontWeight: "500",
+    fontFamily: "Outfit-Medium",
     color: "#666",
   },
   optionButtonTextSelected: {
@@ -1381,7 +1381,7 @@ const styles = StyleSheet.create({
   },
   quantityLabel: {
     fontSize: 14,
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
     color: "#000",
     marginBottom: 12,
   },
@@ -1407,7 +1407,7 @@ const styles = StyleSheet.create({
   },
   quantityText: {
     fontSize: 16,
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
     color: "#000",
     marginHorizontal: 16,
     minWidth: 20,
@@ -1421,7 +1421,7 @@ const styles = StyleSheet.create({
   },
   descriptionTitle: {
     fontSize: 16,
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
     color: "#000",
     marginBottom: 8,
   },
@@ -1485,7 +1485,7 @@ const styles = StyleSheet.create({
   },
   addToCartButtonText: {
     fontSize: 14,
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
     color: "#ffffff",
   },
   buyButton: {
@@ -1501,7 +1501,7 @@ const styles = StyleSheet.create({
   },
   buyButtonText: {
     fontSize: 14,
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
     color: "white",
   },
 

@@ -15,18 +15,18 @@ import {
     ScrollView,
     StatusBar,
     StyleSheet,
-    Text,
+
     TextInput,
     View,
 } from "react-native";
-// Configure these for your app
-const CART_API = "http://192.168.18.5:3000/cart";
-const ADDRESSES_API = "http://192.168.18.5:3000/addresses";
-const CURRENCY_SYMBOL = "PKR ";
-
 import NavigationSpaceContainer from "../../components/NavigationSpaceContainer";
+import Text from "../../components/Text";
 import { createOrder } from "../utils/actions";
 import { useAuthenticatedFetch, useAuthStore } from "../utils/authStore";
+// Configure these for your app
+const CART_API = "https://076d27aa8a97.ngrok-free.app/cart";
+const ADDRESSES_API = "https://076d27aa8a97.ngrok-free.app/addresses";
+const CURRENCY_SYMBOL = "PKR ";
 // Subtle, elegant color palette
 const COLORS = {
   primary: "#6B46C1", // Deep purple
@@ -1409,14 +1409,14 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     fontSize: 20,
-    fontWeight: "700",
+    fontFamily: "Outfit-Bold",
     color: COLORS.text,
     marginBottom: 4,
   },
   headerSubtitle: {
     fontSize: 14,
     color: COLORS.textLight,
-    fontWeight: "500",
+    fontFamily: "Outfit-Medium",
   },
 
   center: {
@@ -1440,7 +1440,7 @@ const styles = StyleSheet.create({
     marginTop: 16,
     color: COLORS.textLight,
     fontSize: 14,
-    fontWeight: "500",
+    fontFamily: "Outfit-Medium",
   },
 
   body: {
@@ -1482,7 +1482,7 @@ const styles = StyleSheet.create({
   },
   summaryTitle: {
     fontSize: 16,
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
     color: COLORS.text,
     marginBottom: 2,
   },
@@ -1511,7 +1511,7 @@ const styles = StyleSheet.create({
   },
   outOfStockTitle: {
     fontSize: 13,
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
     color: COLORS.textMuted,
   },
 
@@ -1540,7 +1540,7 @@ const styles = StyleSheet.create({
   },
   miniTitle: {
     fontSize: 13,
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
     color: COLORS.text,
   },
   miniTitleOutOfStock: {
@@ -1561,11 +1561,11 @@ const styles = StyleSheet.create({
   },
   miniQtyOutOfStock: {
     color: COLORS.error,
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
   },
   miniPrice: {
     fontSize: 13,
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
     color: COLORS.text,
   },
   miniPriceOutOfStock: {
@@ -1585,7 +1585,7 @@ const styles = StyleSheet.create({
   },
   discountTitle: {
     fontSize: 14,
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
     color: COLORS.text,
     marginBottom: 12,
   },
@@ -1618,7 +1618,7 @@ const styles = StyleSheet.create({
   applyDiscountText: {
     color: "white",
     fontSize: 14,
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
   },
   appliedDiscountContainer: {
     flexDirection: "row",
@@ -1635,7 +1635,7 @@ const styles = StyleSheet.create({
   },
   appliedDiscountCode: {
     fontSize: 14,
-    fontWeight: "700",
+    fontFamily: "Outfit-Bold",
     color: COLORS.success,
   },
   appliedDiscountDesc: {
@@ -1654,7 +1654,7 @@ const styles = StyleSheet.create({
   removeDiscountText: {
     color: "white",
     fontSize: 12,
-    fontWeight: "bold",
+    fontFamily: "Outfit-Bold",
   },
 
   // Summary totals
@@ -1672,12 +1672,12 @@ const styles = StyleSheet.create({
   summaryLabel: {
     fontSize: 13,
     color: COLORS.textLight,
-    fontWeight: "500",
+    fontFamily: "Outfit-Medium",
   },
   summaryValue: {
     fontSize: 13,
     color: COLORS.text,
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
   },
   discountLabel: {
     color: COLORS.success,
@@ -1687,7 +1687,7 @@ const styles = StyleSheet.create({
   },
   freeText: {
     color: COLORS.success,
-    fontWeight: "700",
+    fontFamily: "Outfit-Bold",
   },
   totalRow: {
     borderTopWidth: 1,
@@ -1698,12 +1698,12 @@ const styles = StyleSheet.create({
   totalLabel: {
     fontSize: 15,
     color: COLORS.text,
-    fontWeight: "700",
+    fontFamily: "Outfit-Bold",
   },
   totalValue: {
     fontSize: 16,
     color: "#000",
-    fontWeight: "800",
+    fontFamily: "Outfit-ExtraBold",
   },
 
   // Cards
@@ -1743,7 +1743,7 @@ const styles = StyleSheet.create({
   },
   cardTitle: {
     fontSize: 15,
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
     color: COLORS.text,
     marginBottom: 2,
   },
@@ -1780,18 +1780,18 @@ const styles = StyleSheet.create({
   },
   addressTypeText: {
     fontSize: 14,
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
     color: COLORS.primary,
   },
   changeText: {
     fontSize: 14,
     color: COLORS.primary,
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
   },
 
   selectedAddressName: {
     fontSize: 16,
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
     color: COLORS.text,
     marginBottom: 4,
   },
@@ -1826,7 +1826,7 @@ const styles = StyleSheet.create({
   noAddressIconText: {
     fontSize: 18,
     color: COLORS.textMuted,
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
   },
 
   noAddressText: {
@@ -1835,7 +1835,7 @@ const styles = StyleSheet.create({
 
   noAddressTitle: {
     fontSize: 15,
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
     color: COLORS.text,
     marginBottom: 2,
   },
@@ -1848,7 +1848,7 @@ const styles = StyleSheet.create({
   selectArrow: {
     fontSize: 16,
     color: COLORS.textMuted,
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
   },
 
   savedAddressButton: {
@@ -1873,7 +1873,7 @@ const styles = StyleSheet.create({
   savedAddressText: {
     color: "black",
     fontSize: 12,
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
   },
 
   // Checkbox
@@ -1908,12 +1908,12 @@ const styles = StyleSheet.create({
   checkmark: {
     color: "white",
     fontSize: 10,
-    fontWeight: "bold",
+    fontFamily: "Outfit-Bold",
   },
   checkboxLabel: {
     fontSize: 14,
     color: COLORS.text,
-    fontWeight: "500",
+    fontFamily: "Outfit-Medium",
   },
 
   // Payment Methods
@@ -1948,7 +1948,7 @@ const styles = StyleSheet.create({
   },
   paymentOptionTitle: {
     fontSize: 14,
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
     color: COLORS.text,
     marginBottom: 2,
   },
@@ -1981,7 +1981,7 @@ const styles = StyleSheet.create({
   },
   inputLabel: {
     fontSize: 13,
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
     color: COLORS.text,
     marginBottom: 6,
   },
@@ -2027,7 +2027,7 @@ const styles = StyleSheet.create({
   },
   bottomTotal: {
     fontSize: 18,
-    fontWeight: "800",
+    fontFamily: "Outfit-ExtraBold",
     color: COLORS.text,
   },
   bottomItems: {
@@ -2037,7 +2037,7 @@ const styles = StyleSheet.create({
   },
   outOfStockNote: {
     color: COLORS.error,
-    fontWeight: "500",
+    fontFamily: "Outfit-Medium",
   },
 
   // Pay Button
@@ -2062,13 +2062,13 @@ const styles = StyleSheet.create({
   payButtonText: {
     color: "white",
     fontSize: 15,
-    fontWeight: "700",
+    fontFamily: "Outfit-Bold",
   },
 
   // Error states
   errorTitle: {
     fontSize: 18,
-    fontWeight: "700",
+    fontFamily: "Outfit-Bold",
     color: COLORS.text,
     textAlign: "center",
   },
@@ -2087,7 +2087,7 @@ const styles = StyleSheet.create({
   },
   retryText: {
     color: "white",
-    fontWeight: "700",
+    fontFamily: "Outfit-Bold",
     fontSize: 14,
   },
 
@@ -2138,14 +2138,14 @@ const styles = StyleSheet.create({
   },
   modalTitle: {
     fontSize: 18,
-    fontWeight: "700",
+    fontFamily: "Outfit-Bold",
     color: COLORS.text,
     marginBottom: 4,
   },
   modalSubtitle: {
     fontSize: 14,
     color: COLORS.textLight,
-    fontWeight: "500",
+    fontFamily: "Outfit-Medium",
   },
   modalCloseBtn: {
     width: 36,
@@ -2160,7 +2160,7 @@ const styles = StyleSheet.create({
   modalCloseText: {
     fontSize: 16,
     color: COLORS.textMuted,
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
   },
   modalBody: {
     maxHeight: 400,
@@ -2201,7 +2201,7 @@ const styles = StyleSheet.create({
   },
   addressType: {
     fontSize: 14,
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
     color: COLORS.primary,
   },
   badgeContainer: {
@@ -2217,7 +2217,7 @@ const styles = StyleSheet.create({
   selectedBadgeText: {
     fontSize: 11,
     color: "white",
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
   },
   defaultBadge: {
     backgroundColor: COLORS.success,
@@ -2229,7 +2229,7 @@ const styles = StyleSheet.create({
   defaultBadgeText: {
     fontSize: 11,
     color: "white",
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
   },
   selectIndicator: {
     width: 24,
@@ -2254,7 +2254,7 @@ const styles = StyleSheet.create({
   editAddressBtnText: {
     color: "white",
     fontSize: 12,
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
   },
 
   addNewAddressOption: {
@@ -2269,7 +2269,7 @@ const styles = StyleSheet.create({
 
   addressName: {
     fontSize: 16,
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
     color: COLORS.text,
     marginBottom: 2,
   },
@@ -2300,14 +2300,14 @@ const styles = StyleSheet.create({
   addNewAddressPlus: {
     color: "white",
     fontSize: 18,
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
   },
   addNewAddressText: {
     flex: 1,
   },
   addNewAddressTitle: {
     fontSize: 15,
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
     color: COLORS.primary,
     marginBottom: 2,
   },
@@ -2327,7 +2327,7 @@ const styles = StyleSheet.create({
   incompleteAddressBadgeText: {
     fontSize: 11,
     color: "white",
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
   },
   incompleteAddressCard: {
     borderColor: COLORS.error,
@@ -2355,7 +2355,7 @@ const styles = StyleSheet.create({
   selectedTickmarkText: {
     color: "white",
     fontSize: 12,
-    fontWeight: "bold",
+    fontFamily: "Outfit-Bold",
   },
   defaultBadge: {
     flexDirection: "row",
@@ -2373,6 +2373,6 @@ const styles = StyleSheet.create({
   defaultBadgeText: {
     fontSize: 12,
     color: "green",
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
   },
 });

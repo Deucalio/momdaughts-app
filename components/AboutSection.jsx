@@ -1,13 +1,11 @@
-import {
-  View,
-  Text,
-  
-  TouchableOpacity,
-  StyleSheet,
-  Dimensions,
-} from "react-native";
 import { Image } from 'expo-image';
-
+import {
+  Dimensions,
+  StyleSheet,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import Text from "../components/Text";
 const { width } = Dimensions.get("window");
 
 const AboutSection = ({onExploreStory}) => {
@@ -86,7 +84,7 @@ const styles = StyleSheet.create({
   },
   overlayText: {
     fontSize: 18,
-    fontWeight: "500",
+    fontFamily: "Outfit-Medium",
     color: "#374151",
   },
   contentSection: {
@@ -95,13 +93,13 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     fontSize: 16,
-    fontWeight: "500",
+    fontFamily: "Outfit-Medium",
     color: "#6B7280",
     marginBottom: 8,
   },
   title: {
     fontSize: width > 768 ? 48 : 36,
-    fontWeight: "bold",
+    fontFamily: "Outfit-Bold",
     color: "#000000",
     lineHeight: width > 768 ? 56 : 42,
     marginBottom: 24,
@@ -110,7 +108,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     lineHeight: 24,
     color: "#374151",
-    fontWeight: "400",
     marginBottom: 32,
   },
   button: {
@@ -118,7 +115,7 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     fontSize: 18,
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
     color: "#000000",
     marginBottom: 4,
   },

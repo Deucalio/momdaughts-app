@@ -10,7 +10,6 @@ import {
     SafeAreaView,
     ScrollView,
     StyleSheet,
-    Text,
     TextInput,
     TouchableOpacity,
     View,
@@ -18,6 +17,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import CartToast from "../../components/CartToast";
 import ScreenWrapper from "../../components/ScreenWrapper";
+import Text from "../../components/Text";
 import {
     addToCart,
     fetchCartItemsCount,
@@ -43,7 +43,7 @@ const COLORS = {
   lightGray: "#ddd",
 };
 
-const BACKEND_URL = "http://192.168.18.5:3000";
+const BACKEND_URL = "https://076d27aa8a97.ngrok-free.app";
 
 const categories = [
   {
@@ -532,7 +532,7 @@ const styles = StyleSheet.create({
   },
   bannerTitle: {
     fontSize: 24,
-    fontWeight: "bold",
+    fontFamily: "Outfit-Bold",
     color: "#fff",
     marginBottom: 8,
   },
@@ -551,7 +551,7 @@ const styles = StyleSheet.create({
   },
   bannerButtonText: {
     color: "#333",
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
     fontSize: 14,
   },
   bannerBadge: {
@@ -564,7 +564,7 @@ const styles = StyleSheet.create({
   bannerBadgeText: {
     color: "#fff",
     fontSize: 12,
-    fontWeight: "bold",
+    fontFamily: "Outfit-Bold",
   },
   section: {
     paddingHorizontal: 20,
@@ -572,7 +572,7 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 17,
-    fontWeight: "bold",
+    fontFamily: "Outfit-Bold",
     color: "#333",
     marginBottom: 15,
   },
@@ -598,7 +598,7 @@ const styles = StyleSheet.create({
   },
   categoryTitle: {
     fontSize: 11,
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
     color: "#333",
     textAlign: "center",
     maxWidth: 100,
@@ -628,7 +628,7 @@ const styles = StyleSheet.create({
   },
   productName: {
     fontSize: 14,
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
     color: "#333",
     marginBottom: 6,
     lineHeight: 18,
@@ -646,7 +646,7 @@ const styles = StyleSheet.create({
   productPrice: {
     fontSize: 16,
     color: "#333",
-    fontWeight: "bold",
+    fontFamily: "Outfit-Bold",
     marginBottom: 10,
   },
   addToCartButton: {
@@ -659,7 +659,7 @@ const styles = StyleSheet.create({
   addToCartText: {
     color: "#fff",
     fontSize: 13,
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
   },
   // New styles for All Products section
   productSearchContainer: {
@@ -716,7 +716,7 @@ const styles = StyleSheet.create({
   },
   gridProductName: {
     fontSize: 13,
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
     color: "#333",
     marginBottom: 6,
     lineHeight: 16,
@@ -730,7 +730,7 @@ const styles = StyleSheet.create({
   gridProductPrice: {
     fontSize: 15,
     color: "#333",
-    fontWeight: "bold",
+    fontFamily: "Outfit-Bold",
     marginBottom: 10,
   },
   gridAddToCartButton: {
@@ -742,6 +742,6 @@ const styles = StyleSheet.create({
   gridAddToCartText: {
     color: "#fff",
     fontSize: 12,
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
   },
 });

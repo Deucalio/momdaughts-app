@@ -1,15 +1,12 @@
-import React from 'react';
-import {
-  View,
-  Text,
-  ScrollView,
-  TouchableOpacity,
-  
-  StyleSheet,
-  ActivityIndicator,
-} from 'react-native';
 import { Image } from 'expo-image';
-
+import {
+  ActivityIndicator,
+  ScrollView,
+  StyleSheet,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import Text from "../components/Text";
 const COLORS = {
   lightPink: "#f5b8d0",
   lavender: "#e2c6df",
@@ -181,13 +178,13 @@ const styles = StyleSheet.create({
   },
   trendingBadgeText: {
     fontSize: 11,
-    fontWeight: "700",
+    fontFamily: "Outfit-Bold",
     color: COLORS.darkBlue,
     letterSpacing: 0.8,
   },
   trendingTitle: {
     fontSize: 26,
-    fontWeight: "800",
+    fontFamily: "Outfit-ExtraBold",
     color: COLORS.almostBlack,
     lineHeight: 32,
     marginBottom: 8,
@@ -196,7 +193,6 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: COLORS.mediumGray,
     lineHeight: 20,
-    fontWeight: "400",
   },
   trendingScroll: {
     marginHorizontal: -20,
@@ -242,7 +238,7 @@ const styles = StyleSheet.create({
   plusIcon: {
     fontSize: 18,
     color: COLORS.white,
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
     lineHeight: 18,
   },
   horizontalProductInfo: {
@@ -250,7 +246,7 @@ const styles = StyleSheet.create({
   },
   horizontalProductTitle: {
     fontSize: 16,
-    fontWeight: "700",
+    fontFamily: "Outfit-Bold",
     color: COLORS.almostBlack,
     marginBottom: 6,
     lineHeight: 22,
@@ -266,7 +262,7 @@ const styles = StyleSheet.create({
   },
   horizontalProductPrice: {
     fontSize: 18,
-    fontWeight: "800",
+    fontFamily: "Outfit-ExtraBold",
     color: COLORS.almostBlack,
     marginTop: 1,
   },
@@ -283,7 +279,7 @@ const styles = StyleSheet.create({
     marginLeft: 6,
     fontSize: 14,
     color: COLORS.mediumGray,
-    fontWeight: "500",
+    fontFamily: "Outfit-Medium",
   },
   // Placeholder cards for when we have less than 4 products
   placeholderCard: {

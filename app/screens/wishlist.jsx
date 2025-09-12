@@ -1,31 +1,25 @@
-import React, { useEffect, useState, useCallback } from "react";
+import { Ionicons } from "@expo/vector-icons";
+import { Image } from 'expo-image';
+import { useFocusEffect, useRouter } from "expo-router";
+import { useCallback, useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
   Animated,
   Dimensions,
   FlatList,
-  
-  Platform,
   Pressable,
   SafeAreaView,
   StatusBar,
   StyleSheet,
-  Text,
-  PressableOpacity,
-  View,
   TouchableOpacity,
+  View
 } from "react-native";
-import { Image } from 'expo-image';
-
-import { Ionicons } from "@expo/vector-icons";
+import Text from "../../components/Text";
 import { useAuthenticatedFetch } from "../utils/authStore";
-import { useFocusEffect, useRouter } from "expo-router";
 
-import { fetchWishlistItems } from "../utils/actions";
-import { Touchable } from "react-native";
 import HeaderWithoutCart from "../../components/HeaderWithoutCart";
-import NavigationSpaceContainer from "../../components/NavigationSpaceContainer";
+import { fetchWishlistItems } from "../utils/actions";
 
 // Your color theme
 const COLORS = {
@@ -432,7 +426,7 @@ const styles = StyleSheet.create({
   outOfStockText: {
     color: COLORS.white,
     fontSize: 14,
-    fontWeight: "700",
+    fontFamily: "Outfit-Bold",
   },
 
   // Product Info
@@ -441,7 +435,7 @@ const styles = StyleSheet.create({
   },
   variantTitle: {
     fontSize: 14,
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
     color: COLORS.darkBlue,
     lineHeight: 18,
   },
@@ -459,7 +453,7 @@ const styles = StyleSheet.create({
   },
   stockText: {
     fontSize: 11,
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
   },
 
   // Price
@@ -470,7 +464,7 @@ const styles = StyleSheet.create({
   },
   currentPrice: {
     fontSize: 16,
-    fontWeight: "800",
+    fontFamily: "Outfit-ExtraBold",
     color: COLORS.darkBlue,
   },
   originalPrice: {
@@ -500,7 +494,7 @@ const styles = StyleSheet.create({
   addToCartText: {
     color: COLORS.white,
     fontSize: 13,
-    fontWeight: "700",
+    fontFamily: "Outfit-Bold",
   },
 
   // Skeleton Loading
@@ -575,7 +569,7 @@ const styles = StyleSheet.create({
   },
   emptyTitle: {
     fontSize: 22,
-    fontWeight: "800",
+    fontFamily: "Outfit-ExtraBold",
     color: COLORS.darkBlue,
     textAlign: "center",
     marginBottom: 12,
@@ -601,6 +595,6 @@ const styles = StyleSheet.create({
   shopNowText: {
     color: COLORS.white,
     fontSize: 16,
-    fontWeight: "700",
+    fontFamily: "Outfit-Bold",
   },
 });

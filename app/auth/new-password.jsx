@@ -2,19 +2,19 @@
 
 import { Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
-import { useRouter, useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { useState } from "react";
 import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
   StyleSheet,
-  Text,
   TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import Text from "../../components/Text";
 import { resetPassword } from "../utils/actions";
 import { useAuthenticatedFetch } from "../utils/authStore";
 
@@ -27,7 +27,7 @@ export default function NewPasswordPage() {
   const [isLoading, setIsLoading] = useState(false);
   const { authenticatedFetch } = useAuthenticatedFetch();
   const router = useRouter();
-  const {email, otp } = useLocalSearchParams();
+  const { email, otp } = useLocalSearchParams();
   const handleResetPassword = async () => {
     const passwordErrors = validatePassword(password);
     const newErrors = { ...passwordErrors };
@@ -57,8 +57,7 @@ export default function NewPasswordPage() {
       const resetResult = await resetPassword({
         email: email,
         otp: otp,
-        newPassword: password
-
+        newPassword: password,
       });
       if (resetResult.success) {
         router.push("/auth/login");
@@ -79,10 +78,10 @@ export default function NewPasswordPage() {
       errors.password = "Password is required";
     } else if (pwd.length < 8) {
       errors.password = "Password must be at least 8 characters";
-    } 
+    }
     // else if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(pwd)) {
-      // errors.password =
-        // "Password must contain uppercase, lowercase, and number";
+    // errors.password =
+    // "Password must contain uppercase, lowercase, and number";
     // }
     return errors;
   };
@@ -300,7 +299,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 28,
-    fontWeight: "bold",
+    fontFamily: "Outfit-Bold",
     color: "#2d3748",
     marginBottom: 12,
     textAlign: "center",
@@ -324,7 +323,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#4a5568",
     marginBottom: 4,
-    fontWeight: "500",
+    fontFamily: "Outfit-Medium",
   },
   inputContainer: {
     flexDirection: "row",
@@ -394,7 +393,7 @@ const styles = StyleSheet.create({
   sendCodeButtonText: {
     color: "#ffffff",
     fontSize: 16,
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
   },
   verifyButton: {
     backgroundColor: "#2c2a6b",
@@ -414,7 +413,7 @@ const styles = StyleSheet.create({
   verifyButtonText: {
     color: "#ffffff",
     fontSize: 16,
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
   },
   resetButton: {
     backgroundColor: "#2c2a6b",
@@ -434,7 +433,7 @@ const styles = StyleSheet.create({
   resetButtonText: {
     color: "#ffffff",
     fontSize: 16,
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
   },
   signInPrompt: {
     alignItems: "center",
@@ -446,7 +445,7 @@ const styles = StyleSheet.create({
   },
   signInLink: {
     color: "#df367c",
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
     fontSize: 12,
   },
   // OTP specific styles
@@ -462,7 +461,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     backgroundColor: "#ffffff",
     fontSize: 18,
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
     color: "#2d3748",
     shadowColor: "#000",
     shadowOffset: {
@@ -488,7 +487,7 @@ const styles = StyleSheet.create({
   resendText: {
     fontSize: 14,
     color: "#df367c",
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
   },
   inputError: {
     // borderWidth: 1,

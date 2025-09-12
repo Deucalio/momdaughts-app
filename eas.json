@@ -4,33 +4,28 @@
     "appVersionSource": "remote"
   },
   "build": {
-    "development": {
-      "developmentClient": true,
-      "distribution": "internal",
-      "env": {
-        "NODE_OPTIONS": "--max-old-space-size=4096"
-      }
-    },
     "preview": {
       "distribution": "internal",
-      "env": {
-        "NODE_OPTIONS": "--max-old-space-size=4096"
-      }
-    },
-    "production": {
-      "autoIncrement": true,
-      "env": {
-        "NODE_OPTIONS": "--max-old-space-size=4096"
+      "android": {
+        "buildType": "apk"
       },
-      "distribution": "store"
-    },
-    "development-simulator": {
-      "developmentClient": true,
-      "distribution": "internal",
-      "ios": {
-        "simulator": true
+      "env": {
+        "NODE_OPTIONS": "--max-old-space-size=4096",
+        "EXPO_DEBUG": "1"
       },
-      "environment": "development"
+      "channel": "preview"
+    },
+    "preview-debug": {
+      "distribution": "internal", 
+      "android": {
+        "buildType": "apk",
+        "gradleCommand": ":app:assembleDebug"
+      },
+      "env": {
+        "NODE_OPTIONS": "--max-old-space-size=4096",
+        "EXPO_DEBUG": "1"
+      },
+      "developmentClient": false
     }
   },
   "submit": {

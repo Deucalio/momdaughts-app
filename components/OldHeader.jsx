@@ -6,13 +6,12 @@ import { useEffect, useState } from "react";
 import {
     Pressable,
     StyleSheet,
-    Text,
     TouchableOpacity,
     View
 } from "react-native";
 import { logOut, useAuthenticatedFetch } from "../app/utils/authStore";
-
-const BACKEND_URL = "http://192.168.18.5:3000";
+import Text from "../components/Text";
+const BACKEND_URL = "https://076d27aa8a97.ngrok-free.app";
 
 const Header = ({cartItemCount_}) => {
   const [showProfileMenu, setShowProfileMenu] = useState(false);
@@ -196,7 +195,7 @@ const styles = StyleSheet.create({
   logoText: {
     color: "white",
     fontSize: 14,
-    fontWeight: "bold",
+    fontFamily: "Outfit-Bold",
   },
   logoTitle: {
 
@@ -228,7 +227,7 @@ const styles = StyleSheet.create({
   badgeText: {
     color: "white",
     fontSize: 12,
-    fontWeight: "bold",
+    fontFamily: "Outfit-Bold",
   },
   profileContainer: {
     position: "relative",
@@ -263,7 +262,7 @@ const styles = StyleSheet.create({
   dropdownText: {
     fontSize: 16,
     color: "#333",
-    fontWeight: "500",
+    fontFamily: "Outfit-Medium",
   },
   dropdownDivider: {
     height: 1,

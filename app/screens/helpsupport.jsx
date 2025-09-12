@@ -1,23 +1,21 @@
 "use client";
 
 import { Ionicons } from "@expo/vector-icons";
-import { Image } from "expo-image";
 import { router } from "expo-router";
 import { useState } from "react";
 import {
+  Alert,
   KeyboardAvoidingView,
+  Linking,
   Platform,
   ScrollView,
   StyleSheet,
-  Text,
   TextInput,
   TouchableOpacity,
   View,
-  Linking,
-  Alert,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-
+import Text from "../../components/Text";
 export default function HelpSupportPage() {
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [contactForm, setContactForm] = useState({
@@ -318,7 +316,7 @@ export default function HelpSupportPage() {
   },
   headerTitle: {
     fontSize: 18,
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
     color: "#2d3748",
   },
   placeholder: {
@@ -333,7 +331,7 @@ export default function HelpSupportPage() {
   },
   sectionTitle: {
     fontSize: 20,
-    fontWeight: "bold",
+    fontFamily: "Outfit-Bold",
     color: "#2d3748",
     marginBottom: 16,
   },
@@ -357,7 +355,7 @@ export default function HelpSupportPage() {
   },
   contactMethodType: {
     fontSize: 12,
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
     color: "#2c2a6b",
     marginTop: 8,
   },
@@ -389,7 +387,7 @@ export default function HelpSupportPage() {
   },
   categoryTitle: {
     fontSize: 16,
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
     color: "#2d3748",
     marginLeft: 12,
   },
@@ -402,7 +400,7 @@ export default function HelpSupportPage() {
   },
   faqQuestion: {
     fontSize: 14,
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
     color: "#2d3748",
     marginBottom: 8,
   },
@@ -424,7 +422,7 @@ export default function HelpSupportPage() {
   inputLabel: {
     fontSize: 14,
     color: "#4a5568",
-    fontWeight: "500",
+    fontFamily: "Outfit-Medium",
   },
   textInput: {
     backgroundColor: "#f8f9fa",
@@ -450,7 +448,7 @@ export default function HelpSupportPage() {
   submitButtonText: {
     color: "#ffffff",
     fontSize: 16,
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
   },
 
   // About Page Styles
@@ -473,11 +471,11 @@ export default function HelpSupportPage() {
   tabText: {
     fontSize: 14,
     color: "#718096",
-    fontWeight: "500",
+    fontFamily: "Outfit-Medium",
   },
   activeTabText: {
     color: "#2c2a6b",
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
   },
   aboutContent: {
     padding: 24,
@@ -496,7 +494,7 @@ export default function HelpSupportPage() {
   },
   brandName: {
     fontSize: 32,
-    fontWeight: "bold",
+    fontFamily: "Outfit-Bold",
     color: "#f596bb",
     marginBottom: 8,
   },
@@ -537,7 +535,7 @@ export default function HelpSupportPage() {
   },
   valueTitle: {
     fontSize: 16,
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
     color: "#2d3748",
     marginBottom: 4,
   },
@@ -560,7 +558,7 @@ export default function HelpSupportPage() {
   },
   socialText: {
     fontSize: 12,
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
     marginTop: 8,
   },
   companyInfo: {
@@ -572,7 +570,7 @@ export default function HelpSupportPage() {
     lineHeight: 20,
   },
   companyInfoLabel: {
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
     color: "#2d3748",
   },
 
@@ -589,7 +587,7 @@ export default function HelpSupportPage() {
   },
   termsTitle: {
     fontSize: 24,
-    fontWeight: "bold",
+    fontFamily: "Outfit-Bold",
     color: "#2d3748",
     marginBottom: 8,
   },
@@ -612,7 +610,7 @@ export default function HelpSupportPage() {
   },
   termsSectionTitle: {
     fontSize: 16,
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
     color: "#2d3748",
     marginBottom: 12,
   },

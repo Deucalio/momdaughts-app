@@ -1,14 +1,11 @@
-import React from "react";
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  StatusBar,
-} from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import {
+  StatusBar,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Image } from "expo-image";
-
+import Text from "../components/Text";
 const HeaderWithoutCart = ({
   title = "Page Title",
   showBackButton = true,
@@ -77,7 +74,7 @@ const HeaderWithoutCart = ({
             <Text
               style={{
                 fontSize: 18,
-                fontWeight: "600",
+                fontFamily: "Outfit-SemiBold",
                 color: textColor,
                 flex: 1,
               }}

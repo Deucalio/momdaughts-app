@@ -1,22 +1,21 @@
-import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  Modal,
-  TextInput,
-  Alert,
-  ScrollView,
-  SafeAreaView,
-  Image,
-  ActivityIndicator,
-  StatusBar,
-} from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useAuthenticatedFetch, useAuthStore } from "../utils/authStore";
-import {useRouter} from 'expo-router';
-
+import { useRouter } from 'expo-router';
+import { useState } from 'react';
+import {
+  ActivityIndicator,
+  Alert,
+  Image,
+  Modal,
+  SafeAreaView,
+  ScrollView,
+  StatusBar,
+  StyleSheet,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import Text from "../../components/Text";
+import { useAuthStore } from "../utils/authStore";
 const COLORS = {
   primary: '#007AFF',
   gray: '#8E8E93',
@@ -456,7 +455,7 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     fontSize: 18,
-    fontWeight: '600',
+    fontFamily: "Outfit-SemiBold",
     color: COLORS.darkGray,
   },
   content: {
@@ -485,7 +484,7 @@ const styles = StyleSheet.create({
   },
   profileName: {
     fontSize: 24,
-    fontWeight: '600',
+    fontFamily: "Outfit-SemiBold",
     color: COLORS.darkGray,
   },
   fieldsContainer: {
@@ -528,7 +527,8 @@ const styles = StyleSheet.create({
   fieldValue: {
     fontSize: 16,
     color: COLORS.darkGray,
-    fontWeight: '400',
+    fontFamily: "Outfit-Regular",
+  
   },
   modalOverlay: {
     flex: 1,
@@ -552,7 +552,7 @@ const styles = StyleSheet.create({
   },
   modalTitle: {
     fontSize: 18,
-    fontWeight: '600',
+    fontFamily: "Outfit-SemiBold",
     color: COLORS.darkGray,
   },
   modalCancel: {
@@ -562,7 +562,7 @@ const styles = StyleSheet.create({
   modalSave: {
     fontSize: 16,
     color: COLORS.primary,
-    fontWeight: '600',
+    fontFamily: "Outfit-SemiBold",
   },
   modalContent: {
     padding: 20,
@@ -572,7 +572,7 @@ const styles = StyleSheet.create({
   },
   inputLabel: {
     fontSize: 14,
-    fontWeight: '500',
+    fontFamily: "Outfit-Medium",
     color: COLORS.darkGray,
     marginBottom: 8,
   },
@@ -603,7 +603,7 @@ const styles = StyleSheet.create({
   resendButtonText: {
     fontSize: 16,
     color: COLORS.primary,
-    fontWeight: '500',
+    fontFamily: "Outfit-Medium",
   },
   resendButtonTextDisabled: {
     color: COLORS.gray,

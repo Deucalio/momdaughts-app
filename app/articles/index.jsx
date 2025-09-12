@@ -1,21 +1,20 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { Image } from "expo-image";
+import { useEffect, useRef, useState } from "react";
 import {
-  View,
-  Text,
-  FlatList,
-
-  TouchableOpacity,
-  StyleSheet,
-  SafeAreaView,
   Dimensions,
+  FlatList,
+  SafeAreaView,
+  StyleSheet,
+  TouchableOpacity,
+  View,
 } from "react-native";
+import HeaderWithoutCart from "../../components/HeaderWithoutCart"; // Adjust path as needed
+import NavigationSpaceContainer from "../../components/NavigationSpaceContainer";
+import Text from "../../components/Text";
 import { fetchArticles } from "../utils/actions";
 import { useAuthenticatedFetch } from "../utils/authStore";
-import HeaderWithoutCart from "../../components/HeaderWithoutCart"; // Adjust path as needed
-import { Image } from 'expo-image';
-import NavigationSpaceContainer from "../../components/NavigationSpaceContainer"
 
 import { useRouter } from "expo-router";
 const { width } = Dimensions.get("window");
@@ -173,33 +172,31 @@ const Articles = () => {
       </View>
 
       {/* Highlights Section */}
-     <View style={styles.section}>
-{/* Highlights Section */}
-<View style={styles.highlightsSection}>
-     <View style={styles.latestPostsHeader}>
-
-  <Text style={styles.sectionTitle}>HIGHLIGHTS</Text>
-     </View>
-  <FlatList
-    data={highlightedArticles}
-    renderItem={renderHighlightItem}
-    keyExtractor={(item) => String(item.id)}
-    horizontal
-    showsHorizontalScrollIndicator={false}
-    contentContainerStyle={styles.highlightsScroll}
-    pagingEnabled={false}
-    bounces={true}
-    removeClippedSubviews={false}
-    nestedScrollEnabled={true}
-  />
-</View>
-
-</View>
+      <View style={styles.section}>
+        {/* Highlights Section */}
+        <View style={styles.highlightsSection}>
+          <View style={styles.latestPostsHeader}>
+            <Text style={styles.sectionTitle}>HIGHLIGHTS</Text>
+          </View>
+          <FlatList
+            data={highlightedArticles}
+            renderItem={renderHighlightItem}
+            keyExtractor={(item) => String(item.id)}
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.highlightsScroll}
+            pagingEnabled={false}
+            bounces={true}
+            removeClippedSubviews={false}
+            nestedScrollEnabled={true}
+          />
+        </View>
+      </View>
 
       {/* Latest Posts Section Title */}
-   <View style={styles.latestPostsHeader}>
-  <Text style={styles.sectionTitle}>LATEST POSTS</Text>
-</View>
+      <View style={styles.latestPostsHeader}>
+        <Text style={styles.sectionTitle}>LATEST POSTS</Text>
+      </View>
     </>
   );
 
@@ -224,13 +221,12 @@ const Articles = () => {
         initialNumToRender={5}
         // Removed getItemLayout as it was causing issues with nested horizontal scroll
       />
-  <NavigationSpaceContainer/>      
+      <NavigationSpaceContainer />
     </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
- 
   container: {
     flex: 1,
     backgroundColor: "white",
@@ -251,14 +247,14 @@ const styles = StyleSheet.create({
   },
   appTitle: {
     fontSize: 32,
-    fontWeight: "bold",
+    fontFamily: "Outfit-Bold",
     color: "#000",
     textAlign: "center",
     marginBottom: 8,
   },
   appSubtitle: {
     fontSize: 20,
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
     color: "#000",
     textAlign: "center",
     marginBottom: 16,
@@ -274,30 +270,30 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 23,
-    fontWeight: "bold",
+    fontFamily: "Outfit-Bold",
     color: "#ff69b4",
     textAlign: "center",
     marginBottom: 20,
     letterSpacing: 0,
   },
   highlightsSection: {
-  backgroundColor: "#ffe4ec" , // light pink
-  paddingVertical: 20,
-  marginBottom: 30,
-},
+    backgroundColor: "#ffe4ec", // light pink
+    paddingVertical: 20,
+    marginBottom: 30,
+  },
 
-latestPostsHeader: {
-  borderBottomWidth: 1,
-  borderBottomColor: "#ff69b4" + "90", // pink line
-  marginHorizontal: 20,
-  paddingBottom: 4,
-  marginBottom: 20,
-},
+  latestPostsHeader: {
+    borderBottomWidth: 1,
+    borderBottomColor: "#ff69b4" + "90", // pink line
+    marginHorizontal: 20,
+    paddingBottom: 4,
+    marginBottom: 20,
+  },
 
-highlightsScroll: {
-  paddingLeft: (width - (width * 0.8)) / 2,
-  paddingRight: (width - (width * 0.8)) / 2,
-},
+  highlightsScroll: {
+    paddingLeft: (width - width * 0.8) / 2,
+    paddingRight: (width - width * 0.8) / 2,
+  },
 
   highlightCard: {
     width: width * 0.8,
@@ -327,7 +323,7 @@ highlightsScroll: {
   },
   highlightTitle: {
     fontSize: 16,
-    fontWeight: "bold",
+    fontFamily: "Outfit-Bold",
     color: "#333",
     marginBottom: 8,
     lineHeight: 20,
@@ -349,7 +345,7 @@ highlightsScroll: {
   readMoreText: {
     color: "white",
     fontSize: 12,
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
     letterSpacing: 1,
   },
   paginationContainer: {
@@ -397,7 +393,7 @@ highlightsScroll: {
   },
   latestPostTitle: {
     fontSize: 20,
-    fontWeight: "bold",
+    fontFamily: "Outfit-Bold",
     color: "#333",
     marginBottom: 12,
     lineHeight: 26,

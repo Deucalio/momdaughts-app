@@ -1,20 +1,20 @@
-import {
-  View,
-  Text,
-  ScrollView,
-  TouchableOpacity,
-  StyleSheet,
-  Dimensions,
-} from "react-native";
 import { Image } from "expo-image";
+import { LinearGradient } from "expo-linear-gradient";
+import { useFocusEffect, useRouter } from "expo-router";
+import { useCallback, useState } from "react";
+import {
+  Dimensions,
+  ScrollView,
+  StyleSheet,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import ScreenWrapper from "../../components/ScreenWrapper";
+import Text from "../../components/Text";
+import { fetchCartItemsCount } from "../utils/actions";
 import { useAuthenticatedFetch } from "../utils/authStore";
 const { width } = Dimensions.get("window");
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { LinearGradient } from "expo-linear-gradient";
-import { fetchCartItemsCount } from "../utils/actions";
-import ScreenWrapper from "../../components/ScreenWrapper";
-import { useRouter, useFocusEffect } from "expo-router";
-import { useCallback, useEffect, useState } from "react";
 
 const COLORS = {
   lightPink: "#f5b8d0",
@@ -33,7 +33,7 @@ const COLORS = {
   softPurple: "#e8d5ff",
   mintGreen: "#d1fae5",
   peachOrange: "#fed7aa",
-  lightishPink: "#f596bb"
+  lightishPink: "#f596bb",
 };
 
 const WellnessScreen = () => {
@@ -48,7 +48,11 @@ const WellnessScreen = () => {
       title: "Period pain relief",
       subtitle: "Gentle stretches & poses",
       image: "https://i.ibb.co/kF3J0B7/image.png",
-      gradientColors: [COLORS.lightishPink , COLORS.mediumPink, COLORS.lightPink],
+      gradientColors: [
+        COLORS.lightishPink,
+        COLORS.mediumPink,
+        COLORS.lightPink,
+      ],
       duration: "10-15 min",
     },
     {
@@ -59,29 +63,30 @@ const WellnessScreen = () => {
       gradientColors: ["#333333", "#dd1818"],
       duration: "5-10 min",
     },
-
-
   ];
 
   const personalizedTips = [
     {
       id: 1,
       title: "Stay hydrated",
-      description: "Drink plenty of water to reduce bloating and support your body during menstruation",
+      description:
+        "Drink plenty of water to reduce bloating and support your body during menstruation",
       icon: "💧",
       backgroundColor: COLORS.softPurple,
     },
     {
       id: 2,
       title: "Gentle movement",
-      description: "Light exercise like walking or yoga can help reduce cramps and improve mood",
+      description:
+        "Light exercise like walking or yoga can help reduce cramps and improve mood",
       icon: "🚶‍♀️",
       backgroundColor: COLORS.mintGreen,
     },
     {
       id: 3,
       title: "Nutrition matters",
-      description: "Eat iron-rich foods and reduce caffeine to help manage period symptoms",
+      description:
+        "Eat iron-rich foods and reduce caffeine to help manage period symptoms",
       icon: "🥗",
       backgroundColor: COLORS.peachOrange,
     },
@@ -146,12 +151,18 @@ const WellnessScreen = () => {
                 source={{ uri: exercise.image }}
                 style={styles.exerciseImageVertical}
               />
-              
+
               <View style={styles.exerciseContentVertical}>
                 <View style={styles.exerciseTextContainer}>
-                  <Text style={styles.exerciseTitleVertical}>{exercise.title}</Text>
-                  <Text style={styles.exerciseSubtitle}>{exercise.subtitle}</Text>
-                  <Text style={styles.exerciseDuration}>{exercise.duration}</Text>
+                  <Text style={styles.exerciseTitleVertical}>
+                    {exercise.title}
+                  </Text>
+                  <Text style={styles.exerciseSubtitle}>
+                    {exercise.subtitle}
+                  </Text>
+                  <Text style={styles.exerciseDuration}>
+                    {exercise.duration}
+                  </Text>
                 </View>
                 <PlayButton size={40} />
               </View>
@@ -178,17 +189,18 @@ const WellnessScreen = () => {
               </View>
             </TouchableOpacity>
           ))}
-          
-          {/* Quick Stats Card */}
-          <View style={[styles.statsCard, {
-            display: "none"
-          }]}>
-            <LinearGradient
-              colors={
-                [COLORS.lightPink , COLORS.mediumPink, "#f596bb"]
 
-              }
-              
+          {/* Quick Stats Card */}
+          <View
+            style={[
+              styles.statsCard,
+              {
+                display: "none",
+              },
+            ]}
+          >
+            <LinearGradient
+              colors={[COLORS.lightPink, COLORS.mediumPink, "#f596bb"]}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 1 }}
               style={styles.statsGradient}
@@ -224,11 +236,11 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 18,
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
     color: "#111827",
     marginBottom: 16,
   },
-  
+
   // Vertical Exercise Cards
   exerciseCardVertical: {
     width: "100%",
@@ -266,7 +278,7 @@ const styles = StyleSheet.create({
   exerciseTitleVertical: {
     color: "white",
     fontSize: 18,
-    fontWeight: "bold",
+    fontFamily: "Outfit-Bold",
     marginBottom: 4,
   },
   exerciseSubtitle: {
@@ -277,7 +289,7 @@ const styles = StyleSheet.create({
   exerciseDuration: {
     color: "rgba(255, 255, 255, 0.8)",
     fontSize: 12,
-    fontWeight: "500",
+    fontFamily: "Outfit-Medium",
   },
 
   // Tips Section
@@ -309,7 +321,7 @@ const styles = StyleSheet.create({
   },
   tipTitle: {
     fontSize: 16,
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
     color: "#111827",
     marginBottom: 4,
   },
@@ -331,7 +343,7 @@ const styles = StyleSheet.create({
   },
   statsTitle: {
     fontSize: 18,
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
     color: "white",
     marginBottom: 16,
     textAlign: "center",
@@ -345,7 +357,7 @@ const styles = StyleSheet.create({
   },
   statNumber: {
     fontSize: 24,
-    fontWeight: "bold",
+    fontFamily: "Outfit-Bold",
     color: "white",
     marginBottom: 4,
   },
@@ -380,4 +392,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default WellnessScreen
+export default WellnessScreen;

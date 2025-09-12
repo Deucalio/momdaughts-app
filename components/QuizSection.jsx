@@ -1,12 +1,10 @@
-import React from 'react';
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-} from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-
+import {
+  StyleSheet,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import Text from "../components/Text";
 const COLORS = {
   lightPink: "#f5b8d0",
   lavender: "#e2c6df",
@@ -57,7 +55,7 @@ const styles = StyleSheet.create({
   },
   discoverTitle: {
     fontSize: 24,
-    fontWeight: "bold",
+    fontFamily: "Outfit-Bold",
     color: COLORS.white,
     marginBottom: 8,
   },
@@ -79,7 +77,7 @@ const styles = StyleSheet.create({
   },
   startQuizText: {
     color: COLORS.darkBlue,
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
     fontSize: 16,
   },
   quizArrow: {

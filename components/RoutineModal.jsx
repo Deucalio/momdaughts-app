@@ -1,19 +1,16 @@
 // RoutineModal.js
-import React from 'react';
-import {
-  Modal,
-  View,
-  Text,
-  TouchableOpacity,
-  ScrollView,
-
-  SafeAreaView,
-  StyleSheet,
-  Animated,
-} from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
 import { Image } from 'expo-image';
-
+import { LinearGradient } from 'expo-linear-gradient';
+import {
+  Animated,
+  Modal,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import Text from "../components/Text";
 // Updated color theme with your colors
 const colors = {
   // Your color theme
@@ -253,7 +250,7 @@ const styles = StyleSheet.create({
   },
   closeButtonText: {
     fontSize: 18,
-    fontWeight: 'bold',
+  fontFamily: "Outfit-Bold",
     color: colors.almostBlack,
   },
   stepCounter: {
@@ -271,7 +268,7 @@ const styles = StyleSheet.create({
   },
   stepCounterText: {
     fontSize: 14,
-    fontWeight: '600',
+    fontFamily: "Outfit-SemiBold",
     color: colors.almostBlack,
   },
   progressContainer: {
@@ -362,7 +359,7 @@ const styles = StyleSheet.create({
   },
   durationText: {
     fontSize: 11,
-    fontWeight: '600',
+    fontFamily: "Outfit-SemiBold",
     color: colors.mediumGray,
   },
   contentCard: {
@@ -380,7 +377,7 @@ const styles = StyleSheet.create({
   },
   stepTitle: {
     fontSize: 24,
-    fontWeight: '700',
+    fontFamily: "Outfit-Bold",
     color: colors.almostBlack,
     marginBottom: 12,
     textAlign: 'center',
@@ -402,7 +399,7 @@ const styles = StyleSheet.create({
   },
   tipLabel: {
     fontSize: 14,
-    fontWeight: '600',
+    fontFamily: "Outfit-SemiBold",
     color: colors.almostBlack,
     marginBottom: 8,
   },
@@ -448,7 +445,7 @@ const styles = StyleSheet.create({
   },
   nextButtonText: {
     fontSize: 16,
-    fontWeight: '700',
+    fontFamily: "Outfit-Bold",
     color: colors.white,
   },
 });

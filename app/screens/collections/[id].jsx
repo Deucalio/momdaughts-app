@@ -1,21 +1,20 @@
-import React, { useEffect, useState } from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-  SafeAreaView,
-  StatusBar,
-  Dimensions,
-} from "react-native";
-import { Image } from "expo-image";
 import { Ionicons } from "@expo/vector-icons";
-import { useAuthenticatedFetch } from "../../utils/authStore";
-import { fetchCollection, fetchProducts } from "../../utils/actions";
+import { Image } from "expo-image";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { useEffect, useState } from "react";
+import {
+  Dimensions,
+  SafeAreaView,
+  ScrollView,
+  StatusBar,
+  StyleSheet,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import NavigationSpaceContainer from "../../../components/NavigationSpaceContainer";
-import { useRouter, useLocalSearchParams } from "expo-router";
-
+import Text from "../../../components/Text";
+import { fetchCollection } from "../../utils/actions";
+import { useAuthenticatedFetch } from "../../utils/authStore";
 const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
 
 const COLLECTIONS = [
@@ -300,7 +299,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 28,
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
     color: "#2c2c2c",
     flex: 1,
     textAlign: "center",
@@ -308,7 +307,7 @@ const styles = StyleSheet.create({
   itemCount: {
     fontSize: 16,
     color: "#888",
-    fontWeight: "500",
+    fontFamily: "Outfit-Medium",
     position: "absolute",
     right: 20,
   },
@@ -343,14 +342,14 @@ const styles = StyleSheet.create({
   },
   productName: {
     fontSize: 16,
-    fontWeight: "500",
+    fontFamily: "Outfit-Medium",
     color: "#2c2c2c",
     marginBottom: 4,
     lineHeight: 20,
   },
   productPrice: {
     fontSize: 16,
-    fontWeight: "700",
+    fontFamily: "Outfit-Bold",
     color: "#2c2c2c",
   },
   // Loading skeleton styles
@@ -369,7 +368,7 @@ const styles = StyleSheet.create({
   errorText: {
     fontSize: 18,
     color: "white",
-    fontWeight: "500",
+    fontFamily: "Outfit-Medium",
   },
 });
 

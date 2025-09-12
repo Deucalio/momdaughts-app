@@ -6,17 +6,16 @@ import {
 
     ScrollView,
     StyleSheet,
-    Text,
     TouchableOpacity,
     View,
 } from "react-native";
 
 import AddSessionSection from "../../../components/AddSessionSection";
+import Text from "../../../components/Text";
 import { createIPLSession, fetchIPLProfile } from "../../utils/actions";
 import { useAuthenticatedFetch, useAuthStore } from "../../utils/authStore";
 const { width, height } = Dimensions.get("window");
-
-const BACKEND_URL = "http://192.168.18.5:3000";
+const BACKEND_URL = "https://076d27aa8a97.ngrok-free.app";
 
 const mockSessionData = [
   { month: "Jan", sessions: 4 },
@@ -434,7 +433,7 @@ const styles = StyleSheet.create({
   retryButtonText: {
     color: "#FFFFFF",
     fontSize: 16,
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
   },
   statsGrid: {
     flexDirection: "row",
@@ -461,7 +460,7 @@ const styles = StyleSheet.create({
   },
   statValue: {
     fontSize: 24,
-    fontWeight: "700",
+    fontFamily: "Outfit-Bold",
     color: "#333",
     marginBottom: 4,
   },
@@ -483,7 +482,7 @@ const styles = StyleSheet.create({
   },
   profileInfoTitle: {
     fontSize: 16,
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
     color: "#333",
     marginBottom: 15,
   },
@@ -499,14 +498,14 @@ const styles = StyleSheet.create({
   profileInfoValue: {
     fontSize: 14,
     color: "#333",
-    fontWeight: "500",
+    fontFamily: "Outfit-Medium",
   },
   progressSection: {
     marginBottom: 30,
   },
   sectionTitle: {
     fontSize: 18,
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
     color: "#333",
     marginBottom: 15,
   },
@@ -558,7 +557,7 @@ const styles = StyleSheet.create({
   },
   chartTitle: {
     fontSize: 16,
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
     color: "#333",
     marginBottom: 20,
   },
@@ -584,7 +583,7 @@ const styles = StyleSheet.create({
   },
   barValue: {
     fontSize: 12,
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
     color: "#333",
   },
   welcomeHeader: {
@@ -600,7 +599,7 @@ const styles = StyleSheet.create({
   },
   welcomeText: {
     fontSize: 18,
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
     color: "#333",
     marginBottom: 12,
   },
@@ -626,7 +625,7 @@ const styles = StyleSheet.create({
   },
   nextSessionTitle: {
     fontSize: 16,
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
     color: "#FFFFFF",
     marginBottom: 8,
   },
@@ -644,7 +643,7 @@ const styles = StyleSheet.create({
   },
   logSessionButtonText: {
     fontSize: 16,
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
     color: "#2c2a6b",
   },
   historyToggle: {
@@ -658,7 +657,7 @@ const styles = StyleSheet.create({
   },
   historyToggleText: {
     fontSize: 16,
-    fontWeight: "500",
+    fontFamily: "Outfit-Medium",
     color: "#333",
   },
   historyToggleIcon: {
@@ -686,7 +685,7 @@ const styles = StyleSheet.create({
   },
   historyDateText: {
     fontSize: 12,
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
     color: "#2c2a6b",
   },
   historyDetails: {
@@ -694,7 +693,7 @@ const styles = StyleSheet.create({
   },
   historyArea: {
     fontSize: 16,
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
     color: "#333",
     marginBottom: 4,
   },

@@ -1,31 +1,28 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { Image } from 'expo-image';
-import NavigationSpaceContainer from "../../components/NavigationSpaceContainer"
+import { Image } from "expo-image";
+import { useEffect, useState } from "react";
+import NavigationSpaceContainer from "../../components/NavigationSpaceContainer";
 
-import {
-  View,
-  Text,
-  ScrollView,
-
-  TouchableOpacity,
-  StyleSheet,
-  SafeAreaView,
-  StatusBar,
-  ActivityIndicator,
-  Dimensions,
-  useWindowDimensions,
-  Linking,
-  Alert,
-} from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { Ionicons } from "@expo/vector-icons";
+import {
+  ActivityIndicator,
+  Alert,
+  Dimensions,
+  Linking,
+  SafeAreaView,
+  ScrollView,
+  StatusBar,
+  StyleSheet,
+  useWindowDimensions,
+  View,
+} from "react-native";
+import RenderHtml from "react-native-render-html";
+import HeaderWithoutCart from "../../components/HeaderWithoutCart";
+import Text from "../../components/Text";
 import { fetchArticle } from "../utils/actions";
 import { useAuthenticatedFetch } from "../utils/authStore";
 const { height: screenHeight, width: screenWidth } = Dimensions.get("window");
-import RenderHtml from "react-native-render-html";
-import HeaderWithoutCart from "../../components/HeaderWithoutCart";
 
 export default function ArticlePage() {
   const { id } = useLocalSearchParams();
@@ -68,21 +65,21 @@ export default function ArticlePage() {
     },
     h1: {
       fontSize: 24,
-      fontWeight: "bold",
+      fontFamily: "Outfit-Bold",
       marginBottom: 16,
       marginTop: 24,
       color: "#1a1a1a",
     },
     h2: {
       fontSize: 20,
-      fontWeight: "bold",
+      fontFamily: "Outfit-Bold",
       marginBottom: 12,
       marginTop: 20,
       color: "#2a2a2a",
     },
     h3: {
       fontSize: 18,
-      fontWeight: "bold",
+      fontFamily: "Outfit-Bold",
       marginBottom: 10,
       marginTop: 16,
       color: "#3a3a3a",
@@ -92,7 +89,7 @@ export default function ArticlePage() {
       textDecorationLine: "underline",
     },
     strong: {
-      fontWeight: "bold",
+      fontFamily: "Outfit-Bold",
     },
     ol: {
       marginBottom: 16,
@@ -126,12 +123,12 @@ export default function ArticlePage() {
     return (
       <SafeAreaView style={styles.container}>
         <StatusBar barStyle="dark-content" backgroundColor="#2c2a6b" />
-             <HeaderWithoutCart 
-        title="Blogs" 
-        onBackPress={() => router.back()}
-        showLogo={true}
-        showBackButton={true}
-      />
+        <HeaderWithoutCart
+          title="Blogs"
+          onBackPress={() => router.back()}
+          showLogo={true}
+          showBackButton={true}
+        />
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color="#2c2a6b" />
         </View>
@@ -164,8 +161,8 @@ export default function ArticlePage() {
           <Text style={styles.backText}>Back</Text>
         </TouchableOpacity>
       </View> */}
-          <HeaderWithoutCart 
-        title="Blogs" 
+      <HeaderWithoutCart
+        title="Blogs"
         onBackPress={() => router.back()}
         showLogo={true}
         showBackButton={true}
@@ -216,7 +213,7 @@ export default function ArticlePage() {
           </View>
         </View>
       </ScrollView>
-      <NavigationSpaceContainer/>
+      <NavigationSpaceContainer />
     </SafeAreaView>
   );
 }
@@ -268,7 +265,7 @@ const styles = StyleSheet.create({
     color: "#f8f9fa", // Light gray color for better contrast
     fontSize: 16,
     marginLeft: 8,
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
   },
   headerRight: {
     flexDirection: "row",
@@ -278,7 +275,7 @@ const styles = StyleSheet.create({
     color: "white",
     fontSize: 16,
     marginLeft: 5,
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
   },
   scrollView: {
     flex: 1,
@@ -313,7 +310,7 @@ const styles = StyleSheet.create({
   date: {
     fontSize: 14,
     color: "#666",
-    fontWeight: "600", // Semi-bold
+    fontFamily: "Outfit-SemiBold", // Semi-bold
     flex: 1,
   },
   tabContainer: {
@@ -331,7 +328,7 @@ const styles = StyleSheet.create({
   },
   tabText: {
     fontSize: 12,
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
     color: "#999",
     letterSpacing: 0.5,
   },
@@ -344,7 +341,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 28,
-    fontWeight: "bold",
+    fontFamily: "Outfit-Bold",
     color: "#333",
     lineHeight: 34,
     marginBottom: 15,
@@ -375,7 +372,7 @@ const styles = StyleSheet.create({
   followButtonText: {
     color: "white",
     fontSize: 12,
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
   },
   starButton: {
     padding: 5,

@@ -1,16 +1,13 @@
-import React from "react";
-import {
-  View,
-  Text,
-  ScrollView,
-  TouchableOpacity,
-
-  StyleSheet,
-  ActivityIndicator,
-} from "react-native";
-import { LinearGradient } from "expo-linear-gradient";
 import { Image } from 'expo-image';
-
+import { LinearGradient } from "expo-linear-gradient";
+import {
+  ActivityIndicator,
+  ScrollView,
+  StyleSheet,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import Text from "../components/Text";
 const COLORS = {
   lightPink: "#f5b8d0",
 
@@ -163,13 +160,13 @@ const styles = StyleSheet.create({
   },
   blogBadgeText: {
     fontSize: 11,
-    fontWeight: "700",
+    fontFamily: "Outfit-Bold",
     color: COLORS.darkBlue,
     letterSpacing: 0.8,
   },
   blogTitle: {
     fontSize: 26,
-    fontWeight: "800",
+    fontFamily: "Outfit-ExtraBold",
     color: COLORS.almostBlack,
     lineHeight: 32,
     marginBottom: 8,
@@ -178,7 +175,6 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: COLORS.mediumGray,
     lineHeight: 20,
-    fontWeight: "400",
   },
   blogViewAll: {
     backgroundColor: COLORS.deepBlue,
@@ -193,7 +189,7 @@ const styles = StyleSheet.create({
   },
   blogViewAllText: {
     fontSize: 14,
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
     color: COLORS.white,
   },
   blogScrollView: {
@@ -234,16 +230,16 @@ const styles = StyleSheet.create({
   blogDate: {
     fontSize: 12,
     color: COLORS.mediumGray,
-    fontWeight: "500",
+    fontFamily: "Outfit-Medium",
   },
   blogReadTime: {
     fontSize: 12,
     color: COLORS.mediumGray,
-    fontWeight: "500",
+    fontFamily: "Outfit-Medium",
   },
   blogTitle: {
     fontSize: 16,
-    fontWeight: "700",
+    fontFamily: "Outfit-Bold",
     color: COLORS.almostBlack,
     lineHeight: 20,
     marginBottom: 8,
@@ -259,7 +255,7 @@ const styles = StyleSheet.create({
   },
   learnMoreText: {
     fontSize: 14,
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
     color: COLORS.darkBlue,
     // textDecorationLine: "underline",
     display: "none",
@@ -273,7 +269,7 @@ const styles = StyleSheet.create({
     marginTop: 16,
     fontSize: 16,
     color: COLORS.mediumGray,
-    fontWeight: "500",
+    fontFamily: "Outfit-Medium",
   },
   blogEmptyContainer: {
     alignItems: "center",
@@ -283,7 +279,7 @@ const styles = StyleSheet.create({
   blogEmptyText: {
     fontSize: 16,
     color: COLORS.mediumGray,
-    fontWeight: "500",
+    fontFamily: "Outfit-Medium",
   },
 });
 

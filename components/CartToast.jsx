@@ -1,15 +1,14 @@
-import React, { useEffect, useRef } from "react";
 import { Ionicons } from "@expo/vector-icons";
-import { 
-  StyleSheet, 
-  View, 
-  Text, 
-  Animated, 
-
-  PanResponder
-} from "react-native";
 import { Image } from 'expo-image';
+import { useEffect, useRef } from "react";
+import {
+  Animated,
 
+  PanResponder,
+  StyleSheet,
+  View
+} from "react-native";
+import Text from "../components/Text";
 const CartToast = ({
   isVisible,
   onClose,
@@ -226,7 +225,7 @@ const styles = StyleSheet.create({
   },
   productName: {
     fontSize: 14,
-    fontWeight: '500',
+    fontFamily: "Outfit-Medium",
     color: '#111827',
     marginBottom: 2,
   },

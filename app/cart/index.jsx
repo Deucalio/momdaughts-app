@@ -1,19 +1,18 @@
 "use client";
 
-import { useState, useCallback, useEffect, useRef } from "react";
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  ScrollView,
-  StyleSheet,
-  RefreshControl,
-  FlatList,
-} from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import { router, useFocusEffect } from "expo-router";
+import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+  TouchableOpacity,
+  View
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import Text from "../../components/Text";
 import { useAuthenticatedFetch } from "../utils/authStore";
 import { createCartOperations } from "../utils/cartOperations";
 
@@ -429,7 +428,7 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     fontSize: 18,
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
     color: COLORS.text,
   },
   itemCount: {
@@ -450,7 +449,7 @@ const styles = StyleSheet.create({
   },
   logoText: {
     fontSize: 8,
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
     color: COLORS.gray,
   },
   content: {
@@ -489,7 +488,7 @@ const styles = StyleSheet.create({
   outOfStockText: {
     color: COLORS.white,
     fontSize: 8,
-    fontWeight: "bold",
+    fontFamily: "Outfit-Bold",
     textAlign: "center",
   },
   productDetails: {
@@ -498,7 +497,7 @@ const styles = StyleSheet.create({
   },
   productTitle: {
     fontSize: 14,
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
     color: COLORS.text,
     marginBottom: 4,
   },
@@ -509,7 +508,7 @@ const styles = StyleSheet.create({
   },
   productPrice: {
     fontSize: 16,
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
     color: COLORS.text,
     marginBottom: 12,
   },
@@ -527,12 +526,12 @@ const styles = StyleSheet.create({
   },
   quantityButtonText: {
     fontSize: 16,
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
     color: COLORS.text,
   },
   quantityText: {
     fontSize: 16,
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
     color: COLORS.text,
     marginHorizontal: 16,
   },
@@ -551,7 +550,7 @@ const styles = StyleSheet.create({
   },
   statusText: {
     fontSize: 10,
-    fontWeight: "500",
+    fontFamily: "Outfit-Medium",
     marginLeft: 4,
     flex: 1,
   },
@@ -622,12 +621,12 @@ const styles = StyleSheet.create({
   },
   finalTotalLabel: {
     fontSize: 16,
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
     color: COLORS.text,
   },
   finalTotalAmount: {
     fontSize: 16,
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
     color: COLORS.text,
   },
   checkoutButton: {
@@ -644,7 +643,7 @@ const styles = StyleSheet.create({
   },
   checkoutButtonText: {
     fontSize: 16,
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
     color: COLORS.white,
     
   },
@@ -667,7 +666,7 @@ const styles = StyleSheet.create({
   },
   emptyCartTitle: {
     fontSize: 20,
-    fontWeight: "bold",
+    fontFamily: "Outfit-Bold",
     color: COLORS.text,
     marginBottom: 6,
     textAlign: "center",
@@ -688,7 +687,7 @@ const styles = StyleSheet.create({
   startShoppingText: {
     color: COLORS.white,
     fontSize: 13,
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
   },
   // Loading skeleton styles
   skeletonItem: {

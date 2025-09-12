@@ -1,18 +1,17 @@
-import { Image } from "expo-image";
-import {
-  View,
-  Text,
-  ScrollView,
-  TouchableOpacity,
-  StyleSheet,
-  Dimensions,
-  StatusBar,
-} from "react-native";
-import { LinearGradient } from "expo-linear-gradient";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useRouter, useLocalSearchParams } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-
+import { Image } from "expo-image";
+import { LinearGradient } from "expo-linear-gradient";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import {
+  Dimensions,
+  ScrollView,
+  StatusBar,
+  StyleSheet,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import Text from "../../components/Text";
 const { height: screenHeight, width: screenWidth } = Dimensions.get("window");
 
 const COLORS = {
@@ -215,7 +214,7 @@ const styles = StyleSheet.create({
   },
   backArrow: {
     color: "#fff",
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
     textAlign: "center",
   },
   heroImageContainer: {
@@ -238,7 +237,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 28,
-    fontWeight: "bold",
+    fontFamily: "Outfit-Bold",
     color: "#111827",
     marginBottom: 8,
   },
@@ -250,7 +249,7 @@ const styles = StyleSheet.create({
   },
   duration: {
     fontSize: 18,
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
     color: "#111827",
     marginBottom: 20,
   },
@@ -276,7 +275,7 @@ const styles = StyleSheet.create({
   },
   poseName: {
     fontSize: 16,
-    fontWeight: "500",
+    fontFamily: "Outfit-Medium",
     color: "#111827",
     flex: 1,
   },
@@ -310,7 +309,7 @@ const styles = StyleSheet.create({
   startButtonText: {
     color: "#FFFFFF",
     fontSize: 18,
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
   },
   errorContainer: {
     flex: 1,

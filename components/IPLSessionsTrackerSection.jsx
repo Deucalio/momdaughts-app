@@ -1,12 +1,11 @@
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-  ImageBackground,
-} from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
+import {
+  StyleSheet,
+  TouchableOpacity,
+  View
+} from "react-native";
 
+import Text from "../components/Text";
 const COLORS = {
   lightPink: "#f5b8d0",
   lavender: "#e2c6df",
@@ -162,13 +161,13 @@ const styles = StyleSheet.create({
   },
   trackersTitle: {
     fontSize: 16,
-    fontWeight: "700",
+    fontFamily:"Outfit-Bold",
     color: COLORS.white,
   },
   viewAllTextWhite: {
     fontSize: 12,
     color: COLORS.white,
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
   },
   trackersContent: {
     flex: 1,
@@ -196,7 +195,7 @@ const styles = StyleSheet.create({
   },
   trackerLabel: {
     fontSize: 14,
-    fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
     color: COLORS.white,
     marginBottom: 1,
   },
