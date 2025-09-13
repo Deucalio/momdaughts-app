@@ -31,7 +31,7 @@ export default function LoginPage() {
     setError("");
     const { success, error } = await signInWithCustom(phoneNumber, password);
     if (success) {
-      router.push("/(tabs)");
+      router.replace("/(tabs)");
     }
 
     setIsLoading(false);
@@ -96,6 +96,7 @@ export default function LoginPage() {
                   onChangeText={setPhoneNumber}
                   keyboardType="email-address"
                   autoCapitalize="none"
+                  placeholderTextColor="#9ca3af"
                 />
               </View>
             </View>
@@ -114,6 +115,7 @@ export default function LoginPage() {
                   placeholder="• • • • • • • • • • • •"
                   value={password}
                   onChangeText={setPassword}
+                  placeholderTextColor="#9ca3af"
                   secureTextEntry={!showPassword}
                 />
                 <TouchableOpacity

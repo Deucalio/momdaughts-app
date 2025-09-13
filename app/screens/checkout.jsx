@@ -940,6 +940,7 @@ export default function CheckoutScreen() {
                       onChangeText={setDiscountCode}
                       placeholder="Enter discount code"
                       placeholderTextColor={COLORS.textMuted}
+                      
                       autoCapitalize="characters"
                     />
                     <Pressable
@@ -1283,6 +1284,7 @@ function AddressForm({ address, onUpdate }) {
           onChangeText={(value) => onUpdate("phone", value)}
           placeholder="+92 300 1234567"
           keyboardType="phone-pad"
+          placeholderTextColor="#9ca3af"
           containerStyle={{ flex: 1 }}
           required
         />
@@ -1293,6 +1295,7 @@ function AddressForm({ address, onUpdate }) {
           onChangeText={(value) => onUpdate("email", value)}
           placeholder="your@email.com"
           keyboardType="email-address"
+          placeholderTextColor="#9ca3af"
           autoCapitalize="none"
           containerStyle={{ flex: 1 }}
           required
@@ -1341,6 +1344,7 @@ function AddressForm({ address, onUpdate }) {
           onChangeText={(value) => onUpdate("postalCode", value)}
           placeholder="12345"
           keyboardType="number-pad"
+          placeholderTextColor="#9ca3af"
           containerStyle={{ flex: 1 }}
           required
         />

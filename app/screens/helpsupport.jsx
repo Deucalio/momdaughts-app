@@ -234,6 +234,7 @@ export default function HelpSupportPage() {
                 <Text style={styles.inputLabel}>Name *</Text>
                 <TextInput
                   style={styles.textInput}
+                  placeholderTextColor="#9ca3af"
                   placeholder="Your full name"
                   value={contactForm.name}
                   onChangeText={(text) => setContactForm({...contactForm, name: text})}
@@ -245,9 +246,11 @@ export default function HelpSupportPage() {
                 <TextInput
                   style={styles.textInput}
                   placeholder="your.email@example.com"
+                  
                   value={contactForm.email}
                   onChangeText={(text) => setContactForm({...contactForm, email: text})}
                   keyboardType="email-address"
+                  placeholderTextColor="#9ca3af"
                   autoCapitalize="none"
                 />
               </View>
@@ -257,6 +260,7 @@ export default function HelpSupportPage() {
                 <TextInput
                   style={styles.textInput}
                   placeholder="Brief subject of your inquiry"
+                  placeholderTextColor="#9ca3af"
                   value={contactForm.subject}
                   onChangeText={(text) => setContactForm({...contactForm, subject: text})}
                 />
@@ -267,6 +271,7 @@ export default function HelpSupportPage() {
                 <TextInput
                   style={[styles.textInput, styles.messageInput]}
                   placeholder="Describe your issue or question in detail..."
+                  placeholderTextColor="#9ca3af"
                   value={contactForm.message}
                   onChangeText={(text) => setContactForm({...contactForm, message: text})}
                   multiline={true}

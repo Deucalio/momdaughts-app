@@ -60,7 +60,7 @@ export default function NewPasswordPage() {
         newPassword: password,
       });
       if (resetResult.success) {
-        router.push("/auth/login");
+        router.replace("/auth/login");
         return;
       }
 
@@ -147,6 +147,7 @@ export default function NewPasswordPage() {
                 />
                 <TextInput
                   style={styles.passwordInput}
+                  placeholderTextColor="#9ca3af"
                   placeholder="Enter new password"
                   value={password}
                   onChangeText={(text) => {
@@ -191,6 +192,7 @@ export default function NewPasswordPage() {
                 <TextInput
                   style={styles.passwordInput}
                   placeholder="Confirm new password"
+                  placeholderTextColor="#9ca3af"
                   value={confirmPassword}
                   onChangeText={(text) => {
                     setConfirmPassword(text);

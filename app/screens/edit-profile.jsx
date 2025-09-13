@@ -302,6 +302,7 @@ const ProfilePage = () => {
                       onChangeText={setFirstName}
                       autoFocus={true}
                       editable={!isLoading}
+                      placeholderTextColor="#9ca3af"
                     />
                   </View>
                   <View style={styles.inputGroup}>
@@ -310,6 +311,7 @@ const ProfilePage = () => {
                       style={styles.modalInput}
                       value={lastName}
                       onChangeText={setLastName}
+                      placeholderTextColor="#9ca3af"
                       editable={!isLoading}
                     />
                   </View>
@@ -324,6 +326,7 @@ const ProfilePage = () => {
                       onChangeText={setNewPassword}
                       secureTextEntry={true}
                       autoFocus={true}
+                      placeholderTextColor="#9ca3af"
                       editable={!isLoading}
                     />
                   </View>
@@ -334,6 +337,7 @@ const ProfilePage = () => {
                       value={confirmPassword}
                       onChangeText={setConfirmPassword}
                       secureTextEntry={true}
+                      placeholderTextColor="#9ca3af"
                       editable={!isLoading}
                     />
                   </View>
@@ -349,6 +353,7 @@ const ProfilePage = () => {
                     onChangeText={setEditValue}
                     autoFocus={true}
                     editable={!isLoading}
+                    placeholderTextColor="#9ca3af"
                     keyboardType={editingField === 'phone' ? 'phone-pad' : 'default'}
                   />
                 </View>
@@ -392,6 +397,7 @@ const ProfilePage = () => {
                     value={newEmail}
                     onChangeText={setNewEmail}
                     keyboardType="email-address"
+                    placeholderTextColor="#9ca3af"
                     autoFocus={true}
                     editable={!isOtpLoading}
                   />
@@ -408,6 +414,8 @@ const ProfilePage = () => {
                       value={otp}
                       onChangeText={setOtp}
                       keyboardType="number-pad"
+                      placeholderTextColor="#9ca3af"
+                      
                       maxLength={6}
                       autoFocus={true}
                       editable={!isOtpLoading}

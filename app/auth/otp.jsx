@@ -101,7 +101,7 @@ export default function OTPPage() {
       } else {
         if (!user) {
           // that means he must be using forget password
-          router.push({
+          router.replace({
             pathname: "/auth/new-password",
             params: { email: email, otp: otpCode },
           });
@@ -118,6 +118,9 @@ export default function OTPPage() {
           setError("Verification failed. Please try again.");
           return 1;
         }
+
+        // Navigate to tracker
+        router.replace("/onboarding");
       }
     } catch (err) {
       setError("Verification failed. Please try again.");
@@ -195,6 +198,7 @@ export default function OTPPage() {
                   keyboardType="numeric"
                   maxLength={1}
                   textAlign="center"
+                  placeholderTextColor="#9ca3af"
                 />
               ))}
             </View>
@@ -232,7 +236,7 @@ export default function OTPPage() {
             <View style={styles.signInPrompt}>
               <Text style={styles.signInText}>
                 Remember your password?{" "}
-                <TouchableOpacity onPress={() => router.push("/auth/login")}>
+                <TouchableOpacity onPress={() => router.replace("/auth/login")}>
                   <Text style={styles.signInLink}>Sign In here</Text>
                 </TouchableOpacity>
               </Text>

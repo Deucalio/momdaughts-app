@@ -240,6 +240,7 @@ export const fetchArticles = async (
     if (!data || !Array.isArray(data.articles)) {
       throw new Error("Invalid response format");
     }
+    console.log("ARticles ====: ", data)
     return data.articles || [];
   } catch (error) {
     console.error("Error fetching articles:", error);
@@ -579,4 +580,27 @@ export const fetchRecentOrders = async (authenticatedFetch) => {
       success: false,
     }
   }
+}
+
+
+
+export const fetchAllOrders = async (authenticatedFetch) => {
+  try {
+    const response = await authenticatedFetch(
+      `${BACKEND_URL}/all-orders`
+    );
+    if (response.ok) {
+      const data = await response.json();
+      return {success:true, orders: data.orders};
+    }
+    return {
+      success: false,
+    }
+  } catch (error) {
+    
+    return {
+      success: false,
+    }
+  }
+  
 }

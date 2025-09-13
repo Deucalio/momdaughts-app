@@ -25,7 +25,7 @@ export default function ForgotPasswordPage() {
     if (email) {
       // router.push("/auth/otp");
 
-      router.push({
+      router.replace({
         pathname: "/auth/otp",
         params: { email: email },
       });
@@ -92,6 +92,7 @@ export default function ForgotPasswordPage() {
                   onChangeText={setEmail}
                   keyboardType="email-address"
                   autoCapitalize="none"
+                  placeholderTextColor="#9ca3af"
                 />
               </View>
             </View>

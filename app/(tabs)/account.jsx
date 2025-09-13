@@ -162,7 +162,7 @@ export default function AccountScreen() {
     console.log("Logging out...");
     const res = await logOut();
     if (res) {
-      router.push("/auth/login");
+      router.replace("/auth/login");
     }
   };
 
@@ -180,6 +180,9 @@ export default function AccountScreen() {
     useCallback(() => {
       // Use requestAnimationFrame to defer state updates
       requestAnimationFrame(() => {
+        if (!user) {
+          router.replace("/auth/login");
+        }
         loadCartItemsCount();
         loadWishlistItemsCount();
         loadRecentOrders();
@@ -193,7 +196,7 @@ export default function AccountScreen() {
       title: "My Orders",
       subtitle: "Track your orders",
       icon: "bag-outline",
-      onPress: () => router.push("/orders"),
+      onPress: () => router.push("/screens/orders"),
       badge: orderHistory.length > 0 ? orderHistory.length.toString() : null,
     },
     {

@@ -61,6 +61,7 @@ export default function RootLayout() {
       "change",
       handleAppStateChange
     );
+
     return () => subscription?.remove();
   }, [setNavigationBarStyle]);
 
@@ -118,44 +119,67 @@ export default function RootLayout() {
     <>
       <StatusBar style="dark" backgroundColor="#ffffff" translucent={false} />
       
-      {/* Not logged in - show auth screens */}
-      {isLoggedIn === false && (
-        <Stack screenOptions={{ headerShown: false }}>
-          <Stack.Screen name="auth/login" options={{ headerShown: false }} />
-          <Stack.Screen name="auth/signup" options={{ headerShown: false }} />
-          <Stack.Screen name="auth/forget" options={{ headerShown: false }} />
-          <Stack.Screen name="auth/new-password" options={{ headerShown: false }} />
-        </Stack>
-      )}
-      
-      {/* Logged in but email not verified - show OTP */}
-      {isLoggedIn === true && !isEmailVerified && (
-        <Stack screenOptions={{ headerShown: false }}>
-          <Stack.Screen name="auth/otp" options={{ headerShown: false }} />
-          <Stack.Screen name="auth/login" options={{ headerShown: false }} />
-        </Stack>
-      )}
-      
-      {/* Logged in, email verified but onboarding not complete */}
-      {isLoggedIn === true && isEmailVerified && hasCompletedOnboarding === false && (
-        <Stack screenOptions={{ headerShown: false }}>
-          <Stack.Screen name="onboarding" options={{ headerShown: false }} />
-          <Stack.Screen name="auth/login" options={{ headerShown: false }} />
-        </Stack>
-      )}
-      
-      {/* Fully authenticated - show main app */}
-      {isLoggedIn === true && isEmailVerified && hasCompletedOnboarding === true && (
-        <Stack screenOptions={{ headerShown: false }}>
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          <Stack.Screen name="cart" options={{ headerShown: false }} />
-          <Stack.Screen name="products/[id].jsx" options={{ headerShown: false }} />
-          <Stack.Screen name="screens" options={{ headerShown: false }} />
-          <Stack.Screen name="products" options={{ headerShown: false }} />
-          <Stack.Screen name="articles" options={{ headerShown: false }} />
-          <Stack.Screen name="auth/login" options={{ headerShown: false }} />
-        </Stack>
-      )}
+      <Stack screenOptions={{ headerShown: false }}>
+        {/* Not logged in - show auth screens */}
+        {isLoggedIn === false && (
+          <>
+            <Stack.Screen name="auth/login" options={{ headerShown: false }} />
+            <Stack.Screen name="auth/signup" options={{ headerShown: false }} />
+            <Stack.Screen name="auth/forget" options={{ headerShown: false }} />
+            <Stack.Screen name="auth/new-password" options={{ headerShown: false }} />
+          </>
+        )}
+        
+        {/* Logged in but email not verified - show OTP */}
+        {isLoggedIn === true && !isEmailVerified && (
+          <>
+            <Stack.Screen name="auth/otp" options={{ headerShown: false }} />
+            <Stack.Screen name="auth/login" options={{ headerShown: false }} />
+          </>
+        )}
+        
+        {/* Logged in, email verified but onboarding not complete */}
+        {isLoggedIn === true && isEmailVerified && hasCompletedOnboarding === false && (
+          <>
+            <Stack.Screen name="onboarding" options={{ headerShown: false }} />
+            <Stack.Screen name="auth/login" options={{ headerShown: false }} />
+          </>
+        )}
+        
+        {/* Fully authenticated - show main app */}
+        {isLoggedIn === true && isEmailVerified && hasCompletedOnboarding === true && (
+          <>
+            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+            <Stack.Screen name="cart/index" options={{ headerShown: false }} />
+            <Stack.Screen name="products/[id]" options={{ headerShown: false }} />
+            <Stack.Screen name="articles/[id]" options={{ headerShown: false }} />
+            <Stack.Screen name="articles/index" options={{ headerShown: false }} />
+            {/* Screen group routes */}
+            <Stack.Screen name="screens/aboutus" options={{ headerShown: false }} />
+            <Stack.Screen name="screens/checkout" options={{ headerShown: false }} />
+            <Stack.Screen name="screens/edit-profile" options={{ headerShown: false }} />
+            <Stack.Screen name="screens/exercise" options={{ headerShown: false }} />
+            <Stack.Screen name="screens/helpsupport" options={{ headerShown: false }} />
+            <Stack.Screen name="screens/quiz" options={{ headerShown: false }} />
+            <Stack.Screen name="screens/referral" options={{ headerShown: false }} />
+            <Stack.Screen name="screens/start" options={{ headerShown: false }} />
+            <Stack.Screen name="screens/terms" options={{ headerShown: false }} />
+            <Stack.Screen name="screens/test" options={{ headerShown: false }} />
+            <Stack.Screen name="screens/tracker" options={{ headerShown: false }} />
+            <Stack.Screen name="screens/wishlist" options={{ headerShown: false }} />
+            <Stack.Screen name="screens/addresses/[id]" options={{ headerShown: false }} />
+            <Stack.Screen name="screens/addresses/index" options={{ headerShown: false }} />
+            <Stack.Screen name="screens/collections/[id]" options={{ headerShown: false }} />
+            <Stack.Screen name="screens/ipl/dashboard" options={{ headerShown: false }} />
+            <Stack.Screen name="screens/ipl/onboard" options={{ headerShown: false }} />
+            <Stack.Screen name="screens/orders/index.jsx" options={{ headerShown: false }} />
+            <Stack.Screen name="screens/orders/[id].jsx" options={{ headerShown: false }} />
+          </>
+        )}
+        
+        {/* Auth fallback - always available */}
+        <Stack.Screen name="auth/login" options={{ headerShown: false }} />
+      </Stack>
     </>
   );
 }

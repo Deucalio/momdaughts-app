@@ -9,22 +9,17 @@
     "scheme": "momdaughts",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
-    "splash": {
-      "image": "./assets/images/splash-icon.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
-    },
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.momdaughts",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
-      },
-      "splash": {
-        "image": "./assets/images/splash-icon.png",
-        "resizeMode": "contain",
-        "backgroundColor": "#ffffff"
       }
+    },
+    "splash": {
+      "image": "./assets/images/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#2e296c"
     },
     "android": {
       "adaptiveIcon": {
@@ -32,17 +27,8 @@
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
-      "package": "com.momdaughts",
-      "splash": {
-        "image": "./assets/images/splash-icon.png",
-        "resizeMode": "contain",
-        "backgroundColor": "#ffffff",
-        "mdpi": "./assets/images/splash-icon.png",
-        "hdpi": "./assets/images/splash-icon.png",
-        "xhdpi": "./assets/images/splash-icon.png",
-        "xxhdpi": "./assets/images/splash-icon.png",
-        "xxxhdpi": "./assets/images/splash-icon.png"
-      }
+      "package": "com.momdaughts"
+  
     },
     "web": {
       "bundler": "metro",
@@ -55,12 +41,12 @@
         "expo-splash-screen",
         {
           "image": "./assets/images/splash-icon.png",
-          "imageWidth": 200,
           "resizeMode": "contain",
-          "backgroundColor": "#ffffff"
+          "backgroundColor": "#2e296c"
         }
       ],
       "expo-secure-store"
+    
     ],
     "experiments": {
       "typedRoutes": true

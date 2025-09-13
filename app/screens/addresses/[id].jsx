@@ -377,6 +377,8 @@ export default function App() {
                     placeholder="Enter phone number"
                     placeholderTextColor={COLORS.mediumGray}
                     keyboardType="phone-pad"
+                    
+                    
                     onFocus={() => setFocusedField("phone")}
                     onBlur={() => setFocusedField(null)}
                   />

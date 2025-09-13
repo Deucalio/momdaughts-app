@@ -4,7 +4,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import { router } from "expo-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   KeyboardAvoidingView,
@@ -18,6 +18,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import Text from "../../components/Text";
 import { signUpWithCustom } from "../utils/auth";
+import { useAuthStore } from "../utils/authStore";
 
 export default function SignUpPage() {
   const [firstName, setFirstName] = useState("");
@@ -30,6 +31,7 @@ export default function SignUpPage() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
+  const {user} = useAuthStore();
 
   const validateForm = () => {
     const newErrors = {};
@@ -94,6 +96,7 @@ export default function SignUpPage() {
         //   "Account created successfully! Please check your email for verification.",
         //   [{ text: "OK", onPress: () => router.push("/auth/login") }]
         // );
+        router.replace("/auth/otp");
       } else {
         // Handle specific error cases
         if (result.error?.includes("email")) {
@@ -111,6 +114,8 @@ export default function SignUpPage() {
       setLoading(false);
     }
   };
+
+
 
   return (
     <SafeAreaView style={styles.container}>
@@ -171,6 +176,7 @@ export default function SignUpPage() {
                   value={firstName}
                   onChangeText={setFirstName}
                   autoCapitalize="words"
+                  placeholderTextColor="#9ca3af"
                 />
               </View>
               {errors.firstName && (
@@ -199,6 +205,7 @@ export default function SignUpPage() {
                   value={lastName}
                   onChangeText={setLastName}
                   autoCapitalize="words"
+                  placeholderTextColor="#9ca3af"
                 />
               </View>
               {errors.lastName && (
@@ -228,6 +235,7 @@ export default function SignUpPage() {
                   onChangeText={setEmail}
                   keyboardType="email-address"
                   autoCapitalize="none"
+                  placeholderTextColor="#9ca3af"
                 />
               </View>
               {errors.email && (
@@ -256,6 +264,7 @@ export default function SignUpPage() {
                   value={phone}
                   onChangeText={setPhone}
                   keyboardType="phone-pad"
+                  placeholderTextColor="#9ca3af"
                 />
               </View>
               {errors.phone && (
@@ -283,6 +292,7 @@ export default function SignUpPage() {
                   placeholder="Enter your password"
                   value={password}
                   onChangeText={setPassword}
+                  placeholderTextColor="#9ca3af"
                   secureTextEntry={!showPassword}
                 />
                 <TouchableOpacity
@@ -321,6 +331,7 @@ export default function SignUpPage() {
                   placeholder="Confirm your password"
                   value={confirmPassword}
                   onChangeText={setConfirmPassword}
+                  placeholderTextColor="#9ca3af"
                   secureTextEntry={!showConfirmPassword}
                 />
                 <TouchableOpacity
@@ -356,7 +367,7 @@ export default function SignUpPage() {
             <View style={styles.signInPrompt}>
               <Text style={styles.signInText}>
                 Already have an account?{" "}
-                <TouchableOpacity onPress={() => router.push("/auth/login")}>
+                <TouchableOpacity onPress={() => router.replace("/auth/login")}>
                   <Text style={styles.signInLink}>Sign In here</Text>
                 </TouchableOpacity>
               </Text>

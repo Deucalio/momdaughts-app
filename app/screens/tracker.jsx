@@ -313,6 +313,7 @@ export default function PeriodTrackerScreen() {
               <TextInput
                 style={styles.notesInput}
                 placeholder="How are you feeling today?"
+                placeholderTextColor="#9ca3af"
                 value={notes}
                 onChangeText={setNotes}
                 multiline
