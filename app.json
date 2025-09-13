@@ -18,7 +18,7 @@
     },
     "splash": {
       "image": "./assets/images/splash-icon.png",
-      "resizeMode": "contain",
+      "resizeMode": "cover",
       "backgroundColor": "#2e296c"
     },
     "android": {
@@ -26,6 +26,11 @@
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
+       "splash": {
+    "image": "./assets/images/splash-icon.png",
+    "resizeMode": "cover", 
+    "backgroundColor": "#2e296c"
+  },
       "edgeToEdgeEnabled": true,
       "package": "com.momdaughts"
   
@@ -37,14 +42,7 @@
     },
     "plugins": [
       "expo-router",
-      [
-        "expo-splash-screen",
-        {
-          "image": "./assets/images/splash-icon.png",
-          "resizeMode": "contain",
-          "backgroundColor": "#2e296c"
-        }
-      ],
+
       "expo-secure-store"
     
     ],

@@ -604,3 +604,24 @@ export const fetchAllOrders = async (authenticatedFetch) => {
   }
   
 }
+
+
+export const fetchOrder = async (authenticatedFetch, orderId) => {
+  try {
+    const response = await authenticatedFetch(
+      `${BACKEND_URL}/order/${orderId}`
+    );
+    if (response.ok) {
+      const data = await response.json();
+      return {success:true, order: data.order};
+    }
+    return {
+      success: false,
+    }
+  } catch (error) {
+    
+    return {
+      success: false,
+    }
+  }
+}

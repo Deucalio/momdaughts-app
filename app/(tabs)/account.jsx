@@ -468,7 +468,7 @@ export default function AccountScreen() {
           >
             Recent Orders
           </Text>
-          <TouchableOpacity onPress={() => router.push("/orders")}>
+          <TouchableOpacity onPress={() => router.push("/screens/orders")}>
             <Text
               style={{
                 fontSize: 12,

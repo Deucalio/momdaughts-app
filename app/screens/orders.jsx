@@ -56,6 +56,10 @@ export default function OrdersPage() {
   };
 
   const getStatusColor = (status, financialStatus) => {
+    if (financialStatus.toLowerCase() === "voided") {
+      return { bg: "#FEF2F2", text: "#DC2626", icon: "close-circle" };
+    }
+
     if (status === "Fulfilled") {
       return { bg: "#dcfce7", text: "#16a34a", icon: "checkmark-circle" };
     } else if (status === "Unfulfilled") {
@@ -181,7 +185,7 @@ export default function OrdersPage() {
               </Text>
             </View>
             <Text style={styles.orderTotal}>
-              {formatCurrency(order.pricing.total, order.pricing.currency)}
+              {formatCurrency(Math.round(order.pricing.total), order.pricing.currency)}
             </Text>
           </View>
 
@@ -361,7 +365,8 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     fontSize: 18,
-    fontWeight: "600",
+    // fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
     color: "#2d3748",
   },
   searchButton: {
@@ -410,7 +415,8 @@ const styles = StyleSheet.create({
   filterTabText: {
     fontSize: 14,
     color: "#718096",
-    fontWeight: "500",
+    // fontWeight: "500",
+    fontFamily: "Outfit-Medium",
   },
   activeFilterTabText: {
     color: "#ffffff",
@@ -430,7 +436,8 @@ const styles = StyleSheet.create({
   filterBadgeText: {
     fontSize: 12,
     color: "#4a5568",
-    fontWeight: "600",
+    // fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
   },
   activeFilterBadgeText: {
     color: "#ffffff",
@@ -448,7 +455,8 @@ const styles = StyleSheet.create({
   ordersCount: {
     fontSize: 16,
     color: "#4a5568",
-    fontWeight: "500",
+    // fontWeight: "500",
+    fontFamily: "Outfit-Medium",
   },
   orderCard: {
     backgroundColor: "#ffffff",
@@ -476,7 +484,8 @@ const styles = StyleSheet.create({
   },
   orderNumber: {
     fontSize: 16,
-    fontWeight: "600",
+    // fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
     color: "#2d3748",
     marginBottom: 4,
   },
@@ -493,7 +502,8 @@ const styles = StyleSheet.create({
   },
   statusText: {
     fontSize: 12,
-    fontWeight: "600",
+    // fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
     marginLeft: 4,
   },
   itemsPreview: {
@@ -528,7 +538,8 @@ const styles = StyleSheet.create({
   itemQuantity: {
     fontSize: 10,
     color: "#ffffff",
-    fontWeight: "600",
+    // fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
   },
   moreItemsIndicator: {
     width: 60,
@@ -544,7 +555,8 @@ const styles = StyleSheet.create({
   moreItemsText: {
     fontSize: 12,
     color: "#718096",
-    fontWeight: "600",
+    // fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
   },
   moreItemsSubtext: {
     fontSize: 10,
@@ -571,7 +583,9 @@ const styles = StyleSheet.create({
   },
   orderTotal: {
     fontSize: 18,
-    fontWeight: "700",
+    // fontWeight: "700",
+
+    fontFamily: "Outfit-Bold",
     color: "#2d3748",
   },
   paymentRow: {
@@ -597,7 +611,8 @@ const styles = StyleSheet.create({
   pendingText: {
     fontSize: 11,
     color: "#d97706",
-    fontWeight: "500",
+    // fontWeight: "500",
+    fontFamily: "Outfit-Medium",
   },
   actionArrow: {
     position: "absolute",
@@ -618,7 +633,8 @@ const styles = StyleSheet.create({
   },
   emptyStateTitle: {
     fontSize: 20,
-    fontWeight: "600",
+    // fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
     color: "#2d3748",
     marginBottom: 8,
     textAlign: "center",
@@ -639,6 +655,7 @@ const styles = StyleSheet.create({
   shopNowButtonText: {
     color: "#ffffff",
     fontSize: 16,
-    fontWeight: "600",
+    // fontWeight: "600",
+    fontFamily: "Outfit-SemiBold",
   },
 });
