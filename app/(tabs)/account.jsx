@@ -24,7 +24,7 @@ import {
 } from "../utils/actions";
 import { logOut } from "../utils/auth";
 import { useAuthenticatedFetch, useAuthStore } from "../utils/authStore";
-const BACKEND_URL = "https://076d27aa8a97.ngrok-free.app";
+const BACKEND_URL = "https://d4bcaa3b5f1b.ngrok-free.app";
 const { width } = Dimensions.get("window");
 
 // Color palette matching the cart design

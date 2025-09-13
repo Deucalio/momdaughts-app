@@ -44,7 +44,7 @@ interface UserState {
   tokens: any;
 }
 
-const BACKEND_URL = "https://076d27aa8a97.ngrok-free.app";
+const BACKEND_URL = "https://d4bcaa3b5f1b.ngrok-free.app";
 
 export const useAuthStore = create(
   persist<UserState>(

@@ -5,23 +5,23 @@ import { Ionicons } from "@expo/vector-icons";
 import { useFocusEffect, useRouter } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import {
-    Dimensions,
-    FlatList,
-    SafeAreaView,
-    ScrollView,
-    StyleSheet,
-    TextInput,
-    TouchableOpacity,
-    View,
+  Dimensions,
+  FlatList,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import CartToast from "../../components/CartToast";
 import ScreenWrapper from "../../components/ScreenWrapper";
 import Text from "../../components/Text";
 import {
-    addToCart,
-    fetchCartItemsCount,
-    fetchCollections,
+  addToCart,
+  fetchCartItemsCount,
+  fetchCollections,
 } from "../utils/actions";
 import { useAuthenticatedFetch, useAuthStore } from "../utils/authStore";
 
@@ -43,7 +43,7 @@ const COLORS = {
   lightGray: "#ddd",
 };
 
-const BACKEND_URL = "https://076d27aa8a97.ngrok-free.app";
+const BACKEND_URL = "https://d4bcaa3b5f1b.ngrok-free.app";
 
 const categories = [
   {

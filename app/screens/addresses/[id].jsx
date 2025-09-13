@@ -4,15 +4,15 @@ import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import {
-    ActivityIndicator,
-    Alert,
-    SafeAreaView,
-    ScrollView,
-    StatusBar,
-    StyleSheet,
-    TextInput,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  Alert,
+  SafeAreaView,
+  ScrollView,
+  StatusBar,
+  StyleSheet,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import Svg, { Path } from "react-native-svg";
 import Text from "../../../components/Text";
@@ -191,7 +191,7 @@ export default function App() {
     setFetchingAddress(true);
     try {
       // Replace with your actual API endpoint
-      const response = await authenticatedFetch(`https://076d27aa8a97.ngrok-free.app/address/${id}`);
+      const response = await authenticatedFetch(`https://d4bcaa3b5f1b.ngrok-free.app/address/${id}`);
       if (!response.ok) {
         throw new Error('Failed to fetch address');
       }

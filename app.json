@@ -16,24 +16,14 @@
         "ITSAppUsesNonExemptEncryption": false
       }
     },
-    "splash": {
-      "image": "./assets/images/splash-icon.png",
-      "resizeMode": "cover",
-      "backgroundColor": "#2e296c"
-    },
+
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "backgroundColor": "#e2c8e1"
       },
-       "splash": {
-    "image": "./assets/images/splash-icon.png",
-    "resizeMode": "cover", 
-    "backgroundColor": "#2e296c"
-  },
       "edgeToEdgeEnabled": true,
       "package": "com.momdaughts"
-  
     },
     "web": {
       "bundler": "metro",
@@ -42,9 +32,7 @@
     },
     "plugins": [
       "expo-router",
-
       "expo-secure-store"
-    
     ],
     "experiments": {
       "typedRoutes": true

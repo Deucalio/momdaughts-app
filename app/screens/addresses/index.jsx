@@ -4,15 +4,15 @@ import { Ionicons } from "@expo/vector-icons";
 import { useFocusEffect, useRouter } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import {
-    ActivityIndicator,
-    Alert,
-    Modal,
-    SafeAreaView,
-    ScrollView,
-    StatusBar,
-    StyleSheet,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  Alert,
+  Modal,
+  SafeAreaView,
+  ScrollView,
+  StatusBar,
+  StyleSheet,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import Svg, { Path } from "react-native-svg";
 import { removeAddress, updateShippingAddress } from "../../utils/actions";
@@ -233,7 +233,7 @@ export default function AddressesPage() {
   const fetchAddresses = async () => {
     setLoading(true);
     try {
-      const response = await authenticatedFetch("https://076d27aa8a97.ngrok-free.app/addresses");
+      const response = await authenticatedFetch("https://d4bcaa3b5f1b.ngrok-free.app/addresses");
       if (!response.ok) {
         throw new Error('Failed to fetch addresses');
       }
