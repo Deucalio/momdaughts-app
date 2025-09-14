@@ -16,7 +16,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { fetchAllOrders } from "../utils/actions";
-import { useAuthenticatedFetch, useAuthStore} from "../utils/authStore";
+import { useAuthenticatedFetch, useAuthStore } from "../utils/authStore";
 
 const { width } = Dimensions.get("window");
 
@@ -26,7 +26,7 @@ export default function OrdersPage() {
   const [refreshing, setRefreshing] = useState(false);
   const [selectedFilter, setSelectedFilter] = useState("all");
 
-  const {user} = useAuthStore();
+  const { user } = useAuthStore();
   const { authenticatedFetch } = useAuthenticatedFetch();
   // Simulate API call
   const fetchOrders = async () => {
@@ -36,7 +36,7 @@ export default function OrdersPage() {
 
       // Mock API response based on your data
       const apiRes = await fetchAllOrders(authenticatedFetch);
-   
+
       setOrders(apiRes.orders);
     } catch (error) {
       console.error("Failed to fetch orders:", error);
@@ -122,7 +122,9 @@ export default function OrdersPage() {
       <TouchableOpacity
         key={order.id}
         style={styles.orderCard}
-        onPress={() => router.push(`/screens/orders/${order.id.split("/").pop()}`)}
+        onPress={() =>
+          router.push(`/screens/orders/${order.id.split("/").pop()}`)
+        }
         activeOpacity={0.7}
       >
         {/* Order Header */}
@@ -185,7 +187,10 @@ export default function OrdersPage() {
               </Text>
             </View>
             <Text style={styles.orderTotal}>
-              {formatCurrency(Math.round(order.pricing.total), order.pricing.currency)}
+              {formatCurrency(
+                Math.round(order.pricing.total),
+                order.pricing.currency
+              )}
             </Text>
           </View>
 
@@ -248,8 +253,10 @@ export default function OrdersPage() {
           <Ionicons name="arrow-back" size={24} color="#4a5568" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>My Orders</Text>
-        <TouchableOpacity style={styles.searchButton}>
-          <Ionicons name="search" size={20} color="#718096" />
+        <TouchableOpacity style={{
+          opacity: 0
+        }}>
+          <Text>sad</Text>
         </TouchableOpacity>
       </View>
 

@@ -1,5 +1,5 @@
 import { useFonts } from "expo-font";
-// import * as SplashScreen from "expo-splash-screen";
+import * as SplashScreen from "expo-splash-screen";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import * as NavigationBar from "expo-navigation-bar";
@@ -7,7 +7,6 @@ import { useAuthStore } from "./utils/authStore";
 import { useEffect, useCallback, useState } from "react";
 import { Platform, AppState, View, Text } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
-// import BootSplash from "react-native-bootsplash";
 
 // Override React Native's Text with your custom one globally
 import { Text as RNText } from "react-native";
@@ -15,7 +14,7 @@ RNText.defaultProps = RNText.defaultProps || {};
 RNText.defaultProps.style = { fontFamily: "Outfit-Regular" };
 
 // Keep the native splash screen visible while we fetch resources
-// SplashScreen.preventAutoHideAsync();
+SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
   const { isLoggedIn, hasCompletedOnboarding, user, _hasHydrated } =
@@ -85,8 +84,7 @@ export default function RootLayout() {
       console.log("============================\n");
 
       try {
-        // await SplashScreen.hideAsync();
-
+        await SplashScreen.hideAsync();
         // Set navigation bar style after splash is hidden
         setTimeout(() => {
           setNavigationBarStyle();

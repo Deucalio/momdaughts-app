@@ -15,7 +15,6 @@ import {
   ScrollView,
   StatusBar,
   StyleSheet,
-
   TextInput,
   View,
 } from "react-native";
@@ -24,8 +23,8 @@ import Text from "../../components/Text";
 import { createOrder } from "../utils/actions";
 import { useAuthenticatedFetch, useAuthStore } from "../utils/authStore";
 // Configure these for your app
-const CART_API = "https://d4bcaa3b5f1b.ngrok-free.app/cart";
-const ADDRESSES_API = "https://d4bcaa3b5f1b.ngrok-free.app/addresses";
+const CART_API = "https://95d408fcc5df.ngrok-free.app/cart";
+const ADDRESSES_API = "https://95d408fcc5df.ngrok-free.app/addresses";
 const CURRENCY_SYMBOL = "PKR ";
 // Subtle, elegant color palette
 const COLORS = {
@@ -306,7 +305,6 @@ export default function CheckoutScreen() {
   // 0% Tax (Pakistan GST)
   const tax = 0;
 
-  
   const discountAmount = appliedDiscount
     ? Math.round(subtotal * (appliedDiscount.percentage / 100))
     : 0;
@@ -324,12 +322,11 @@ export default function CheckoutScreen() {
     );
   };
 
-
   useEffect(() => {
-  if (sameAsBilling) {
-    setBillingAddress(shippingAddress);
-  }
-}, [sameAsBilling, shippingAddress]);
+    if (sameAsBilling) {
+      setBillingAddress(shippingAddress);
+    }
+  }, [sameAsBilling, shippingAddress]);
 
   const handleApplyDiscount = async () => {
     if (!discountCode.trim()) {
@@ -344,7 +341,11 @@ export default function CheckoutScreen() {
 
       // Mock discount validation
       const mockDiscounts = {
-        NEWORDER10: { code: "NEWORDER10", percentage: 10, description: "10% off" },
+        NEWORDER10: {
+          code: "NEWORDER10",
+          percentage: 10,
+          description: "10% off",
+        },
         WELCOME15: {
           code: "WELCOME15",
           percentage: 15,
@@ -486,10 +487,9 @@ export default function CheckoutScreen() {
         country: address.country ? address.country : "Parkistan",
       };
       setShippingAddress(mappedAddress);
-  
+
       if (sameAsBilling) {
         setBillingAddress(mappedAddress);
-     
       }
     } else {
       // Handle billing address selection
@@ -729,7 +729,6 @@ export default function CheckoutScreen() {
                 setSameAsBilling(newSameAsBilling);
                 if (newSameAsBilling) {
                   setBillingAddress(shippingAddress);
-              
                 }
               }}
               style={styles.checkboxRow}
@@ -940,7 +939,6 @@ export default function CheckoutScreen() {
                       onChangeText={setDiscountCode}
                       placeholder="Enter discount code"
                       placeholderTextColor={COLORS.textMuted}
-                      
                       autoCapitalize="characters"
                     />
                     <Pressable

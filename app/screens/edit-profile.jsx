@@ -1,6 +1,6 @@
-import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
-import { useState } from 'react';
+import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
+import { useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -13,74 +13,113 @@ import {
   TextInput,
   TouchableOpacity,
   View,
-} from 'react-native';
+} from "react-native";
 import Text from "../../components/Text";
-import { useAuthStore } from "../utils/authStore";
+import { useAuthStore, useAuthenticatedFetch } from "../utils/authStore";
+import { logOut } from "../utils/auth";
+import {
+  sendOTP,
+  verifyOTP,
+  updateUserEmail,
+  updateUserPassword,
+  updateUserName,
+  updateUserPhone,
+  isEmailAlreadyTaken,
+} from "../utils/actions";
 const COLORS = {
-  primary: '#007AFF',
-  gray: '#8E8E93',
-  lightGray: '#F2F2F7',
-  darkGray: '#3C3C43',
-  white: '#FFFFFF',
-  border: '#E5E5EA',
+  primary: "#007AFF",
+  gray: "#8E8E93",
+  lightGray: "#F2F2F7",
+  darkGray: "#3C3C43",
+  white: "#FFFFFF",
+  border: "#E5E5EA",
 };
 
 const ProfilePage = () => {
-  const {user} = useAuthStore();
-  console.log("u:", user)
+  const { user, syncUserData, token } = useAuthStore();
+  const { authenticatedFetch } = useAuthenticatedFetch();
+  console.log("u:", user, authenticatedFetch, "t", token);
   const [userProfile, setUserProfile] = useState({
     name: `${user.firstName} ${user.lastName}`,
     email: `${user.email}`,
     phone: `${user.phone || "0315-1234567"} `,
-    password: '••••••••',
+    password: "••••••••",
     avatar: null,
   });
   const router = useRouter();
 
   const [modalVisible, setModalVisible] = useState(false);
   const [otpModalVisible, setOtpModalVisible] = useState(false);
-  const [editingField, setEditingField] = useState('');
-  const [editValue, setEditValue] = useState('');
-  const [otp, setOtp] = useState('');
-  const [newEmail, setNewEmail] = useState('');
+  const [editingField, setEditingField] = useState("");
+  const [editValue, setEditValue] = useState("");
+  const [otp, setOtp] = useState("");
+  const [newEmail, setNewEmail] = useState("");
   const [otpTimer, setOtpTimer] = useState(0);
   const [isOtpSent, setIsOtpSent] = useState(false);
-  
+
+  const handleLogout = async () => {
+    console.log("Logging out...");
+    const res = await logOut();
+    if (res) {
+      router.replace("/auth/login");
+    }
+  };
+
   // New states for name editing
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
-  
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+
   // New states for password editing
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+
   // Loading states
   const [isLoading, setIsLoading] = useState(false);
   const [isOtpLoading, setIsOtpLoading] = useState(false);
 
   const profileFields = [
-    { key: 'name', label: 'Name', icon: 'person-outline', value: userProfile.name },
-    { key: 'email', label: 'Email', icon: 'mail-outline', value: userProfile.email },
-    { key: 'phone', label: 'Phone', icon: 'call-outline', value: userProfile.phone },
-    { key: 'password', label: 'Password', icon: 'lock-closed-outline', value: userProfile.password },
+    {
+      key: "name",
+      label: "Name",
+      icon: "person-outline",
+      value: userProfile.name,
+    },
+    {
+      key: "email",
+      label: "Email",
+      icon: "mail-outline",
+      value: userProfile.email,
+    },
+    {
+      key: "phone",
+      label: "Phone",
+      icon: "call-outline",
+      value: userProfile.phone,
+    },
+    {
+      key: "password",
+      label: "Password",
+      icon: "lock-closed-outline",
+      value: userProfile.password,
+    },
   ];
 
   const openEditModal = (field, value) => {
     setEditingField(field);
-    setEditValue(value === '••••••••' ? '' : value);
-    
-    if (field === 'email') {
+    setEditValue(value === "••••••••" ? "" : value);
+
+    if (field === "email") {
       setNewEmail(value);
       setOtpModalVisible(true);
-    } else if (field === 'name') {
+    } else if (field === "name") {
       // Split the current name into first and last name
-      const nameParts = value.split(' ');
-      setFirstName(nameParts[0] || '');
-      setLastName(nameParts.slice(1).join(' ') || '');
+      const nameParts = value.split(" ");
+      setFirstName(nameParts[0] || "");
+      setLastName(nameParts.slice(1).join(" ") || "");
       setModalVisible(true);
-    } else if (field === 'password') {
-      setNewPassword('');
-      setConfirmPassword('');
+    } else if (field === "password") {
+      setNewPassword("");
+      setConfirmPassword("");
       setModalVisible(true);
     } else {
       setModalVisible(true);
@@ -89,81 +128,161 @@ const ProfilePage = () => {
 
   const saveField = async () => {
     // Validation
-    if (editingField === 'name') {
+    if (editingField === "name") {
       if (!firstName.trim() || !lastName.trim()) {
-        Alert.alert('Error', 'Please enter both first name and last name');
+        Alert.alert("Error", "Please enter both first name and last name");
         return;
       }
-    } else if (editingField === 'password') {
+    } else if (editingField === "password") {
       if (newPassword.length < 6) {
-        Alert.alert('Error', 'Password must be at least 6 characters long');
+        Alert.alert("Error", "Password must be at least 6 characters long");
         return;
       }
       if (newPassword !== confirmPassword) {
-        Alert.alert('Error', 'Passwords do not match');
+        Alert.alert("Error", "Passwords do not match");
         return;
       }
-    } else if (editingField === 'phone') {
+    } else if (editingField === "phone") {
       if (!editValue.trim()) {
-        Alert.alert('Error', 'Please enter a valid phone number');
+        Alert.alert("Error", "Please enter a valid phone number");
         return;
       }
     }
-    
+
     setIsLoading(true);
-    
+
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      let updatedValue = editValue;
-      if (editingField === 'name') {
-        updatedValue = `${firstName.trim()} ${lastName.trim()}`;
-      } else if (editingField === 'password') {
-        updatedValue = '••••••••';
+      let result;
+
+      if (editingField === "name") {
+        result = await updateUserName(authenticatedFetch, {
+          firstName: firstName,
+          lastName: lastName,
+        });
+      } else if (editingField === "phone") {
+        result = await updateUserPhone(authenticatedFetch, {
+          phone: editValue,
+        });
+      } else if (editingField === "password") {
+        result = await updateUserPassword(authenticatedFetch, {
+          newPassword: newPassword,
+        });
       }
-      
-      setUserProfile(prev => ({
-        ...prev,
-        [editingField]: updatedValue
-      }));
-      
+
+      let user_;
+      console.log("user: ", user.id);
+      try {
+        user_ = await syncUserData(user.id);
+      } catch (e) {
+        console.log("Catch", e);
+      }
+
+      if (!result.success) {
+        throw new Error(result.error);
+      }
+
+      // Update local state
+      // let updatedValue = editValue;
+      // if (editingField === "name") {
+      //   updatedValue = `${firstName.trim()} ${lastName.trim()}`;
+      //   // Update auth store if available
+      //   if (result.user) {
+      //     const { setUser } = useAuthStore.getState();
+      //     setUser(result.user);
+      //   }
+      // } else if (editingField === "password") {
+      //   updatedValue = "••••••••";
+      // } else if (editingField === "phone" && result.user) {
+      //   // Update auth store
+      //   const { setUser } = useAuthStore.getState();
+      //   setUser(result.user);
+      // }
+
+      // setUserProfile((prev) => ({
+      //   ...prev,
+      //   [editingField]: editingField === "name" ? `${firstName} ${lastName}` : editValue,
+      // }));
+
+      setUserProfile({
+        email: user_.user.email,
+        phone: user_.user.phone,
+        password: "••••••••",
+        name: `${user_.user.firstName} ${user_.user.lastName}`,
+        avatar: null,
+      });
+
       setModalVisible(false);
-      setEditingField('');
-      setEditValue('');
-      setFirstName('');
-      setLastName('');
-      setNewPassword('');
-      setConfirmPassword('');
-      
-      Alert.alert('Success', `${editingField.charAt(0).toUpperCase() + editingField.slice(1)} updated successfully`);
+      setEditingField("");
+      setEditValue("");
+      setFirstName("");
+      setLastName("");
+      setNewPassword("");
+      setConfirmPassword("");
+
+      Alert.alert("Success", result.message || "Updated successfully");
     } catch (error) {
-      Alert.alert('Error', 'Failed to update. Please try again.');
+      console.error("Update error:", error);
+      Alert.alert(
+        "Error",
+        error.message || "Failed to update. Please try again."
+      );
     } finally {
       setIsLoading(false);
     }
   };
 
-  const sendOTP = async () => {
-    if (!newEmail || !newEmail.includes('@')) {
-      Alert.alert('Error', 'Please enter a valid email address');
+  const sendOTP_ = async () => {
+    if (!newEmail || !newEmail.includes("@")) {
+      Alert.alert("Error", "Please enter a valid email address");
       return;
     }
-    
+
+    console.log("newEmail: ", newEmail);
+
     setIsOtpLoading(true);
-    
+
     try {
-      // Simulate API call for sending OTP
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
+      // const response = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/send-otp`, {
+      //   method: 'POST',
+      //   headers: {
+      //     'Content-Type': 'application/json',
+      //   },
+      //   body: JSON.stringify({
+      //     formattedData: {
+      //       email: newEmail,
+      //       is_password_reset: false
+      //     }
+      //   })
+      // });
+
+      if (newEmail === user.email) {
+        Alert.alert("Error", "Please enter a different email address");
+        return;
+      }
+
+      // First check if the email is not registered
+      const res_ = await isEmailAlreadyTaken(authenticatedFetch, newEmail);
+      if (!res_.success) {
+        throw new Error(data.error || "Failed to send OTP");
+      }
+      if (res_.emailTaken) {
+        Alert.alert("Error", "Email already registered on another account");
+        return;
+      }
+
+      const res = await sendOTP({ email: newEmail, is_password_reset: false });
+      if (!res.success) {
+        throw new Error(data.error || "Failed to send OTP");
+      }
+
       setIsOtpSent(true);
       setOtpTimer(60);
-      
-      Alert.alert('OTP Sent', `Verification code sent to ${newEmail}`);
-      
+
+      Alert.alert("OTP Sent", `Verification code sent to ${newEmail}`);
+
       // Start countdown
       const timer = setInterval(() => {
-        setOtpTimer(prev => {
+        setOtpTimer((prev) => {
           if (prev <= 1) {
             clearInterval(timer);
             return 0;
@@ -172,33 +291,45 @@ const ProfilePage = () => {
         });
       }, 1000);
     } catch (error) {
-      Alert.alert('Error', 'Failed to send OTP. Please try again.');
+      console.log("Send OTP error:", error);
+      Alert.alert(
+        "Error",
+        error.message || "Failed to send OTP. Please try again."
+      );
     } finally {
       setIsOtpLoading(false);
     }
   };
 
-  const verifyOTP = async () => {
+  const verifyOTP_ = async () => {
     if (otp.length !== 6) {
-      Alert.alert('Error', 'Please enter a valid 6-digit OTP');
+      Alert.alert("Error", "Please enter a valid 6-digit OTP");
       return;
     }
-    
+
     setIsOtpLoading(true);
-    
+
     try {
-      // Simulate API call for OTP verification
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      setUserProfile(prev => ({ ...prev, email: newEmail }));
+      console.log("newEmail: ", newEmail);
+      const result = await updateUserEmail(authenticatedFetch, {
+        newEmail: newEmail,
+        otp: otp,
+      });
+      console.log("result: ", result);
+      if (result.success) {
+        handleLogout();
+        return;
+      }
+
+      setUserProfile((prev) => ({ ...prev, email: newEmail }));
       setOtpModalVisible(false);
-      setOtp('');
-      setNewEmail('');
+      setOtp("");
+      setNewEmail("");
       setIsOtpSent(false);
       setOtpTimer(0);
-      Alert.alert('Success', 'Email updated successfully');
+      Alert.alert("Success", "Email updated successfully");
     } catch (error) {
-      Alert.alert('Error', 'Failed to verify OTP. Please try again.');
+      Alert.alert("Error", "Failed to verify OTP. Please try again.");
     } finally {
       setIsOtpLoading(false);
     }
@@ -206,8 +337,8 @@ const ProfilePage = () => {
 
   const closeOtpModal = () => {
     setOtpModalVisible(false);
-    setOtp('');
-    setNewEmail('');
+    setOtp("");
+    setNewEmail("");
     setIsOtpSent(false);
     setOtpTimer(0);
   };
@@ -250,7 +381,7 @@ const ProfilePage = () => {
               key={field.key}
               style={[
                 styles.fieldRow,
-                index === profileFields.length - 1 && styles.lastFieldRow
+                index === profileFields.length - 1 && styles.lastFieldRow,
               ]}
               onPress={() => openEditModal(field.key, field.value)}
             >
@@ -290,9 +421,9 @@ const ProfilePage = () => {
                 )}
               </TouchableOpacity>
             </View>
-            
+
             <View style={styles.modalContent}>
-              {editingField === 'name' ? (
+              {editingField === "name" ? (
                 <>
                   <View style={styles.inputGroup}>
                     <Text style={styles.inputLabel}>First Name</Text>
@@ -316,7 +447,7 @@ const ProfilePage = () => {
                     />
                   </View>
                 </>
-              ) : editingField === 'password' ? (
+              ) : editingField === "password" ? (
                 <>
                   <View style={styles.inputGroup}>
                     <Text style={styles.inputLabel}>New Password</Text>
@@ -345,7 +476,10 @@ const ProfilePage = () => {
               ) : (
                 <View style={styles.inputGroup}>
                   <Text style={styles.inputLabel}>
-                    {editingField === 'phone' ? 'Phone Number' : editingField.charAt(0).toUpperCase() + editingField.slice(1)}
+                    {editingField === "phone"
+                      ? "Phone Number"
+                      : editingField.charAt(0).toUpperCase() +
+                        editingField.slice(1)}
                   </Text>
                   <TextInput
                     style={styles.modalInput}
@@ -354,7 +488,9 @@ const ProfilePage = () => {
                     autoFocus={true}
                     editable={!isLoading}
                     placeholderTextColor="#9ca3af"
-                    keyboardType={editingField === 'phone' ? 'phone-pad' : 'default'}
+                    keyboardType={
+                      editingField === "phone" ? "phone-pad" : "default"
+                    }
                   />
                 </View>
               )}
@@ -377,17 +513,20 @@ const ProfilePage = () => {
                 <Text style={styles.modalCancel}>Cancel</Text>
               </TouchableOpacity>
               <Text style={styles.modalTitle}>Change Email</Text>
-              <TouchableOpacity onPress={isOtpSent ? verifyOTP : sendOTP} disabled={isOtpLoading}>
+              <TouchableOpacity
+                onPress={isOtpSent ? verifyOTP_ : sendOTP_}
+                disabled={isOtpLoading}
+              >
                 {isOtpLoading ? (
                   <ActivityIndicator size="small" color={COLORS.primary} />
                 ) : (
                   <Text style={styles.modalSave}>
-                    {isOtpSent ? 'Verify' : 'Send OTP'}
+                    {isOtpSent ? "Verify" : "Send OTP"}
                   </Text>
                 )}
               </TouchableOpacity>
             </View>
-            
+
             <View style={styles.modalContent}>
               {!isOtpSent ? (
                 <View style={styles.inputGroup}>
@@ -415,7 +554,6 @@ const ProfilePage = () => {
                       onChangeText={setOtp}
                       keyboardType="number-pad"
                       placeholderTextColor="#9ca3af"
-                      
                       maxLength={6}
                       autoFocus={true}
                       editable={!isOtpLoading}
@@ -424,16 +562,19 @@ const ProfilePage = () => {
                   <TouchableOpacity
                     style={[
                       styles.resendButton,
-                      (otpTimer > 0 || isOtpLoading) && styles.resendButtonDisabled
+                      (otpTimer > 0 || isOtpLoading) &&
+                        styles.resendButtonDisabled,
                     ]}
-                    onPress={sendOTP}
+                    onPress={sendOTP_}
                     disabled={otpTimer > 0 || isOtpLoading}
                   >
-                    <Text style={[
-                      styles.resendButtonText,
-                      otpTimer > 0 && styles.resendButtonTextDisabled
-                    ]}>
-                      {otpTimer > 0 ? `Resend in ${otpTimer}s` : 'Resend OTP'}
+                    <Text
+                      style={[
+                        styles.resendButtonText,
+                        otpTimer > 0 && styles.resendButtonTextDisabled,
+                      ]}
+                    >
+                      {otpTimer > 0 ? `Resend in ${otpTimer}s` : "Resend OTP"}
                     </Text>
                   </TouchableOpacity>
                 </>
@@ -453,9 +594,9 @@ const styles = StyleSheet.create({
     paddingTop: StatusBar.currentHeight || 0,
   },
   header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     paddingHorizontal: 20,
     paddingVertical: 15,
     borderBottomWidth: 1,
@@ -470,7 +611,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   profileSection: {
-    alignItems: 'center',
+    alignItems: "center",
     paddingVertical: 30,
     paddingHorizontal: 20,
   },
@@ -487,8 +628,8 @@ const styles = StyleSheet.create({
     height: 80,
     borderRadius: 40,
     backgroundColor: COLORS.lightGray,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
   profileName: {
     fontSize: 24,
@@ -503,9 +644,9 @@ const styles = StyleSheet.create({
     borderColor: COLORS.border,
   },
   fieldRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     paddingHorizontal: 16,
     paddingVertical: 16,
     borderBottomWidth: 1,
@@ -515,13 +656,13 @@ const styles = StyleSheet.create({
     borderBottomWidth: 0,
   },
   fieldLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     flex: 1,
   },
   iconContainer: {
     width: 30,
-    alignItems: 'center',
+    alignItems: "center",
     marginRight: 12,
   },
   fieldInfo: {
@@ -536,12 +677,11 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: COLORS.darkGray,
     fontFamily: "Outfit-Regular",
-  
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'flex-end',
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    justifyContent: "flex-end",
   },
   modalContainer: {
     backgroundColor: COLORS.white,
@@ -550,9 +690,9 @@ const styles = StyleSheet.create({
     paddingBottom: 34,
   },
   modalHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     paddingHorizontal: 20,
     paddingVertical: 16,
     borderBottomWidth: 1,
@@ -596,12 +736,12 @@ const styles = StyleSheet.create({
   otpText: {
     fontSize: 14,
     color: COLORS.gray,
-    textAlign: 'center',
+    textAlign: "center",
     marginBottom: 20,
     lineHeight: 20,
   },
   resendButton: {
-    alignItems: 'center',
+    alignItems: "center",
     marginTop: 16,
     paddingVertical: 12,
   },

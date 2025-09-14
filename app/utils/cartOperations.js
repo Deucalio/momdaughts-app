@@ -1,6 +1,6 @@
 import { Alert } from "react-native";
 
-const BACKEND_URL = "https://d4bcaa3b5f1b.ngrok-free.app";
+const BACKEND_URL = "https://95d408fcc5df.ngrok-free.app";
 
 // Utility function for debouncing
 function debounce(fn, delay) {

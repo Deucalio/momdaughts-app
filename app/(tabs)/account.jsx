@@ -5,26 +5,26 @@ import { Image } from "expo-image";
 import { useFocusEffect, useRouter } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import {
-  Dimensions,
-  RefreshControl,
-  ScrollView,
-  StatusBar,
-  Switch,
-  TouchableOpacity,
-  View,
+    Dimensions,
+    RefreshControl,
+    ScrollView,
+    StatusBar,
+    Switch,
+    TouchableOpacity,
+    View,
 } from "react-native";
 
 import { SafeAreaView } from "react-native-safe-area-context";
 import ScreenWrapper from "../../components/ScreenWrapper";
 import Text from "../../components/Text";
 import {
-  fetchCartItemsCount,
-  fetchRecentOrders,
-  fetchTotalWishlistItemsCount,
+    fetchCartItemsCount,
+    fetchRecentOrders,
+    fetchTotalWishlistItemsCount,
 } from "../utils/actions";
 import { logOut } from "../utils/auth";
 import { useAuthenticatedFetch, useAuthStore } from "../utils/authStore";
-const BACKEND_URL = "https://d4bcaa3b5f1b.ngrok-free.app";
+const BACKEND_URL = "https://95d408fcc5df.ngrok-free.app";
 const { width } = Dimensions.get("window");
 
 // Color palette matching the cart design
@@ -491,7 +491,7 @@ export default function AccountScreen() {
               borderBottomWidth: index < orderHistory.length - 1 ? 1 : 0,
               borderBottomColor: COLORS.border,
             }}
-            onPress={() => router.push(`/orders/${order.id}`)}
+            onPress={() => router.push(`/screens/orders/${order.id}`)}
           >
             <View
               style={{

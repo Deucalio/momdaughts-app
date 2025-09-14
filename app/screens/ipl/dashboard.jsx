@@ -2,12 +2,12 @@ import { Image } from 'expo-image';
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import {
-  Dimensions,
+    Dimensions,
 
-  ScrollView,
-  StyleSheet,
-  TouchableOpacity,
-  View,
+    ScrollView,
+    StyleSheet,
+    TouchableOpacity,
+    View,
 } from "react-native";
 
 import AddSessionSection from "../../../components/AddSessionSection";
@@ -15,7 +15,7 @@ import Text from "../../../components/Text";
 import { createIPLSession, fetchIPLProfile } from "../../utils/actions";
 import { useAuthenticatedFetch, useAuthStore } from "../../utils/authStore";
 const { width, height } = Dimensions.get("window");
-const BACKEND_URL = "https://d4bcaa3b5f1b.ngrok-free.app";
+const BACKEND_URL = "https://95d408fcc5df.ngrok-free.app";
 
 const mockSessionData = [
   { month: "Jan", sessions: 4 },

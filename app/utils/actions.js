@@ -1,4 +1,4 @@
-const BACKEND_URL = "https://d4bcaa3b5f1b.ngrok-free.app";
+const BACKEND_URL = "https://95d408fcc5df.ngrok-free.app";
 export const fetchCartItemsCount = async (authenticatedFetch) => {
   try {
     const res = await authenticatedFetch(`${BACKEND_URL}/cart-items-count`);
@@ -240,7 +240,7 @@ export const fetchArticles = async (
     if (!data || !Array.isArray(data.articles)) {
       throw new Error("Invalid response format");
     }
-    console.log("ARticles ====: ", data)
+    console.log("ARticles ====: ", data);
     return data.articles || [];
   } catch (error) {
     console.error("Error fetching articles:", error);
@@ -474,12 +474,14 @@ export const sendOTP = async (formattedData) => {
 
     if (response.ok) {
       const data = await response.json();
+      console.log("data \n\n\n\n\n\n", data);
       return {
         success: true,
         message: data.message,
       };
     } else {
       const errorData = await response.json();
+      console.log("errorData", errorData);
       return {
         success: false,
         error: errorData.error || "Failed to send OTP",
@@ -496,12 +498,12 @@ export const sendOTP = async (formattedData) => {
 };
 
 // Verify OTP
-export const verifyOTP = async (email,otp) => {
+export const verifyOTP = async (email, otp) => {
   try {
     const response = await fetch(`${BACKEND_URL}/verify-otp`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ userEmail: email,otp }),
+      body: JSON.stringify({ userEmail: email, otp }),
     });
 
     if (response.ok) {
@@ -564,47 +566,37 @@ export const resetPassword = async (data) => {
 
 export const fetchRecentOrders = async (authenticatedFetch) => {
   try {
-    const response = await authenticatedFetch(
-      `${BACKEND_URL}/recent-orders`
-    );
+    const response = await authenticatedFetch(`${BACKEND_URL}/recent-orders`);
     if (response.ok) {
       const data = await response.json();
-      return {success:true, orders: data.formattedOrders};
+      return { success: true, orders: data.formattedOrders };
     }
     return {
       success: false,
-    }
+    };
   } catch (error) {
-    
     return {
       success: false,
-    }
+    };
   }
-}
-
-
+};
 
 export const fetchAllOrders = async (authenticatedFetch) => {
   try {
-    const response = await authenticatedFetch(
-      `${BACKEND_URL}/all-orders`
-    );
+    const response = await authenticatedFetch(`${BACKEND_URL}/all-orders`);
     if (response.ok) {
       const data = await response.json();
-      return {success:true, orders: data.orders};
+      return { success: true, orders: data.orders };
     }
     return {
       success: false,
-    }
+    };
   } catch (error) {
-    
     return {
       success: false,
-    }
+    };
   }
-  
-}
-
+};
 
 export const fetchOrder = async (authenticatedFetch, orderId) => {
   try {
@@ -613,15 +605,185 @@ export const fetchOrder = async (authenticatedFetch, orderId) => {
     );
     if (response.ok) {
       const data = await response.json();
-      return {success:true, order: data.order};
+      return { success: true, order: data.order };
     }
     return {
       success: false,
+    };
+  } catch (error) {
+    return {
+      success: false,
+    };
+  }
+};
+
+export const updateUserName = async (authenticatedFetch, data) => {
+  try {
+    const response = await authenticatedFetch(`${BACKEND_URL}/update-name`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        firstName: data.firstName.trim(),
+        lastName: data.lastName.trim(),
+      }),
+    });
+
+    if (response.ok) {
+      const responseData = await response.json();
+      return {
+        success: true,
+        data: responseData,
+        user: responseData.user,
+        message: responseData.message,
+      };
+    } else {
+      const errorData = await response.json();
+      return {
+        success: false,
+        error: errorData.error || "Failed to update name",
+      };
     }
   } catch (error) {
-    
+    console.error("Failed to update name:", error);
     return {
       success: false,
-    }
+      error: "Failed to update name",
+      details: error.message,
+    };
   }
-}
+};
+
+export const updateUserEmail = async (authenticatedFetch, data) => {
+  try {
+    const response = await authenticatedFetch(`${BACKEND_URL}/update-email`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        newEmail: data.newEmail,
+        otp: data.otp,
+      }),
+    });
+
+    if (response.ok) {
+      const responseData = await response.json();
+      return {
+        success: true,
+        data: responseData,
+        user: responseData.user,
+        message: responseData.message,
+      };
+    } else {
+      const errorData = await response.json();
+      return {
+        success: false,
+        error: errorData.error || "Failed to update email",
+      };
+    }
+  } catch (error) {
+    console.error("Failed to update email:", error);
+    return {
+      success: false,
+      error: "Failed to update email",
+      details: error.message,
+    };
+  }
+};
+
+export const updateUserPhone = async (authenticatedFetch, data) => {
+  try {
+    const response = await authenticatedFetch(`${BACKEND_URL}/update-phone`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        phone: data.phone.trim(),
+      }),
+    });
+
+    if (response.ok) {
+      const responseData = await response.json();
+      return {
+        success: true,
+        data: responseData,
+        user: responseData.user,
+        message: responseData.message,
+      };
+    } else {
+      const errorData = await response.json();
+      return {
+        success: false,
+        error: errorData.error || "Failed to update phone",
+      };
+    }
+  } catch (error) {
+    console.error("Failed to update phone:", error);
+    return {
+      success: false,
+      error: "Failed to update phone",
+      details: error.message,
+    };
+  }
+};
+
+export const updateUserPassword = async (authenticatedFetch, data) => {
+  try {
+    const response = await authenticatedFetch(
+      `${BACKEND_URL}/update-password`,
+      {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          newPassword: data.newPassword,
+        }),
+      }
+    );
+
+    if (response.ok) {
+      const responseData = await response.json();
+      return {
+        success: true,
+        data: responseData,
+        message: responseData.message,
+      };
+    } else {
+      const errorData = await response.json();
+      return {
+        success: false,
+        error: errorData.error || "Failed to update password",
+      };
+    }
+  } catch (error) {
+    console.error("Failed to update password:", error);
+    return {
+      success: false,
+      error: "Failed to update password",
+      details: error.message,
+    };
+  }
+};
+
+export const isEmailAlreadyTaken = async (authenticatedFetch, email) => {
+  try {
+    const response = await authenticatedFetch(
+      `${BACKEND_URL}/is-email-taken`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: email.toLowerCase() }),
+      }
+    );
+    if (response.ok) {
+      const data = await response.json();
+      return {
+        success: true,
+        emailTaken: data.emailTaken,
+      };
+    }
+    return {
+      success: false,
+    };
+  } catch (error) {
+    return {
+      success: false,
+    };
+  }
+};

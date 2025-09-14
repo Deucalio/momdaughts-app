@@ -41,10 +41,11 @@ interface UserState {
   fetchWithAuth: (url: string, options?: RequestInit) => Promise<Response>;
   logInWithGoogle: (googleUser: any) => void;
   syncUserMetaData: (userId: any, newMetaData: any) => Promise<void>;
+  syncUserData: (userId: any) => Promise<{ user: any } | undefined>;
   tokens: any;
 }
 
-const BACKEND_URL = "https://d4bcaa3b5f1b.ngrok-free.app";
+const BACKEND_URL = "https://95d408fcc5df.ngrok-free.app";
 
 export const useAuthStore = create(
   persist<UserState>(
@@ -83,6 +84,29 @@ export const useAuthStore = create(
           }
         } catch (error) {
           console.error("Failed to sync user meta data:", error);
+        }
+      },
+      syncUserData: async (userId: any) => {
+        try {
+          const response = await fetch(`${BACKEND_URL}/user/${userId}`, {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${get().token}`,
+            },
+          });
+          if (response.ok) {
+            const data = await response.json();
+            console.log("Sync user data response status:", data);
+            set({
+              ...get(),
+              isLoggedIn: true,
+              user: data.user,
+            });
+            return { user: data.user };
+          }
+        } catch (error) {
+          console.error("Failed to sync user data:", error);
         }
       },
       logInWithGoogle: (googleUser: any) => {},
@@ -184,6 +208,7 @@ export const useAuthStore = create(
             user,
             isLoggedIn: true,
             authMethod: "custom",
+            hasCompletedOnboarding: true,
           });
 
           return { success: true };
@@ -243,7 +268,7 @@ export const useAuthStore = create(
             isLoggedIn: true,
             authMethod: "custom",
             shouldCreateAccount: false,
-            hasCompletedOnboarding: false,
+            hasCompletedOnboarding: true,
           });
 
           return { success: true };
@@ -346,3 +371,8 @@ export const useAuthenticatedFetch = () => {
 
   return { authenticatedFetch, hasToken: !!token };
 };
+
+async function logIn_(email: any, password: any) {
+  const authStore = useAuthStore.getState();
+  return authStore.logIn(email, password);
+}

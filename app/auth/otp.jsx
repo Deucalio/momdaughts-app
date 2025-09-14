@@ -120,7 +120,7 @@ export default function OTPPage() {
         }
 
         // Navigate to tracker
-        router.replace("/onboarding");
+        router.replace("/(tabs)");
       }
     } catch (err) {
       setError("Verification failed. Please try again.");

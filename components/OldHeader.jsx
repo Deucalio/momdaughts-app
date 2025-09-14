@@ -4,14 +4,14 @@ import { Image } from 'expo-image';
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import {
-  Pressable,
-  StyleSheet,
-  TouchableOpacity,
-  View
+    Pressable,
+    StyleSheet,
+    TouchableOpacity,
+    View
 } from "react-native";
 import { logOut, useAuthenticatedFetch } from "../app/utils/authStore";
 import Text from "../components/Text";
-const BACKEND_URL = "https://d4bcaa3b5f1b.ngrok-free.app";
+const BACKEND_URL = "https://95d408fcc5df.ngrok-free.app";
 
 const Header = ({cartItemCount_}) => {
   const [showProfileMenu, setShowProfileMenu] = useState(false);

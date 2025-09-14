@@ -15,7 +15,7 @@ import {
   StatusBar,
   StyleSheet,
   TouchableOpacity,
-  View
+  View,
 } from "react-native";
 
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -30,7 +30,7 @@ import {
 } from "../utils/actions";
 import { useAuthenticatedFetch } from "../utils/authStore";
 const { width, height } = Dimensions.get("window");
-const BACKEND_URL = "https://d4bcaa3b5f1b.ngrok-free.app";
+const BACKEND_URL = "https://95d408fcc5df.ngrok-free.app";
 const CONTAINER_WIDTH = width - 32;
 
 // Product Detail Page Skeleton
@@ -203,6 +203,7 @@ const ProductDetailSkeleton = () => (
 const ProductDetailPage = () => {
   const params = useLocalSearchParams();
   const [product, setProduct] = useState(null);
+  const [loadingBuyNow, setLoadingBuyNow] = useState(false);
   const [loading, setLoading] = useState(true);
   const [quantity, setQuantity] = useState(1);
   const [selectedOptions, setSelectedOptions] = useState({});
@@ -688,13 +689,22 @@ const ProductDetailPage = () => {
     }
   };
 
-  const handleBuyNow = () => {
-    Alert.alert(
-      "Buy Now",
-      `Proceeding to checkout with ${quantity} x ${
-        selectedVariant?.displayName || product.title
-      }`
-    );
+  const handleBuyNow = async () => {
+    // ADd to cart then redirect user to checkout
+    setLoadingBuyNow(true);
+
+    await handleAddToCart();
+
+    router.push("/screens/checkout");
+
+    setLoadingBuyNow(false);
+
+    // Alert.alert(
+    //   "Buy Now",
+    //   `Proceeding to checkout with ${quantity} x ${
+    //     selectedVariant?.displayName || product.title
+    //   }`
+    // );
   };
 
   const getPrice = () => {
@@ -704,6 +714,10 @@ const ProductDetailPage = () => {
     }
     return "";
   };
+
+       // Helper function to check if fulfillment is older than 45 days
+
+
 
   const getRating = () => {
     const ratingMetafield = product?.metafields?.find(
@@ -1020,9 +1034,9 @@ const ProductDetailPage = () => {
         ]}
       >
         <View style={styles.actionButtons}>
-          <TouchableOpacity style={styles.chatButton}>
+          {/* <TouchableOpacity style={styles.chatButton}>
             <Ionicons name="chatbubble-outline" size={20} color="#2c2a6b" />
-          </TouchableOpacity>
+          </TouchableOpacity> */}
           {/* Minimalist Add to Cart Button */}
           <Animated.View
             style={[
@@ -1056,12 +1070,12 @@ const ProductDetailPage = () => {
           <TouchableOpacity
             style={[
               styles.buyButton,
-              selectedVariant?.inventoryQuantity <= 0 &&
+              (selectedVariant?.inventoryQuantity <= 0 || loadingBuyNow) &&
                 styles.buyButtonDisabled,
             ]}
             onPress={handleBuyNow}
             activeOpacity={0.8}
-            disabled={selectedVariant?.inventoryQuantity <= 0}
+            disabled={selectedVariant?.inventoryQuantity <= 0 || loadingBuyNow}
           >
             <Text style={styles.buyButtonText}>
               {selectedVariant?.inventoryQuantity <= 0
