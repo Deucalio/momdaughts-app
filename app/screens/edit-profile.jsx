@@ -57,13 +57,13 @@ const ProfilePage = () => {
   const [otpTimer, setOtpTimer] = useState(0);
   const [isOtpSent, setIsOtpSent] = useState(false);
 
-  const handleLogout = async () => {
-    console.log("Logging out...");
-    const res = await logOut();
-    if (res) {
-      router.replace("/auth/login");
-    }
-  };
+  // const handleLogout = async () => {
+  //   console.log("Logging out...");
+  //   const res = await logOut();
+  //   if (res) {
+  //     router.replace("/auth/login");
+  //   }
+  // };
 
   // New states for name editing
   const [firstName, setFirstName] = useState("");
@@ -109,8 +109,8 @@ const ProfilePage = () => {
     setEditValue(value === "••••••••" ? "" : value);
 
     if (field === "email") {
-      setNewEmail(value);
-      setOtpModalVisible(true);
+      // setNewEmail(value);
+      // setOtpModalVisible(true);
     } else if (field === "name") {
       // Split the current name into first and last name
       const nameParts = value.split(" ");
@@ -317,8 +317,7 @@ const ProfilePage = () => {
       });
       console.log("result: ", result);
       if (result.success) {
-        handleLogout();
-        return;
+        // await handleLogout();
       }
 
       setUserProfile((prev) => ({ ...prev, email: newEmail }));

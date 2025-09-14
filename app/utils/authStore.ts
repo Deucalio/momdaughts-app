@@ -372,7 +372,3 @@ export const useAuthenticatedFetch = () => {
   return { authenticatedFetch, hasToken: !!token };
 };
 
-async function logIn_(email: any, password: any) {
-  const authStore = useAuthStore.getState();
-  return authStore.logIn(email, password);
-}
