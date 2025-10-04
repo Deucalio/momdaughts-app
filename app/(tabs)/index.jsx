@@ -16,6 +16,7 @@ import {
   addToCart,
   fetchCartItemsCount,
   fetchArticles,
+  fetchCompletedSessions,
 } from "../utils/actions";
 import { useAuthenticatedFetch, useAuthStore } from "../utils/authStore";
 import { useEffect, useState, useCallback } from "react";
@@ -83,18 +84,35 @@ export default function App() {
   const [blogsLoading, setBlogsLoading] = useState(true);
   const [cartCount, setCartCount] = useState(0);
   const [addingToCart, setAddingToCart] = useState(new Set());
+  const [completedIPLSessions, setCompletedIPLSessions] = useState(0);
+  const [totalSessions, setTotalSessions] = useState(6);
   const router = useRouter();
-  console.log("user:", user);
+  console.log("user:\n", user, "\n\n\n\n\n s");
+
+  const loadCompletedIPLSessions = async () => {
+    try {
+      const sessions = await fetchCompletedSessions(authenticatedFetch);
+      setCompletedIPLSessions(sessions.completedSessions || 0);
+      setTotalSessions(sessions.total || 6);
+      console.log("Loaded completed IPL sessions:", sessions);
+      return sessions;
+    } catch (e) {
+      console.error("Failed to load completed IPL sessions:", e);
+      setCompletedIPLSessions(0);
+      setTotalSessions(6);
+      return 0;
+    }
+  };
 
   useFocusEffect(
     useCallback(() => {
       loadCartCount();
+      loadCompletedIPLSessions();
     }, [])
   );
 
-
   const { isLoggedIn, hasCompletedOnboarding } = useAuthStore();
-  
+
   const isEmailVerified = user?.metaData?.is_verified === true;
 
   // useEffect(() => {
@@ -273,12 +291,14 @@ export default function App() {
           </View>
 
           <IPLSessionsTrackerSection
-            completedSessions={3}
-            totalSessions={6}
+            completedSessions={completedIPLSessions}
+            totalSessions={totalSessions}
             onViewAllPress={() => console.log("hqhq")}
             onTrackerPress={() => {
               if (user.metaData.ipl_onboarding_completed) {
-                router.push("/screens/ipl/dashboard");
+                router.push(
+                  `/screens/ipl/dashboard?completedSessions=${completedIPLSessions}&totalSessions=${totalSessions}`
+                );
               } else {
                 router.push("/screens/ipl/onboard");
               }

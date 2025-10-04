@@ -4,27 +4,28 @@ import { Image } from "expo-image";
 import { useFocusEffect, useRouter } from "expo-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
-  ActivityIndicator,
-  Alert,
-  Animated,
-  FlatList,
-  KeyboardAvoidingView,
-  Platform,
-  Pressable,
-  SafeAreaView,
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  TextInput,
-  View,
+    ActivityIndicator,
+    Alert,
+    Animated,
+    FlatList,
+    KeyboardAvoidingView,
+    Platform,
+    Pressable,
+    SafeAreaView,
+    ScrollView,
+    StatusBar,
+    StyleSheet,
+    TextInput,
+    View,
 } from "react-native";
 import NavigationSpaceContainer from "../../components/NavigationSpaceContainer";
 import Text from "../../components/Text";
 import { createOrder } from "../utils/actions";
 import { useAuthenticatedFetch, useAuthStore } from "../utils/authStore";
 // Configure these for your app
-const CART_API = "https://95d408fcc5df.ngrok-free.app/cart";
-const ADDRESSES_API = "https://95d408fcc5df.ngrok-free.app/addresses";
+const CART_API = "https://16c663724b7c.ngrok-free.app/cart";
+const ADDRESSES_API = "https://16c663724b7c.ngrok-free.app/addresses";
+const DISCOUNT_VERIFY_API = "https://16c663724b7c.ngrok-free.app/verify-discount-code";
 const CURRENCY_SYMBOL = "PKR ";
 // Subtle, elegant color palette
 const COLORS = {

@@ -1,4 +1,4 @@
-const BACKEND_URL = "https://95d408fcc5df.ngrok-free.app";
+const BACKEND_URL = "https://16c663724b7c.ngrok-free.app";
 export const fetchCartItemsCount = async (authenticatedFetch) => {
   try {
     const res = await authenticatedFetch(`${BACKEND_URL}/cart-items-count`);
@@ -208,7 +208,7 @@ export const fetchWishlistItems = async (authenticatedFetch) => {
     const res = await authenticatedFetch(`${BACKEND_URL}/wishlist`, {});
 
     const data = await res.json();
-    console.log("hqhqhq:", data);
+    console.log("hqhqhq:\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n", data);
     if (res.ok) {
       return {
         wishlist: data.wishlist,
@@ -343,6 +343,7 @@ export const fetchIPLProfile = async (authenticatedFetch) => {
       return {
         success: true,
         iplProfile: data.iplProfile,
+        monthCounts: data.monthCounts || [],
       };
     }
   } catch (error) {
@@ -354,6 +355,29 @@ export const fetchIPLProfile = async (authenticatedFetch) => {
     };
   }
 };
+
+export const fetchCompletedSessions = async (authenticatedFetch) => {
+  try {
+    const response = await authenticatedFetch(
+      `${BACKEND_URL}/ipl/current-sessions-completed`
+    );
+    if (response.ok) {
+      const data = await response.json();
+      return {
+        success: true,
+        completedSessions: data.completedSessions || 0,
+        total: data.total || 6
+      };
+    }
+  } catch (error) {
+    console.error("Failed to fetch completed sessions:", error);
+    return {
+      success: false,
+      error: "Failed to fetch completed sessions",
+      details: error.message,
+    };
+  }
+}
 
 export const createIPLSession = async (authenticatedFetch, data) => {
   try {

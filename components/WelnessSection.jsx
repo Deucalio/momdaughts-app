@@ -81,7 +81,7 @@ export default function WellnessCollections() {
           const apiData = collections_.find(
             (item) => item.id.replace("gid://shopify/Collection/", "") === collection.id
           );
-          console.log("API Data:", apiData);
+          // console.log("API Data:", apiData);
           return apiData
             ? {
                 ...collection,
@@ -94,7 +94,7 @@ export default function WellnessCollections() {
             : collection;
         });
 
-        console.log("Updated Collections:", updatedCollections);
+        // console.log("Updated Collections:", updatedCollections);
 
         setCollections(updatedCollections);
       } catch (error) {

@@ -3,6 +3,7 @@ import { useState } from "react";
 import { ScrollView, StyleSheet, TouchableOpacity, View } from "react-native";
 import Text from "../components/Text";
 const AddSessionSection = ({
+  selectedArea: propSelectedArea, // Added prop for selected area from parent
   isSessionActive,
   currentSession,
   sessionTimer,
@@ -14,8 +15,8 @@ const AddSessionSection = ({
   setActiveTab,
   updateSessionIntensity, // Added prop for updating intensity during session
 }) => {
-  const [selectedArea, setSelectedArea] = useState(null)
-  const [selectedIntensity, setSelectedIntensity] = useState(null)
+  const [selectedArea, setSelectedArea] = useState(propSelectedArea || null); // Use prop or local state
+  const [selectedIntensity, setSelectedIntensity] = useState(null);
 
   if (isSessionActive) {
     return (
@@ -36,13 +37,20 @@ const AddSessionSection = ({
             {[currentSession.intensity].map((level) => (
               <TouchableOpacity
                 key={level}
-                style={[styles.intensityButton, currentSession?.intensity === level && styles.intensityButtonActive]}
-                onPress={() => updateSessionIntensity && updateSessionIntensity(level)}
+                style={[
+                  styles.intensityButton,
+                  currentSession?.intensity === level &&
+                    styles.intensityButtonActive,
+                ]}
+                onPress={() =>
+                  updateSessionIntensity && updateSessionIntensity(level)
+                }
               >
                 <Text
                   style={[
                     styles.intensityButtonText,
-                    currentSession?.intensity === level && styles.intensityButtonTextActive,
+                    currentSession?.intensity === level &&
+                      styles.intensityButtonTextActive,
                   ]}
                 >
                   {level}
@@ -51,8 +59,11 @@ const AddSessionSection = ({
             ))}
           </View>
           <Text style={styles.intensityDescription}>
-            {currentSession?.intensity <= 3 && "Gentle - Perfect for sensitive areas"}
-            {currentSession?.intensity >= 4 && currentSession?.intensity <= 6 && "Medium - Balanced effectiveness"}
+            {currentSession?.intensity <= 3 &&
+              "Gentle - Perfect for sensitive areas"}
+            {currentSession?.intensity >= 4 &&
+              currentSession?.intensity <= 6 &&
+              "Medium - Balanced effectiveness"}
             {currentSession?.intensity >= 7 && "Strong - Maximum effectiveness"}
           </Text>
         </View>
@@ -60,7 +71,9 @@ const AddSessionSection = ({
         <View style={styles.sessionDetails}>
           <View style={styles.sessionDetailRow}>
             <Text style={styles.sessionDetailLabel}>Treatment Area</Text>
-            <Text style={styles.sessionDetailValue}>{currentSession?.area}</Text>
+            <Text style={styles.sessionDetailValue}>
+              {currentSession?.area}
+            </Text>
           </View>
         </View>
 
@@ -68,11 +81,14 @@ const AddSessionSection = ({
           <Text style={styles.stopButtonText}>Complete Session</Text>
         </TouchableOpacity>
       </View>
-    )
+    );
   }
 
-  const treatmentAreas = getTreatmentAreas()
-  const allAreas = treatmentAreas.length > 0 ? treatmentAreas : ["face", "legs", "arms", "underarms"]
+  const treatmentAreas = getTreatmentAreas();
+  const allAreas =
+    treatmentAreas.length > 0
+      ? treatmentAreas
+      : ["face", "legs", "arms", "underarms"];
 
   const handleStartSession = () => {
     if (selectedArea && selectedIntensity) {
@@ -80,18 +96,21 @@ const AddSessionSection = ({
         area: selectedArea.charAt(0).toUpperCase() + selectedArea.slice(1),
         intensity: selectedIntensity,
         notes: "",
-      })
+      });
       // Reset selections after starting
-      setSelectedArea(null)
-      setSelectedIntensity(null)
+      setSelectedArea(null);
+      setSelectedIntensity(null);
     }
-  }
+  };
 
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity style={styles.backButton} onPress={() => setActiveTab("tracker")}>
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => setActiveTab("tracker")}
+        >
           <Text style={styles.backButtonText}>←</Text>
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Add Session</Text>
@@ -99,26 +118,6 @@ const AddSessionSection = ({
       </View>
 
       {/* Progress Bar (duplicated locally for the Add Session view) */}
-      <View style={styles.progressSectionLocal}>
-        <Text style={styles.sectionTitleLocal}>Progress</Text>
-        <View style={styles.progressCardLocal}>
-          <Text style={styles.progressTextLocal}>
-            You've completed {iplProfile?.sessions?.length || 0}/12 recommended sessions
-          </Text>
-          <View style={styles.progressBarContainerLocal}>
-            <View style={styles.progressBarLocal}>
-              <View
-                style={[
-                  styles.progressFillLocal,
-                  {
-                    width: `${Math.min(((iplProfile?.sessions?.length || 0) / 12) * 100, 100)}%`,
-                  },
-                ]}
-              />
-            </View>
-          </View>
-        </View>
-      </View>
 
       {/* Treatment Area Selection */}
       <View style={styles.selectionSection}>
@@ -129,14 +128,16 @@ const AddSessionSection = ({
               key={area}
               style={[
                 styles.areaCard,
-                selectedArea === area && styles.areaCardSelected
+                selectedArea === area && styles.areaCardSelected,
               ]}
               onPress={() => setSelectedArea(area)}
             >
-              <Text style={[
-                styles.areaCardText,
-                selectedArea === area && styles.areaCardTextSelected
-              ]}>
+              <Text
+                style={[
+                  styles.areaCardText,
+                  selectedArea === area && styles.areaCardTextSelected,
+                ]}
+              >
                 {area.charAt(0).toUpperCase() + area.slice(1)}
               </Text>
             </TouchableOpacity>
@@ -148,62 +149,78 @@ const AddSessionSection = ({
       <View style={styles.selectionSection}>
         <Text style={styles.sectionTitleLocal}>Select Intensity Level</Text>
         <View style={styles.intensityGrid}>
-          {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((level) => (
+          {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((level, index) => (
             <TouchableOpacity
               key={level}
               style={[
                 styles.intensityCard,
-                selectedIntensity === level && styles.intensityCardSelected
+                // selectedIntensity === level && styles.intensityCardSelected
+                // select all the selected cards up to the selected intensity
+                index < selectedIntensity && styles.intensityCardSelected,
               ]}
               onPress={() => setSelectedIntensity(level)}
             >
-              <Text style={[
-                styles.intensityCardNumber,
-                selectedIntensity === level && styles.intensityCardNumberSelected
-              ]}>
+              <Text
+                style={[
+                  styles.intensityCardNumber,
+                  // selectedIntensity === level && styles.intensityCardNumberSelected
+                  index < selectedIntensity &&
+                    styles.intensityCardNumberSelected,
+                ]}
+              >
                 {level}
               </Text>
             </TouchableOpacity>
           ))}
         </View>
-        
+
         {selectedIntensity && (
           <Text style={styles.intensityDescriptionStatic}>
             {selectedIntensity <= 3 && "Gentle - Perfect for sensitive areas"}
-            {selectedIntensity >= 4 && selectedIntensity <= 6 && "Medium - Balanced effectiveness"}
+            {selectedIntensity >= 4 &&
+              selectedIntensity <= 6 &&
+              "Medium - Balanced effectiveness"}
             {selectedIntensity >= 7 && "Strong - Maximum effectiveness"}
           </Text>
         )}
       </View>
 
       {/* Start Session Button */}
-      <TouchableOpacity 
+      <TouchableOpacity
         style={[
           styles.startSessionButton,
-          (!selectedArea || !selectedIntensity) && styles.startSessionButtonDisabled
+          (!selectedArea || !selectedIntensity) &&
+            styles.startSessionButtonDisabled,
         ]}
         onPress={handleStartSession}
         disabled={!selectedArea || !selectedIntensity}
       >
-        <Text style={[
-          styles.startSessionButtonText,
-          (!selectedArea || !selectedIntensity) && styles.startSessionButtonTextDisabled
-        ]}>
-          {!selectedArea ? "Select Treatment Area" : 
-           !selectedIntensity ? "Select Intensity Level" : 
-           `Start ${selectedArea.charAt(0).toUpperCase() + selectedArea.slice(1)} Session`}
+        <Text
+          style={[
+            styles.startSessionButtonText,
+            (!selectedArea || !selectedIntensity) &&
+              styles.startSessionButtonTextDisabled,
+          ]}
+        >
+          {!selectedArea
+            ? "Select Treatment Area"
+            : !selectedIntensity
+            ? "Select Intensity Level"
+            : `Start ${
+                selectedArea.charAt(0).toUpperCase() + selectedArea.slice(1)
+              } Session`}
         </Text>
       </TouchableOpacity>
 
       {/* Custom Session Button */}
-      <TouchableOpacity style={styles.customSessionButton}>
+      {/* <TouchableOpacity style={styles.customSessionButton}>
         <Text style={styles.customSessionButtonText}>+ Create Custom Session</Text>
-      </TouchableOpacity>
+      </TouchableOpacity> */}
     </ScrollView>
-  )
-}
+  );
+};
 
-export default AddSessionSection
+export default AddSessionSection;
 
 const styles = StyleSheet.create({
   container: {
@@ -243,6 +260,8 @@ const styles = StyleSheet.create({
   menuButton: {
     width: 40,
     height: 40,
+    opacity: 0,
+    pointerEvents: "none",
     borderRadius: 20,
     backgroundColor: "#FFFFFF",
     alignItems: "center",
@@ -299,7 +318,7 @@ const styles = StyleSheet.create({
   selectionSection: {
     marginBottom: 30,
   },
-  
+
   /* Area selection styles */
   areaGrid: {
     flexDirection: "row",
@@ -360,6 +379,7 @@ const styles = StyleSheet.create({
   intensityCardSelected: {
     borderColor: "#2c2a6b",
     backgroundColor: "#2c2a6b",
+    color: "#FFFFFF",
   },
   intensityCardNumber: {
     fontSize: 20,
@@ -541,4 +561,23 @@ const styles = StyleSheet.create({
     fontFamily: "Outfit-SemiBold",
     color: "#2c2a6b",
   },
-})
+});
+
+// <Text style={styles.chartTitle}>Sessions Overview</Text>
+
+//     <View style={styles.overallStats}>
+//       <View style={styles.overallStat}>
+//         <Text style={styles.overallStatNumber}>{totalSessions}</Text>
+//         <Text style={styles.overallStatLabel}>Total Sessions</Text>
+//       </View>
+
+//       <View style={styles.overallStat}>
+//         <Text style={styles.overallStatNumber}>{treatmentAreas.length}</Text>
+//         <Text style={styles.overallStatLabel}>Treatment Areas</Text>
+//       </View>
+
+//       <View style={styles.overallStat}>
+//         <Text style={styles.overallStatNumber}>{getNextSessionMessage()}</Text>
+//         <Text style={styles.overallStatLabel}>Next Session</Text>
+//       </View>
+//     </View>

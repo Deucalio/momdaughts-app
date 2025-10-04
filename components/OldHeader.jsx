@@ -11,7 +11,7 @@ import {
 } from "react-native";
 import { logOut, useAuthenticatedFetch } from "../app/utils/authStore";
 import Text from "../components/Text";
-const BACKEND_URL = "https://95d408fcc5df.ngrok-free.app";
+const BACKEND_URL = "https://16c663724b7c.ngrok-free.app";
 
 const Header = ({cartItemCount_}) => {
   const [showProfileMenu, setShowProfileMenu] = useState(false);

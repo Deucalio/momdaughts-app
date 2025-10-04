@@ -329,7 +329,7 @@ export default function OrderScreen() {
                 style={styles.improvedItemCard}
               >
                 <Image
-                  source={{ uri: item.variant.image.url }}
+                  source={{ uri: item.variant?.image?.url }}
                   style={[styles.itemImage]}
                   resizeMode="cover"
                 />

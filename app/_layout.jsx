@@ -1,13 +1,13 @@
 import { useFonts } from "expo-font";
 import * as SplashScreen from "expo-splash-screen";
-import { Stack } from "expo-router";
+import { Stack, router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import * as NavigationBar from "expo-navigation-bar";
 import { useAuthStore } from "./utils/authStore";
-import { useEffect, useCallback, useState } from "react";
+import { useEffect, useCallback, useState, use } from "react";
 import { Platform, AppState, View, Text } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
-
+import { Linking } from "react-native";
 // Override React Native's Text with your custom one globally
 import { Text as RNText } from "react-native";
 RNText.defaultProps = RNText.defaultProps || {};
@@ -17,8 +17,10 @@ RNText.defaultProps.style = { fontFamily: "Outfit-Regular" };
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
-  const { isLoggedIn, hasCompletedOnboarding, user, _hasHydrated } =
+  const { isLoggedIn, hasCompletedOnboarding, user, _hasHydrated, setTokenDirectly  } =
     useAuthStore();
+
+    console.log("layout: ", isLoggedIn, hasCompletedOnboarding, user, _hasHydrated);
 
   // Check if user's email is verified
   const isEmailVerified = user?.metaData?.is_verified === true;
@@ -89,6 +91,7 @@ export default function RootLayout() {
         setTimeout(() => {
           setNavigationBarStyle();
         }, 100);
+
       } catch (error) {
         console.warn("Error hiding splash screen:", error);
       }
@@ -99,6 +102,48 @@ export default function RootLayout() {
     hideSplashScreen();
   }, [hideSplashScreen]);
 
+
+   // Handle OAuth callbacks at the app level
+  useEffect(() => {
+    console.log("=== DEEP LINKING ===");
+    const handleDeepLink = async (url) => {
+      // if (user) return;
+      console.log("Deep link received in layout:", url);
+      
+      if (url && url.includes('token=')) {
+        const urlObj = new URL(url);
+        const token = urlObj.searchParams.get('token');
+        const state = urlObj.searchParams.get('state');
+        const user_ = urlObj.searchParams.get('user'); 
+        
+        console.log("Token from deep link:", token);
+        console.log("State from deep link:", state);
+        
+        if (token) {
+          console.log("Setting token from deep link");
+
+          await setTokenDirectly(token, user_);
+          router.replace("/(tabs)");
+        }
+      }
+    };
+
+    // Listen for incoming URLs
+    const subscription = Linking.addEventListener('url', ({ url }) => {
+      handleDeepLink(url);
+    });
+
+    // Check if app was opened with a URL
+    Linking.getInitialURL().then((url) => {
+      if (url) {
+        console.log("App opened with URL:", url);
+        handleDeepLink(url);
+      }
+    });
+
+    return () => subscription?.remove();
+  }, []);
+
   // Don't render anything until resources are ready
   if (!loaded && !fontError) {
     console.log("⏳ Waiting for fonts to load...");
@@ -108,10 +153,16 @@ export default function RootLayout() {
   if (!_hasHydrated) {
     console.log("⏳ Waiting for auth store to hydrate...");
     return null;
+
   }
 
   console.log("\n=== RENDERING APP ===");
-  console.log("isLoggedIn:", isLoggedIn);
+  // if (user && user.metaData.authMethod === "google") {
+  //   console.log("User auth method is Google");
+  //   // Redirect him to /(tabs)
+  //   router.replace("/(tabs)");
+  // }
+  console.log("isLoggedIn:", isLoggedIn, "user:", user);
   console.log("isEmailVerified:", isEmailVerified);
   console.log("hasCompletedOnboarding:", hasCompletedOnboarding);
   console.log("====================\n");

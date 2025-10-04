@@ -31,6 +31,11 @@ export default function OTPPage() {
   const { user, syncUserMetaData } = useAuthStore();
 
   const sendOTP_ = async () => {
+
+    if (!email && !user){
+      router.replace("/auth/login")
+    }
+
     setError("");
     try {
       const res = await sendOTP({

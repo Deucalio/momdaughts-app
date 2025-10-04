@@ -233,7 +233,7 @@ export default function AddressesPage() {
   const fetchAddresses = async () => {
     setLoading(true);
     try {
-      const response = await authenticatedFetch("https://95d408fcc5df.ngrok-free.app/addresses");
+      const response = await authenticatedFetch("https://16c663724b7c.ngrok-free.app/addresses");
       if (!response.ok) {
         throw new Error('Failed to fetch addresses');
       }
@@ -292,7 +292,7 @@ const handleSetDefault = async (address) => {
     
     // Refresh addresses list
     fetchAddresses();
-    Alert.alert("Success", "Default address updated!");
+    // Alert.alert("Success", "Default address updated!");
   } catch (error) {
     Alert.alert("Error", "Failed to update default address. Please try again.");
     console.error("Error setting default address:", error);

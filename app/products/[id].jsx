@@ -4,18 +4,18 @@ import { Image } from "expo-image";
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
-  Alert,
-  Animated,
-  Dimensions,
-  Easing,
-  FlatList,
-  PanResponder,
-  SafeAreaView,
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  TouchableOpacity,
-  View,
+    Alert,
+    Animated,
+    Dimensions,
+    Easing,
+    FlatList,
+    PanResponder,
+    SafeAreaView,
+    ScrollView,
+    StatusBar,
+    StyleSheet,
+    TouchableOpacity,
+    View,
 } from "react-native";
 
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -23,14 +23,14 @@ import CartToast from "../../components/CartToast";
 import Text from "../../components/Text";
 import WishlistToast from "../../components/WishlistToast";
 import {
-  addToCart,
-  addToWishlist,
-  fetchCartItemsCount,
-  removeFromWishlist,
+    addToCart,
+    addToWishlist,
+    fetchCartItemsCount,
+    removeFromWishlist,
 } from "../utils/actions";
 import { useAuthenticatedFetch } from "../utils/authStore";
 const { width, height } = Dimensions.get("window");
-const BACKEND_URL = "https://95d408fcc5df.ngrok-free.app";
+const BACKEND_URL = "https://16c663724b7c.ngrok-free.app";
 const CONTAINER_WIDTH = width - 32;
 
 // Product Detail Page Skeleton

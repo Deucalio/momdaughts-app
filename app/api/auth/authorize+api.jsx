@@ -7,6 +7,7 @@ import {
 } from "../../../constants";
 
 export async function GET(request) {
+  console.log("GET /api/auth/authorize");
   if (!GOOGLE_CLIENT_ID) {
     return Response.json(
       { message: "Missing GOOGLE_CLIENT_ID" },

@@ -18,6 +18,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import GoogleAuthComponent from "../../components/GoogleAuthComponent";
 import Text from "../../components/Text";
 import { signInWithCustom } from "../utils/auth";
+import { useAuthStore } from "../utils/authStore";
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
@@ -25,6 +26,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+  const {user} = useAuthStore();
 
   const handleLogin = async () => {
     setIsLoading(true);
@@ -40,6 +42,10 @@ export default function LoginPage() {
       setError(error);
     }
   };
+  if (user&& user.metaData.authMethod==="google") {
+    router.replace("/(tabs)");
+    return;
+  }
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#fff" />

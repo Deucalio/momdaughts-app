@@ -1,9 +1,5 @@
 import { LinearGradient } from "expo-linear-gradient";
-import {
-  StyleSheet,
-  TouchableOpacity,
-  View
-} from "react-native";
+import { StyleSheet, TouchableOpacity, View } from "react-native";
 
 import Text from "../components/Text";
 const COLORS = {
@@ -23,13 +19,30 @@ const COLORS = {
   softGold: "#f4f1ea",
 };
 
+const monthNames = [
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
+];
+
 export default function IPLSessionsTracker({
-  completedSessions = 3,
-  totalSessions = 6,
+  completedSessions,
+  totalSessions,
   onViewAllPress,
   onTrackerPress,
 }) {
-  const progressPercentage = (completedSessions / totalSessions) * 100;
+  const progressPercentage = 100;
+  const currentDate = new Date();
+  const currentMonth = monthNames[currentDate.getMonth()];
 
   return (
     <View style={styles.backgroundImage}>
@@ -64,7 +77,9 @@ export default function IPLSessionsTracker({
             <View style={styles.trackerInfo}>
               <Text style={styles.trackerLabel}>IPL Sessions</Text>
               <Text style={styles.trackerValue}>
-                {completedSessions} of {totalSessions} completed
+                Track your IPL progress for {currentMonth}
+                {/* {currentMonth}: {completedSessions} of {totalSessions} completed */}
+                {/* {currentMonth}: {completedSessions} sessions completed */}
               </Text>
               <View style={styles.progressContainer}>
                 <View style={styles.progressBackground}>
@@ -161,7 +176,7 @@ const styles = StyleSheet.create({
   },
   trackersTitle: {
     fontSize: 16,
-    fontFamily:"Outfit-Bold",
+    fontFamily: "Outfit-Bold",
     color: COLORS.white,
   },
   viewAllTextWhite: {

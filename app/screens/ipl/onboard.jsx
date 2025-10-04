@@ -13,6 +13,8 @@ import {
 import Text from "../../../components/Text";
 import { createIPLProfile, fetchDevices } from "../../utils/actions";
 import { useAuthenticatedFetch, useAuthStore } from "../../utils/authStore";
+import NavigationSpaceContainer from "../../../components/NavigationSpaceContainer";
+
 const { width, height } = Dimensions.get("window");
 
 // Scaling functions
@@ -286,7 +288,7 @@ const IPLOnboarding = () => {
   const renderSetReminders = () => (
     <View style={styles.onboardingContainer}>
       <View style={styles.onboardingHeader}>
-        <Text style={styles.onboardingTitle}>Set Reminders</Text>
+        <Text style={styles.onboardingTitle}>Set Frequency</Text>
         <Text style={styles.onboardingSubtitle}>
           Choose your session frequency for optimal results
         </Text>

@@ -157,7 +157,7 @@ export default function OrdersPage() {
             {order.displayItems.slice(0, 3).map((item, index) => (
               <View key={item.id} style={styles.itemPreview}>
                 <Image
-                  source={{ uri: item.variant.image.url }}
+                  source={{ uri: item.variant.image?.url }}
                   style={styles.itemImage}
                   contentFit="cover"
                 />

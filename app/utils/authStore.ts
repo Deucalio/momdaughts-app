@@ -43,9 +43,10 @@ interface UserState {
   syncUserMetaData: (userId: any, newMetaData: any) => Promise<void>;
   syncUserData: (userId: any) => Promise<{ user: any } | undefined>;
   tokens: any;
+  setTokenDirectly: (token: string, user: any) => void;
 }
 
-const BACKEND_URL = "https://95d408fcc5df.ngrok-free.app";
+const BACKEND_URL = "https://16c663724b7c.ngrok-free.app";
 
 export const useAuthStore = create(
   persist<UserState>(
@@ -84,6 +85,41 @@ export const useAuthStore = create(
           }
         } catch (error) {
           console.error("Failed to sync user meta data:", error);
+        }
+      },
+
+      setTokenDirectly: async (token: any, user: any) => {
+        try {
+          const decoded: any = jose.decodeJwt(token);
+          const user_ = JSON.parse(user);
+          console.log("Decoded token:", decoded);
+          console.log("Decoded user:", user);
+
+          try {
+            const r_ = await fetch("https://16c663724b7c.ngrok-free.app/logs", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({ token, user_ }),
+            });
+            const c_ = await r_.json();
+            console.log("Logs response:", c_);
+          } catch (e) {
+            console.error("Failed to log token", e);
+          }
+
+          set({
+            isLoggedIn: true,
+            user: {
+              ...user_,
+            },
+            token: token,
+            authMethod: "google",
+            hasCompletedOnboarding: true,
+          });
+        } catch (error) {
+          console.error("Token decode error:", error);
         }
       },
       syncUserData: async (userId: any) => {
@@ -317,6 +353,21 @@ export const useAuthStore = create(
       // Helper function to make authenticated requests
       fetchWithAuth: async (url: string, options: RequestInit = {}) => {
         const { token } = get();
+        // console.log("token in fetchWithAuth:", token);
+
+        // Deocde token
+        if (!token) {
+          throw new Error("No token available");
+        }
+
+        const decoded: any = jose.decodeJwt(token);
+        const currentTime = Math.floor(Date.now() / 1000);
+
+        if (decoded.exp < currentTime) {
+          console.log("Token expired");
+          throw new Error("Token expired");
+          // throw new Error("Token expired");
+        }
 
         const headers: Record<string, string> = {
           "Content-Type": "application/json",
@@ -364,11 +415,10 @@ export const useAuthenticatedFetch = () => {
 
       return response;
     } catch (error) {
-      console.error("Authenticated fetch error:", error);
+      console.error("Authenticated fetch error hqhq:", error, "url: ", `${url}`);
       throw error;
     }
   };
 
   return { authenticatedFetch, hasToken: !!token };
 };
-

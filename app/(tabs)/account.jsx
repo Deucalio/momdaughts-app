@@ -24,7 +24,7 @@ import {
 } from "../utils/actions";
 import { logOut } from "../utils/auth";
 import { useAuthenticatedFetch, useAuthStore } from "../utils/authStore";
-const BACKEND_URL = "https://95d408fcc5df.ngrok-free.app";
+const BACKEND_URL = "https://16c663724b7c.ngrok-free.app";
 const { width } = Dimensions.get("window");
 
 // Color palette matching the cart design
@@ -97,6 +97,7 @@ export default function AccountScreen() {
 
   const { authenticatedFetch } = useAuthenticatedFetch();
   const { user } = useAuthStore();
+  console.log("hqhqh: ", user);
 
   const loadCartItemsCount = async () => {
     try {
@@ -261,9 +262,9 @@ export default function AccountScreen() {
             overflow: "hidden",
           }}
         >
-          {userProfile?.avatar ? (
+          {userProfile?.metaData?.avatar ? (
             <Image
-              source={{ uri: userProfile.avatar }}
+              source={{ uri: userProfile.metaData?.avatar }}
               style={{ width: 60, height: 60, borderRadius: 40 }}
               resizeMode="cover"
             />
