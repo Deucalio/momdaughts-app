@@ -4,19 +4,19 @@ import { Image } from "expo-image";
 import { useFocusEffect, useRouter } from "expo-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
-    ActivityIndicator,
-    Alert,
-    Animated,
-    FlatList,
-    KeyboardAvoidingView,
-    Platform,
-    Pressable,
-    SafeAreaView,
-    ScrollView,
-    StatusBar,
-    StyleSheet,
-    TextInput,
-    View,
+  ActivityIndicator,
+  Alert,
+  Animated,
+  FlatList,
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  SafeAreaView,
+  ScrollView,
+  StatusBar,
+  StyleSheet,
+  TextInput,
+  View,
 } from "react-native";
 import NavigationSpaceContainer from "../../components/NavigationSpaceContainer";
 import Text from "../../components/Text";
@@ -25,7 +25,8 @@ import { useAuthenticatedFetch, useAuthStore } from "../utils/authStore";
 // Configure these for your app
 const CART_API = "https://16c663724b7c.ngrok-free.app/cart";
 const ADDRESSES_API = "https://16c663724b7c.ngrok-free.app/addresses";
-const DISCOUNT_VERIFY_API = "https://16c663724b7c.ngrok-free.app/verify-discount-code";
+const DISCOUNT_VERIFY_API =
+  "https://16c663724b7c.ngrok-free.app/verify-discount-code";
 const CURRENCY_SYMBOL = "PKR ";
 // Subtle, elegant color palette
 const COLORS = {
@@ -64,9 +65,12 @@ export default function CheckoutScreen() {
   const [sameAsBilling, setSameAsBilling] = useState(true);
   const [processingPayment, setProcessingPayment] = useState(false);
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState("cod"); // Default to COD
+
   const [discountCode, setDiscountCode] = useState("");
-  const [appliedDiscount, setAppliedDiscount] = useState(null);
+  const [appliedDiscounts, setAppliedDiscounts] = useState([]);
   const [applyingDiscount, setApplyingDiscount] = useState(false);
+  const [discountError, setDiscountError] = useState(null);
+
   const [selectedShippingMethod, setSelectedShippingMethod] = useState(null);
   const { user } = useAuthStore();
 
@@ -297,18 +301,50 @@ export default function CheckoutScreen() {
     setSelectedShippingMethod(defaultMethod);
   }, [totalWeight]);
 
-  const shipping = selectedShippingMethod?.price || 0;
+  const shipping = useMemo(() => {
+    const baseShipping = selectedShippingMethod?.price || 0;
 
+    // Check if any applied discount is free shipping
+    const hasFreeShipping = appliedDiscounts.some(
+      (discount) => discount.type === "Free Shipping"
+    );
+
+    if (hasFreeShipping) {
+      return 0;
+    }
+
+    return baseShipping;
+  }, [selectedShippingMethod, appliedDiscounts]);
   // const tax = Math.round(subtotal * 0.17); // 17% tax (Pakistan GST)
   // 2% Tax (Pakistan GST)
   // const tax = Math.round(subtotal * 0.02);
 
-  // 0% Tax (Pakistan GST)
-  const tax = 0;
+  // 2% Tax (Pakistan GST)
+  // const tax = Math.round(subtotal * 0.02);
 
-  const discountAmount = appliedDiscount
-    ? Math.round(subtotal * (appliedDiscount.percentage / 100))
-    : 0;
+  // Calculate 2% tax after discounts
+  const tax = Math.round((subtotal - (discountAmount || 0)) * 0.02);
+
+  // const tax = 0;
+
+  const discountAmount = useMemo(() => {
+    if (!appliedDiscounts || appliedDiscounts.length === 0) return 0;
+
+    let totalDiscount = 0;
+
+    appliedDiscounts.forEach((discount) => {
+      // Handle percentage discounts
+      if (discount.percentage) {
+        totalDiscount += Math.round(subtotal * (discount.percentage / 100));
+      }
+      // Handle fixed amount discounts
+      else if (discount.amount) {
+        totalDiscount += discount.amount;
+      }
+    });
+
+    return totalDiscount;
+  }, [appliedDiscounts, subtotal]);
   const total = subtotal + shipping + tax - discountAmount;
   const isAddressSelected = (address, type) => {
     const currentAddress =
@@ -331,57 +367,129 @@ export default function CheckoutScreen() {
 
   const handleApplyDiscount = async () => {
     if (!discountCode.trim()) {
-      Alert.alert("Invalid Code", "Please enter a discount code.");
+      setDiscountError("Please enter a discount code");
+      return;
+    }
+
+    // Check if code already applied
+    const alreadyApplied = appliedDiscounts.some(
+      (d) => d.code.toLowerCase() === discountCode.trim().toLowerCase()
+    );
+
+    if (alreadyApplied) {
+      setDiscountError("This discount code is already applied");
       return;
     }
 
     setApplyingDiscount(true);
+    setDiscountError(null);
+
     try {
-      // Simulate API call to validate discount code
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      // Get cart variant IDs
+      const cartVariantIds = availableItems
+        .map((item) => item.variantId)
+        .filter(Boolean)
+        .join(",");
 
-      // Mock discount validation
-      const mockDiscounts = {
-        NEWORDER10: {
-          code: "NEWORDER10",
-          percentage: 10,
-          description: "10% off",
-        },
-        WELCOME15: {
-          code: "WELCOME15",
-          percentage: 15,
-          description: "15% off for new customers",
-        },
-        SKINCARE20: {
-          code: "SKINCARE20",
-          percentage: 20,
-          description: "20% off skincare products",
-        },
-      };
+      // Get all applied discount codes
+      const allCodes = [
+        ...appliedDiscounts.map((d) => d.code),
+        discountCode.trim(),
+      ].join(",");
 
-      const discount = mockDiscounts[discountCode.toUpperCase()];
-      if (discount) {
-        setAppliedDiscount(discount);
-        Alert.alert(
-          "Discount Applied!",
-          `${discount.description} has been applied to your order.`
+      // Build query parameters
+      const params = new URLSearchParams({
+        codes: allCodes,
+        subtotal: subtotal.toString(),
+        ...(cartVariantIds && { cartVariants: cartVariantIds }),
+      });
+
+      const response = await authenticatedFetch(
+        `${DISCOUNT_VERIFY_API}?${params.toString()}`
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to verify discount code");
+      }
+
+      const data = await response.json();
+
+      // Check if the new discount is valid
+      if (data.applicableDiscounts && data.applicableDiscounts.length > 0) {
+        const newDiscount = data.applicableDiscounts.find(
+          (d) => d.code.toLowerCase() === discountCode.trim().toLowerCase()
         );
+
+        if (newDiscount) {
+          // Extract percentage or amount
+          let discountPercentage = null;
+          let discountAmount = null;
+
+          if (newDiscount.percentage) {
+            discountPercentage = newDiscount.percentage;
+          } else if (newDiscount.value && newDiscount.value.includes("%")) {
+            discountPercentage = parseFloat(newDiscount.value.replace("%", ""));
+          } else if (newDiscount.amount) {
+            discountAmount = newDiscount.amount;
+          }
+
+          const discountToAdd = {
+            code: newDiscount.code,
+            percentage: discountPercentage,
+            amount: discountAmount,
+            description: newDiscount.value,
+            type: newDiscount.type,
+            title: newDiscount.title,
+          };
+
+          setAppliedDiscounts((prev) => [...prev, discountToAdd]);
+          setDiscountCode("");
+          setDiscountError(null);
+        } else {
+          // Discount was in the request but not applicable
+          const invalidDiscount = data.invalidDiscounts?.find(
+            (d) => d.code.toLowerCase() === discountCode.trim().toLowerCase()
+          );
+
+          if (invalidDiscount && invalidDiscount.invalidReasons) {
+            setDiscountError(invalidDiscount.invalidReasons[0]);
+          } else {
+            setDiscountError(
+              "This discount code cannot be combined with your current discounts"
+            );
+          }
+        }
+      } else if (data.invalidDiscounts && data.invalidDiscounts.length > 0) {
+        const invalidDiscount = data.invalidDiscounts.find(
+          (d) => d.code.toLowerCase() === discountCode.trim().toLowerCase()
+        );
+
+        if (invalidDiscount && invalidDiscount.invalidReasons) {
+          setDiscountError(invalidDiscount.invalidReasons[0]);
+        } else {
+          setDiscountError("Invalid discount code");
+        }
       } else {
-        Alert.alert(
-          "Invalid Code",
-          "The discount code you entered is not valid."
-        );
+        setDiscountError("Invalid discount code");
       }
     } catch (e) {
-      Alert.alert("Error", "Failed to apply discount code. Please try again.");
+      console.error("Discount error:", e);
+      setDiscountError(e.message || "Failed to apply discount code");
     } finally {
       setApplyingDiscount(false);
     }
   };
 
-  const removeDiscount = () => {
-    setAppliedDiscount(null);
+  const removeDiscount = (codeToRemove) => {
+    setAppliedDiscounts((prev) => prev.filter((d) => d.code !== codeToRemove));
+    setDiscountError(null);
+  };
+
+  const clearAllDiscounts = () => {
+    setAppliedDiscounts([]);
     setDiscountCode("");
+    setDiscountError(null);
   };
 
   const isFormValid = () => {
@@ -442,6 +550,8 @@ export default function CheckoutScreen() {
       shipping,
       tax,
       discountAmount,
+      discountCodes: appliedDiscounts.map((d) => d.code),
+      discounts: appliedDiscounts,
       total,
       totalWeight,
     };
@@ -913,31 +1023,50 @@ export default function CheckoutScreen() {
               )}
 
               {/* Discount Code Section */}
+              {/* Discount Code Section */}
               <View style={styles.discountSection}>
-                <Text style={styles.discountTitle}>Discount Code</Text>
-                {appliedDiscount ? (
-                  <View style={styles.appliedDiscountContainer}>
+                <View style={styles.discountHeader}>
+                  <Text style={styles.discountTitle}>Discount Codes</Text>
+                  {appliedDiscounts.length > 0 && (
+                    <Pressable onPress={clearAllDiscounts}>
+                      <Text style={styles.clearAllText}>Clear All</Text>
+                    </Pressable>
+                  )}
+                </View>
+
+                {/* Applied Discounts */}
+                {appliedDiscounts.map((discount) => (
+                  <View
+                    key={discount.code}
+                    style={styles.appliedDiscountContainer}
+                  >
                     <View style={styles.appliedDiscountInfo}>
                       <Text style={styles.appliedDiscountCode}>
-                        {appliedDiscount.code}
+                        {discount.code}
                       </Text>
                       <Text style={styles.appliedDiscountDesc}>
-                        {appliedDiscount.description}
+                        {discount.description}
                       </Text>
                     </View>
                     <Pressable
-                      onPress={removeDiscount}
+                      onPress={() => removeDiscount(discount.code)}
                       style={styles.removeDiscountBtn}
                     >
                       <Text style={styles.removeDiscountText}>✕</Text>
                     </Pressable>
                   </View>
-                ) : (
+                ))}
+
+                {/* Input for new discount */}
+                <View>
                   <View style={styles.discountInputContainer}>
                     <TextInput
                       style={styles.discountInput}
                       value={discountCode}
-                      onChangeText={setDiscountCode}
+                      onChangeText={(text) => {
+                        setDiscountCode(text);
+                        if (discountError) setDiscountError(null);
+                      }}
                       placeholder="Enter discount code"
                       placeholderTextColor={COLORS.textMuted}
                       autoCapitalize="characters"
@@ -958,7 +1087,12 @@ export default function CheckoutScreen() {
                       )}
                     </Pressable>
                   </View>
-                )}
+                  {discountError && (
+                    <Text style={styles.discountErrorText}>
+                      {discountError}
+                    </Text>
+                  )}
+                </View>
               </View>
 
               <View style={styles.summaryTotals}>
@@ -966,16 +1100,24 @@ export default function CheckoutScreen() {
                   <Text style={styles.summaryLabel}>Subtotal</Text>
                   <Text style={styles.summaryValue}>{fmt(subtotal)}</Text>
                 </View>
-                {appliedDiscount && (
-                  <View style={styles.summaryRow}>
+                {appliedDiscounts.map((discount) => (
+                  <View key={discount.code} style={styles.summaryRow}>
                     <Text style={[styles.summaryLabel, styles.discountLabel]}>
-                      Discount ({appliedDiscount.code})
+                      {discount.code}
                     </Text>
                     <Text style={[styles.summaryValue, styles.discountValue]}>
-                      -{fmt(discountAmount)}
+                      {discount.type === "Free Shipping"
+                        ? "Free Ship"
+                        : `- ${fmt(
+                            discount.percentage
+                              ? Math.round(
+                                  subtotal * (discount.percentage / 100)
+                                )
+                              : discount.amount || 0
+                          )}`}
                     </Text>
                   </View>
-                )}
+                ))}
                 <View style={styles.summaryRow}>
                   <Text style={styles.summaryLabel}>Tax (2%)</Text>
                   <Text style={styles.summaryValue}>{fmt(tax)}</Text>
@@ -1466,7 +1608,7 @@ const styles = StyleSheet.create({
   summaryCard: {
     backgroundColor: COLORS.backgroundCard,
     borderRadius: 12,
-    marginBottom: 16,
+    marginBottom: 32,
     overflow: "hidden",
     shadowColor: "#000",
     shadowOpacity: 0.06,
@@ -1529,8 +1671,8 @@ const styles = StyleSheet.create({
     opacity: 0.5,
   },
   miniThumb: {
-    width: 48,
-    height: 48,
+    width: 56,
+    height: 56,
     borderRadius: 8,
     backgroundColor: COLORS.borderLight,
   },
@@ -1629,6 +1771,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     backgroundColor: COLORS.backgroundSoft,
     padding: 12,
+    marginBottom: 8,
     borderRadius: 8,
     borderWidth: 1,
     borderColor: COLORS.success,
@@ -2377,5 +2520,22 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: "green",
     fontFamily: "Outfit-SemiBold",
+  },
+  discountHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 12,
+  },
+  clearAllText: {
+    fontSize: 13,
+    color: COLORS.error,
+    fontFamily: "Outfit-SemiBold",
+  },
+  discountErrorText: {
+    fontSize: 12,
+    color: COLORS.error,
+    marginTop: 8,
+    fontFamily: "Outfit-Medium",
   },
 });
