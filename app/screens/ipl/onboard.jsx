@@ -1,7 +1,7 @@
 "use client";
 
-import { Image } from 'expo-image';
-import { useRouter } from "expo-router";
+import { Image } from "expo-image";
+import { useRouter, useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
 import {
   Dimensions,
@@ -16,6 +16,7 @@ import { useAuthenticatedFetch, useAuthStore } from "../../utils/authStore";
 import NavigationSpaceContainer from "../../../components/NavigationSpaceContainer";
 
 const { width, height } = Dimensions.get("window");
+const BACKEND_URL = "https://16c663724b7c.ngrok-free.app";
 
 // Scaling functions
 const scale = (size) => (width / 375) * size; // Base width: iPhone 11
@@ -33,6 +34,7 @@ const IPLOnboarding = () => {
     treatmentAreas: [],
     frequency: "",
   });
+  const [isChangeDeviceMode, setIsChangeDeviceMode] = useState(false);
   const [devices, setDevices] = useState([]);
   const { authenticatedFetch } = useAuthenticatedFetch();
   const router = useRouter();
@@ -41,28 +43,71 @@ const IPLOnboarding = () => {
   const isContinueDisabled =
     isStopped ||
     (onboardingStep === 0 && !onboardingData.device?.title) ||
-    (onboardingStep === 1 &&
+    (!isChangeDeviceMode &&
+      onboardingStep === 1 &&
       (!onboardingData.skinTone ||
         !onboardingData.hairType ||
         onboardingData.treatmentAreas.length === 0)) ||
-    (onboardingStep === 2 && !onboardingData.frequency);
+    (!isChangeDeviceMode && onboardingStep === 2 && !onboardingData.frequency);
+  const fetchDevicesData = async () => {
+    const devicesData = await fetchDevices(authenticatedFetch);
 
+    // Move the  "id": "gid://shopify/Product/9937795809572", to top
+    if (devicesData && devicesData.length > 0) {
+      const sortedDevices = devicesData.sort((a, b) => {
+        if (a.id === "gid://shopify/Product/9937795809572") return -1; // Move this device to the top
+        return 0; // Keep the rest in original order
+      });
+      setDevices(sortedDevices);
+    }
+  };
   useEffect(() => {
-    const fetchDevicesData = async () => {
-      const devicesData = await fetchDevices(authenticatedFetch);
-
-      // Move the  "id": "gid://shopify/Product/9937795809572", to top
-      if (devicesData && devicesData.length > 0) {
-        const sortedDevices = devicesData.sort((a, b) => {
-          if (a.id === "gid://shopify/Product/9937795809572") return -1; // Move this device to the top
-          return 0; // Keep the rest in original order
-        });
-        setDevices(sortedDevices);
-      }
-    };
     fetchDevicesData();
   }, []);
 
+  const params = useLocalSearchParams();
+
+  useEffect(() => {
+    // Check if we're in change device mode
+    if (params.mode === "changeDevice") {
+      setIsChangeDeviceMode(true);
+    }
+
+    fetchDevicesData();
+  }, [params.mode]);
+
+  const handleChangeDevice = async () => {
+    try {
+      setIsStopped(true);
+
+      // Simulate PUT request to update device
+      const response = await authenticatedFetch(
+        `${BACKEND_URL}/ipl/update-device`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            userId: user.id,
+            iplProfileId: params.iplProfileId,
+            newDeviceId: onboardingData.device.id,
+            deviceTitle: onboardingData.device.title,
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to update device");
+      }
+
+      // Navigate back to dashboard
+      router.back();
+    } catch (error) {
+      console.error("Error updating device:", error);
+      setIsStopped(false);
+    }
+  };
   const handleCompleteOnboarding = async () => {
     try {
       setIsStopped(true);
@@ -348,31 +393,37 @@ const IPLOnboarding = () => {
 
   const renderOnboardingNavigation = () => (
     <View style={styles.onboardingNavigation}>
-      <View style={styles.progressDots}>
-        {[0, 1, 2].map((step) => (
-          <View
-            key={step}
-            style={[
-              styles.progressDot,
-              step === onboardingStep && styles.progressDotActive,
-              step < onboardingStep && styles.progressDotCompleted,
-            ]}
-          />
-        ))}
-      </View>
+      {!isChangeDeviceMode && (
+        <View style={styles.progressDots}>
+          {[0, 1, 2].map((step) => (
+            <View
+              key={step}
+              style={[
+                styles.progressDot,
+                step === onboardingStep && styles.progressDotActive,
+                step < onboardingStep && styles.progressDotCompleted,
+              ]}
+            />
+          ))}
+        </View>
+      )}
 
       <View style={styles.navigationButtons}>
         <TouchableOpacity
           style={[styles.navButton, styles.backNavButton]}
           onPress={() => {
-            if (onboardingStep > 0) {
+            if (isChangeDeviceMode) {
+              router.back();
+            } else if (onboardingStep > 0) {
               setOnboardingStep(onboardingStep - 1);
             } else {
               router.back();
             }
           }}
         >
-          <Text style={[styles.navButtonText]}>Back</Text>
+          <Text style={[styles.navButtonText]}>
+            {isChangeDeviceMode ? "Cancel" : "Back"}
+          </Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={[
@@ -382,7 +433,9 @@ const IPLOnboarding = () => {
           ]}
           disabled={isContinueDisabled}
           onPress={() => {
-            if (onboardingStep < 2) {
+            if (isChangeDeviceMode) {
+              handleChangeDevice();
+            } else if (onboardingStep < 2) {
               setOnboardingStep(onboardingStep + 1);
             } else {
               handleCompleteOnboarding();
@@ -390,7 +443,11 @@ const IPLOnboarding = () => {
           }}
         >
           <Text style={styles.continueButtonText}>
-            {onboardingStep === 2 ? "Get Started" : "Continue"}
+            {isChangeDeviceMode
+              ? "Update Device"
+              : onboardingStep === 2
+              ? "Get Started"
+              : "Continue"}
           </Text>
         </TouchableOpacity>
       </View>
@@ -743,6 +800,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     alignItems: "center",
     marginHorizontal: 8,
+    marginBottom: 16,
   },
   backNavButton: {
     backgroundColor: "#FFFFFF",

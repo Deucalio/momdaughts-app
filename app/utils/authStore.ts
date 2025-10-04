@@ -353,7 +353,7 @@ export const useAuthStore = create(
       // Helper function to make authenticated requests
       fetchWithAuth: async (url: string, options: RequestInit = {}) => {
         const { token } = get();
-        // console.log("token in fetchWithAuth:", token);
+        console.log("token in fetchWithAuth:", token);
 
         // Deocde token
         if (!token) {

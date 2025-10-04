@@ -324,7 +324,8 @@ export default function AccountScreen() {
         gap: 12,
       }}
     >
-      <View
+      <TouchableOpacity
+      onPress={() => router.push("/screens/orders")}
         style={{
           flex: 1,
           backgroundColor: COLORS.white,
@@ -358,9 +359,10 @@ export default function AccountScreen() {
         >
           Orders
         </Text>
-      </View>
+      </TouchableOpacity>
 
-      <View
+      <TouchableOpacity
+          onPress={() => router.push("/screens/wishlist")}
         style={{
           flex: 1,
           backgroundColor: COLORS.white,
@@ -394,7 +396,7 @@ export default function AccountScreen() {
         >
           Wishlist
         </Text>
-      </View>
+      </TouchableOpacity>
 
       <View
         style={{

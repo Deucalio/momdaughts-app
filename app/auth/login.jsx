@@ -345,6 +345,7 @@ const styles = StyleSheet.create({
   signUpPrompt: {
     alignItems: "center",
     marginTop: 8,
+    width: "100%",
   },
   signUpText: {
     fontSize: 13,

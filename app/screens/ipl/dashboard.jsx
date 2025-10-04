@@ -1,12 +1,12 @@
 import { Image } from "expo-image";
-import { useLocalSearchParams, useRouter } from "expo-router";
-import { useEffect, useState } from "react";
+import { useLocalSearchParams, useRouter, useFocusEffect } from "expo-router";
+import { useEffect, useState, useCallback } from "react";
 import {
   Dimensions,
   ScrollView,
   StyleSheet,
   TouchableOpacity,
-  View
+  View,
 } from "react-native";
 
 import AddSessionSection from "../../../components/AddSessionSection";
@@ -51,6 +51,7 @@ const IPLSessionTracker = () => {
   const [monthCounts, setMonthCounts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+const [isStopped, setIsStopped] = useState(false);
 
   // Session management
   const [isSessionActive, setIsSessionActive] = useState(false);
@@ -66,97 +67,103 @@ const IPLSessionTracker = () => {
   const [showAllSessions, setShowAllSessions] = useState(false);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
 
+  const [showTreatmentAreasModal, setShowTreatmentAreasModal] = useState(false);
+  const [tempTreatmentAreas, setTempTreatmentAreas] = useState({});
+
   // New state for area-based data
   const [areaSessionData, setAreaSessionData] = useState({});
   const [nextSessionDue, setNextSessionDue] = useState(null);
 
   const params = useLocalSearchParams();
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
 
-  // Fetch IPL profile and product data
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-        setError(null);
+      const profileResponse = await fetchIPLProfile(authenticatedFetch);
+      console.log("Fetched IPL Profile:", profileResponse);
+      if (profileResponse?.iplProfile) {
+        setIplProfile(profileResponse.iplProfile);
+        setMonthCounts(profileResponse.monthCounts || []);
 
-        const profileResponse = await fetchIPLProfile(authenticatedFetch);
-        console.log("Fetched IPL Profile:", profileResponse);
-        if (profileResponse?.iplProfile) {
-          setIplProfile(profileResponse.iplProfile);
-          setMonthCounts(profileResponse.monthCounts || []);
+        // Calculate next session due
+        const latestSession = profileResponse.iplProfile.sessions
+          ? profileResponse.iplProfile.sessions[
+              profileResponse.iplProfile.sessions.length - 1
+            ]
+          : null;
+        if (latestSession) {
+          const latestSessionDate = new Date(latestSession.date);
+          const currentDate = new Date();
+          const diffInTime =
+            currentDate.getTime() - latestSessionDate.getTime();
+          const diffInDays = Math.ceil(diffInTime / (1000 * 3600 * 24));
+          let nextSessionInDays;
 
-          // Calculate next session due
-          const latestSession = profileResponse.iplProfile.sessions
-            ? profileResponse.iplProfile.sessions[
-                profileResponse.iplProfile.sessions.length - 1
-              ]
-            : null;
-          if (latestSession) {
-            const latestSessionDate = new Date(latestSession.date);
-            const currentDate = new Date();
-            const diffInTime =
-              currentDate.getTime() - latestSessionDate.getTime();
-            const diffInDays = Math.ceil(diffInTime / (1000 * 3600 * 24));
-            let nextSessionInDays;
+          const phase =
+            profileResponse.iplProfile.currentPhase?.toLowerCase() || "weekly";
 
-            const phase =
-              profileResponse.iplProfile.currentPhase?.toLowerCase() ||
-              "weekly";
-
-            switch (phase) {
-              case "biweekly":
-                nextSessionInDays = Math.max(0, 14 - diffInDays);
-                break;
-              case "monthly":
-                nextSessionInDays = Math.max(0, 30 - diffInDays);
-                break;
-              default: // weekly
-                nextSessionInDays = Math.max(0, 7 - diffInDays);
-                break;
-            }
-            setNextSessionDue(nextSessionInDays);
-          } else {
-            setNextSessionDue(0); // First session due now
+          switch (phase) {
+            case "biweekly":
+              nextSessionInDays = Math.max(0, 14 - diffInDays);
+              break;
+            case "monthly":
+              nextSessionInDays = Math.max(0, 30 - diffInDays);
+              break;
+            default: // weekly
+              nextSessionInDays = Math.max(0, 7 - diffInDays);
+              break;
           }
-          setSessionHistory(profileResponse.iplProfile.sessions || []);
-          // With:
-          const treatmentAreas = Object.keys(
-            profileResponse.iplProfile.treatmentAreas || {}
-          ).filter((area) => profileResponse.iplProfile.treatmentAreas[area]);
-          processAreaSessionData(
-            profileResponse.iplProfile.sessions || [],
-            treatmentAreas
+          setNextSessionDue(nextSessionInDays);
+        } else {
+          setNextSessionDue(0); // First session due now
+        }
+        setSessionHistory(profileResponse.iplProfile.sessions || []);
+        // With:
+        const treatmentAreas = Object.keys(
+          profileResponse.iplProfile.treatmentAreas || {}
+        ).filter((area) => profileResponse.iplProfile.treatmentAreas[area]);
+        processAreaSessionData(
+          profileResponse.iplProfile.sessions || [],
+          treatmentAreas
+        );
+        const deviceId = profileResponse.iplProfile.device;
+        if (deviceId) {
+          const productId = deviceId.replace("gid://shopify/Product/", "");
+          const response = await authenticatedFetch(
+            `${BACKEND_URL}/products?productId=${productId}`
           );
-          const deviceId = profileResponse.iplProfile.device;
-          if (deviceId) {
-            const productId = deviceId.replace("gid://shopify/Product/", "");
-            const response = await authenticatedFetch(
-              `${BACKEND_URL}/products?productId=${productId}`
+          if (!response.ok) {
+            throw new Error(
+              `Failed to fetch product data: ${response.status} ${response.statusText}`
             );
-            if (!response.ok) {
-              throw new Error(
-                `Failed to fetch product data: ${response.status} ${response.statusText}`
-              );
-            }
-            const productResponse = await response.json();
-            if (productResponse?.product) {
-              console.log("Fetched Product Data:", productResponse.product);
-              setProductData(productResponse.product);
-            }
+          }
+          const productResponse = await response.json();
+          if (productResponse?.product) {
+            console.log("Fetched Product Data:", productResponse.product);
+            setProductData(productResponse.product);
           }
         }
-      } catch (err) {
-        console.error("Error fetching IPL data:", err);
-        setError(err.message);
-      } finally {
-        setLoading(false);
       }
-    };
-
+    } catch (err) {
+      console.error("Error fetching IPL data:", err);
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+  // Fetch IPL profile and product data
+  useEffect(() => {
     if (user) {
       fetchData();
     }
   }, [user]);
+
+  useFocusEffect(
+    useCallback(() => {
+      fetchData();
+    }, [])
+  );
 
   // Process sessions by treatment area
   // Process sessions by treatment area
@@ -260,6 +267,47 @@ const IPLSessionTracker = () => {
     return `Due in ${nextSessionInDays} days`;
   };
 
+
+  const handleUpdateTreatmentAreas = async () => {
+  try {
+    setIsStopped(true);
+
+    const response = await authenticatedFetch(
+      `${BACKEND_URL}/ipl/update-treatment-areas`,
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          userId: user.id,
+          iplProfileId: iplProfile.id,
+          treatmentAreas: tempTreatmentAreas,
+        }),
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error("Failed to update treatment areas");
+    }
+
+    // Update local state
+    setIplProfile({ ...iplProfile, treatmentAreas: tempTreatmentAreas });
+    
+    // Re-process area session data with new areas
+    const newAreas = Object.keys(tempTreatmentAreas).filter(
+      (area) => tempTreatmentAreas[area]
+    );
+    processAreaSessionData(sessionHistory, newAreas);
+    
+    setShowTreatmentAreasModal(false);
+    setIsStopped(false);
+  } catch (error) {
+    console.error("Error updating treatment areas:", error);
+    setIsStopped(false);
+  }
+};
+
   const stopSession = async () => {
     setSelectedArea(null);
     if (currentSession) {
@@ -341,6 +389,92 @@ const IPLSessionTracker = () => {
     // Optionally call API to update backend
     // await updateIPLProfile(authenticatedFetch, { treatmentAreas: updatedAreas });
   };
+
+
+  const renderTreatmentAreasModal = () => {
+  if (!showTreatmentAreasModal) return null;
+
+  const selectedCount = Object.values(tempTreatmentAreas).filter(Boolean).length;
+
+  return (
+    <View style={styles.customModalOverlay}>
+      <View style={styles.customModalContent}>
+        <View style={styles.modalHeader}>
+          <Text style={styles.modalTitle}>Treatment Areas</Text>
+          <TouchableOpacity onPress={() => setShowTreatmentAreasModal(false)}>
+            <Text style={styles.modalCloseButton}>✕</Text>
+          </TouchableOpacity>
+        </View>
+
+        <Text style={styles.modalSubtitle}>
+          Select the areas you want to treat ({selectedCount} selected)
+        </Text>
+
+        <ScrollView style={styles.treatmentAreasModalContent} showsVerticalScrollIndicator={false}>
+          <View style={styles.treatmentAreasGrid}>
+            {TREATMENT_AREAS.map((treatment) => {
+              const areaKey = treatment.area.toLowerCase();
+              const isSelected = tempTreatmentAreas[areaKey] || false;
+              const areaData = areaSessionData[areaKey] || { totalSessions: 0 };
+
+              return (
+                <TouchableOpacity
+                  key={treatment.area}
+                  style={[
+                    styles.treatmentAreaModalCard,
+                    isSelected && styles.treatmentAreaModalCardSelected,
+                  ]}
+                  onPress={() => {
+                    setTempTreatmentAreas({
+                      ...tempTreatmentAreas,
+                      [areaKey]: !isSelected,
+                    });
+                  }}
+                >
+                  <Text style={styles.treatmentAreaModalIcon}>{treatment.icon}</Text>
+                  <Text style={styles.treatmentAreaModalText}>{treatment.area}</Text>
+                  {areaData.totalSessions > 0 && (
+                    <Text style={styles.treatmentAreaSessionCount}>
+                      {areaData.totalSessions} sessions
+                    </Text>
+                  )}
+                  <View style={styles.treatmentAreaCheckContainer}>
+                    {isSelected && (
+                      <Text style={styles.treatmentAreaCheck}>✓</Text>
+                    )}
+                  </View>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+        </ScrollView>
+
+        <View style={styles.modalActions}>
+          <TouchableOpacity
+            style={[styles.navButton, styles.backNavButton, { flex: 0.4 }]}
+            onPress={() => setShowTreatmentAreasModal(false)}
+          >
+            <Text style={styles.navButtonText}>Cancel</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[
+              styles.navButton,
+              styles.continueNavButton,
+              { flex: 0.6 },
+              selectedCount === 0 && { opacity: 0.5 },
+            ]}
+            disabled={selectedCount === 0 || isStopped}
+            onPress={handleUpdateTreatmentAreas}
+          >
+            <Text style={styles.continueButtonText}>
+              Update Areas
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    </View>
+  );
+};
 
   // Add this function before renderTrackerPage
   const renderLoadingSkeleton = () => (
@@ -653,7 +787,7 @@ const IPLSessionTracker = () => {
               <Text style={styles.modalLogButtonText}>Log Session</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity
+            {/* <TouchableOpacity
               style={styles.modalRemoveButton}
               onPress={() => {
                 removeTreatmentArea(selectedAreaData.area);
@@ -661,7 +795,7 @@ const IPLSessionTracker = () => {
               }}
             >
               <Text style={styles.modalRemoveButtonText}>Remove Area</Text>
-            </TouchableOpacity>
+            </TouchableOpacity> */}
           </View>
         </View>
       </View>
@@ -683,17 +817,39 @@ const IPLSessionTracker = () => {
           </View>
 
           <View style={styles.settingsOptions}>
-            <TouchableOpacity style={styles.settingsOption}>
+            <TouchableOpacity
+              style={styles.settingsOption}
+              onPress={() => {
+                setShowSettingsModal(false);
+                router.push(
+                  "/screens/ipl/onboard?mode=changeDevice&iplProfileId=" +
+                    iplProfile.id
+                );
+              }}
+            >
               <Text style={styles.settingsOptionText}>Change Device</Text>
               <Text style={styles.settingsOptionArrow}>›</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.settingsOption}>
+            {/* <TouchableOpacity
+              style={styles.settingsOption}
+              onPress={() => {
+                setShowSettingsModal(false);
+                // Initialize temp areas with current selection
+                const currentAreas = {};
+                TREATMENT_AREAS.forEach(({ area }) => {
+                  currentAreas[area.toLowerCase()] =
+                    iplProfile?.treatmentAreas?.[area.toLowerCase()] || false;
+                });
+                setTempTreatmentAreas(currentAreas);
+                setShowTreatmentAreasModal(true);
+              }}
+            >
               <Text style={styles.settingsOptionText}>
                 Update Treatment Areas
               </Text>
               <Text style={styles.settingsOptionArrow}>›</Text>
-            </TouchableOpacity>
+            </TouchableOpacity> */}
 
             {/* <TouchableOpacity style={styles.settingsOption}>
             <Text style={styles.settingsOptionText}>Change Frequency</Text>
@@ -879,15 +1035,16 @@ const IPLSessionTracker = () => {
   //   );
   // }
 
-  return loading ? (
-    renderLoadingSkeleton()
-  ) : activeTab === "tracker" ? (
-    <>
-      {renderTrackerPage()}
-      {renderAreaModal()}
-      {renderSettingsModal()}
-    </>
-  ) : (
+return loading ? (
+  renderLoadingSkeleton()
+) : activeTab === "tracker" ? (
+  <>
+    {renderTrackerPage()}
+    {renderAreaModal()}
+    {renderSettingsModal()}
+    {renderTreatmentAreasModal()}
+  </>
+) :(
     <AddSessionSection
       selectedArea={selectedArea}
       isSessionActive={isSessionActive}
@@ -1555,6 +1712,69 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     alignItems: "center",
   },
+  modalSubtitle: {
+  fontSize: 14,
+  color: "#666",
+  marginBottom: 20,
+  textAlign: "center",
+},
+treatmentAreasModalContent: {
+  maxHeight: height * 0.5,
+  marginBottom: 20,
+},
+treatmentAreasGrid: {
+  flexDirection: "row",
+  flexWrap: "wrap",
+  justifyContent: "space-between",
+  gap: 12,
+},
+treatmentAreaModalCard: {
+  width: (width - 80) / 2,
+  backgroundColor: "#FFFFFF",
+  borderRadius: 12,
+  padding: 16,
+  alignItems: "center",
+  borderWidth: 2,
+  borderColor: "#E5E7EB",
+  position: "relative",
+  minHeight: 110,
+},
+treatmentAreaModalCardSelected: {
+  borderColor: "#e99ebf",
+  backgroundColor: "#F8F4FF",
+},
+treatmentAreaModalIcon: {
+  fontSize: 28,
+  marginBottom: 8,
+},
+treatmentAreaModalText: {
+  fontSize: 14,
+  fontFamily: "Outfit-SemiBold",
+  color: "#333",
+  textAlign: "center",
+  marginBottom: 4,
+},
+treatmentAreaSessionCount: {
+  fontSize: 11,
+  color: "#666",
+  fontFamily: "Outfit-Medium",
+},
+treatmentAreaCheckContainer: {
+  position: "absolute",
+  top: 8,
+  right: 8,
+  width: 20,
+  height: 20,
+  borderRadius: 10,
+  backgroundColor: "#e99ebf",
+  alignItems: "center",
+  justifyContent: "center",
+},
+treatmentAreaCheck: {
+  fontSize: 12,
+  color: "#FFFFFF",
+  fontFamily: "Outfit-Bold",
+},
 });
 
 export default IPLSessionTracker;

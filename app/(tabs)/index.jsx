@@ -115,32 +115,26 @@ export default function App() {
 
   const isEmailVerified = user?.metaData?.is_verified === true;
 
-  // useEffect(() => {
-  //   console.log('\n=== INDEX ROUTER ===');
-  //   console.log('isLoggedIn:', isLoggedIn);
-  //   console.log('hasCompletedOnboarding:', hasCompletedOnboarding);
-  //   console.log('isEmailVerified:', isEmailVerified);
-  //   console.log('user:', user);
+  useEffect(() => {
+    console.log("\n=== INDEX ROUTER ===");
+    // console.log("isLoggedIn:", isLoggedIn);
+    // console.log("hasCompletedOnboarding:", hasCompletedOnboarding);
+    // console.log("isEmailVerified:", isEmailVerified);
+    // console.log("user:", user);
 
-  //   // Add a small delay to ensure auth store is fully loaded
-  //   const timer = setTimeout(() => {
-  //     if (!isLoggedIn) {
-  //       console.log('🔄 Redirecting to: /auth/login');
-  //       router.replace('/auth/login');
-  //     } else if (!isEmailVerified) {
-  //       console.log('🔄 Redirecting to: /auth/otp');
-  //       router.replace('/auth/otp');
-  //     } else if (!hasCompletedOnboarding) {
-  //       console.log('🔄 Redirecting to: /onboarding');
-  //       router.replace('/onboarding');
-  //     } else {
-  //       console.log('🔄 Redirecting to: /(tabs)');
-  //       router.replace('/(tabs)');
-  //     }
-  //   }, 500); // Increased delay for development builds
+    // Add a small delay to ensure auth store is fully loaded
+    const timer = setTimeout(() => {
+      if (!isLoggedIn) {
+        console.log("🔄 Redirecting to: /auth/login");
+        router.replace("/auth/login");
+      } else if (!isEmailVerified) {
+        console.log("🔄 Redirecting to: /auth/otp");
+        router.replace("/auth/otp");
+      }
+    }, 500); // Increased delay for development builds
 
-  //   return () => clearTimeout(timer);
-  // }, [isLoggedIn, hasCompletedOnboarding, isEmailVerified]);
+    return () => clearTimeout(timer);
+  }, [isLoggedIn, hasCompletedOnboarding, isEmailVerified]);
 
   const loadProducts = async () => {
     try {

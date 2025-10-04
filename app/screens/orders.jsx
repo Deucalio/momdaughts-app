@@ -25,21 +25,28 @@ export default function OrdersPage() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [selectedFilter, setSelectedFilter] = useState("all");
+  const [error, setError] = useState(null);
 
   const { user } = useAuthStore();
   const { authenticatedFetch } = useAuthenticatedFetch();
   // Simulate API call
+
   const fetchOrders = async () => {
     try {
-      // Simulate network delay
-      // await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      // Mock API response based on your data
+      setError(null);
       const apiRes = await fetchAllOrders(authenticatedFetch);
 
-      setOrders(apiRes.orders);
+      // Add null/undefined checks
+      if (apiRes && apiRes.orders && Array.isArray(apiRes.orders)) {
+        console.log("Fetched orders:", apiRes.orders);
+        setOrders(apiRes.orders);
+      } else {
+        setOrders([]);
+      }
     } catch (error) {
       console.error("Failed to fetch orders:", error);
+      setError("Failed to load orders. Please try again.");
+      setOrders([]);
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -88,159 +95,209 @@ export default function OrdersPage() {
     return `${currency} ${amount.toLocaleString()}`;
   };
 
-  const filterOptions = [
-    { key: "all", label: "All Orders", count: orders.length },
-    {
-      key: "fulfilled",
-      label: "Fulfilled",
-      count: orders.filter((o) => o.status === "Fulfilled").length,
-    },
-    {
-      key: "unfulfilled",
-      label: "Unfulfilled",
-      count: orders.filter((o) => o.status === "Unfulfilled").length,
-    },
-    {
-      key: "cancelled",
-      label: "Cancelled",
-      count: orders.filter((o) => o.status === "Cancelled").length,
-    },
-  ];
+const filterOptions = [
+  { key: "all", label: "All Orders", count: orders?.length || 0 },
+  {
+    key: "fulfilled",
+    label: "Fulfilled",
+    count: orders?.filter((o) => o?.status === "Fulfilled").length || 0,
+  },
+  {
+    key: "unfulfilled",
+    label: "Unfulfilled",
+    count: orders?.filter((o) => o?.status === "Unfulfilled").length || 0,
+  },
+  {
+    key: "cancelled",
+    label: "Cancelled",
+    count: orders?.filter((o) => o?.status === "Cancelled").length || 0,
+  },
+];
+const filteredOrders = (orders || []).filter((order) => {
+  if (!order) return false;
+  if (selectedFilter === "all") return true;
+  if (selectedFilter === "fulfilled") return order.status === "Fulfilled";
+  if (selectedFilter === "unfulfilled") return order.status === "Unfulfilled";
+  if (selectedFilter === "cancelled") return order.status === "Cancelled";
+  return true;
+});
+const renderOrderItem = (order) => {
+  // Add safety checks
+  if (!order) return null;
 
-  const filteredOrders = orders.filter((order) => {
-    if (selectedFilter === "all") return true;
-    if (selectedFilter === "fulfilled") return order.status === "Fulfilled";
-    if (selectedFilter === "unfulfilled") return order.status === "Unfulfilled";
-    if (selectedFilter === "cancelled") return order.status === "Cancelled";
-    return true;
-  });
+  const statusInfo = getStatusColor(
+    order.status || "Unknown",
+    order.financialStatus || ""
+  );
 
-  const renderOrderItem = (order) => {
-    const statusInfo = getStatusColor(order.status, order.financialStatus);
+  // Safe access to nested properties
+  const displayItems = order.displayItems || [];
+  const itemCount = order.itemCount || 0;
+  const orderNumber = order.orderNumber || "N/A";
+  const createdAt = order.createdAt || new Date().toISOString();
+  const pricing = order.pricing || { total: 0, currency: "PKR" };
+  const paymentGateway = order.paymentGateway || "Unknown";
 
-    return (
-      <TouchableOpacity
-        key={order.id}
-        style={styles.orderCard}
-        onPress={() =>
-          router.push(`/screens/orders/${order.id.split("/").pop()}`)
+  return (
+    <TouchableOpacity
+      key={order.id}
+      style={styles.orderCard}
+      onPress={() => {
+        if (order.id) {
+          router.push(`/screens/orders/${order.id.split("/").pop()}`);
         }
-        activeOpacity={0.7}
-      >
-        {/* Order Header */}
-        <View style={styles.orderHeader}>
-          <View style={styles.orderHeaderLeft}>
-            <Text style={styles.orderNumber}>{order.orderNumber}</Text>
-            <Text style={styles.orderDate}>{formatDate(order.createdAt)}</Text>
-          </View>
-          <View
-            style={[styles.statusBadge, { backgroundColor: statusInfo.bg }]}
-          >
-            <Ionicons
-              name={statusInfo.icon}
-              size={14}
-              color={statusInfo.text}
-            />
-            <Text style={[styles.statusText, { color: statusInfo.text }]}>
-              {order.status}
-            </Text>
-          </View>
+      }}
+      activeOpacity={0.7}
+    >
+      {/* Order Header */}
+      <View style={styles.orderHeader}>
+        <View style={styles.orderHeaderLeft}>
+          <Text style={styles.orderNumber}>{orderNumber}</Text>
+          <Text style={styles.orderDate}>{formatDate(createdAt)}</Text>
         </View>
+        <View
+          style={[styles.statusBadge, { backgroundColor: statusInfo.bg }]}
+        >
+          <Ionicons
+            name={statusInfo.icon}
+            size={14}
+            color={statusInfo.text}
+          />
+          <Text style={[styles.statusText, { color: statusInfo.text }]}>
+            {order.status || "Unknown"}
+          </Text>
+        </View>
+      </View>
 
-        {/* Order Items Preview */}
-        <View style={styles.itemsPreview}>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.itemsScrollContainer}
-          >
-            {order.displayItems.slice(0, 3).map((item, index) => (
-              <View key={item.id} style={styles.itemPreview}>
+      {/* Order Items Preview */}
+      <View style={styles.itemsPreview}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.itemsScrollContainer}
+        >
+          {displayItems.slice(0, 3).map((item, index) => {
+            if (!item) return null;
+            
+            return (
+              <View key={item.id || index} style={styles.itemPreview}>
                 <Image
-                  source={{ uri: item.variant.image?.url }}
+                  source={{ 
+                    uri: item.variant?.image?.url || 'https://via.placeholder.com/60'
+                  }}
                   style={styles.itemImage}
                   contentFit="cover"
                 />
                 <View style={styles.itemOverlay}>
-                  <Text style={styles.itemQuantity}>×{item.quantity}</Text>
+                  <Text style={styles.itemQuantity}>
+                    ×{item.quantity || 1}
+                  </Text>
                 </View>
               </View>
-            ))}
-            {order.displayItems.length > 3 && (
-              <View style={styles.moreItemsIndicator}>
-                <Text style={styles.moreItemsText}>
-                  +{order.displayItems.length - 3}
-                </Text>
-                <Text style={styles.moreItemsSubtext}>more</Text>
-              </View>
-            )}
-          </ScrollView>
-        </View>
-
-        {/* Order Summary */}
-        <View style={styles.orderSummary}>
-          <View style={styles.summaryRow}>
-            <View style={styles.summaryLeft}>
-              <Ionicons name="cube" size={16} color="#718096" />
-              <Text style={styles.summaryLabel}>
-                {order.itemCount} item{order.itemCount !== 1 ? "s" : ""}
+            );
+          })}
+          {displayItems.length > 3 && (
+            <View style={styles.moreItemsIndicator}>
+              <Text style={styles.moreItemsText}>
+                +{displayItems.length - 3}
               </Text>
+              <Text style={styles.moreItemsSubtext}>more</Text>
             </View>
-            <Text style={styles.orderTotal}>
-              {formatCurrency(
-                Math.round(order.pricing.total),
-                order.pricing.currency
-              )}
+          )}
+        </ScrollView>
+      </View>
+
+      {/* Order Summary */}
+      <View style={styles.orderSummary}>
+        <View style={styles.summaryRow}>
+          <View style={styles.summaryLeft}>
+            <Ionicons name="cube" size={16} color="#718096" />
+            <Text style={styles.summaryLabel}>
+              {itemCount} item{itemCount !== 1 ? "s" : ""}
             </Text>
           </View>
+          <Text style={styles.orderTotal}>
+            {formatCurrency(
+              Math.round(pricing.total || 0),
+              pricing.currency || "PKR"
+            )}
+          </Text>
+        </View>
 
-          {/* Payment Gateway Info */}
-          <View style={styles.paymentRow}>
-            <View style={styles.paymentInfo}>
-              <Ionicons
-                name={getPaymentIcon(order.paymentGateway)}
-                size={16}
-                color="#718096"
-              />
-              <Text style={styles.paymentText}>{order.paymentGateway}</Text>
-            </View>
-            {/* {order.financialStatus === "Pending" && (
-              <View style={styles.pendingBadge}>
-                <Text style={styles.pendingText}>Payment Pending</Text>
-              </View>
-            )} */}
+        {/* Payment Gateway Info */}
+        <View style={styles.paymentRow}>
+          <View style={styles.paymentInfo}>
+            <Ionicons
+              name={getPaymentIcon(paymentGateway)}
+              size={16}
+              color="#718096"
+            />
+            <Text style={styles.paymentText}>{paymentGateway}</Text>
           </View>
         </View>
+      </View>
 
-        {/* Action Arrow */}
-        <View style={styles.actionArrow}>
-          <Ionicons name="chevron-forward" size={20} color="#cbd5e0" />
-        </View>
-      </TouchableOpacity>
-    );
-  };
+      {/* Action Arrow */}
+      <View style={styles.actionArrow}>
+        <Ionicons name="chevron-forward" size={20} color="#cbd5e0" />
+      </View>
+    </TouchableOpacity>
+  );
+};
 
-  if (loading) {
-    return (
-      <SafeAreaView style={styles.container}>
-        <View style={styles.header}>
-          <TouchableOpacity
-            style={styles.backButton}
-            onPress={() => router.back()}
-          >
-            <Ionicons name="arrow-back" size={24} color="#4a5568" />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>My Orders</Text>
-          <View style={styles.placeholder} />
-        </View>
+if (loading) {
+  return (
+    <SafeAreaView style={styles.container}>
+      <View style={styles.header}>
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => router.back()}
+        >
+          <Ionicons name="arrow-back" size={24} color="#4a5568" />
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>My Orders</Text>
+        <View style={styles.placeholder} />
+      </View>
 
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#2c2a6b" />
-          <Text style={styles.loadingText}>Loading your orders...</Text>
-        </View>
-      </SafeAreaView>
-    );
-  }
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#2c2a6b" />
+        <Text style={styles.loadingText}>Loading your orders...</Text>
+      </View>
+    </SafeAreaView>
+  );
+}
+
+// Add error state after loading check
+if (error) {
+  return (
+    <SafeAreaView style={styles.container}>
+      <View style={styles.header}>
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => router.back()}
+        >
+          <Ionicons name="arrow-back" size={24} color="#4a5568" />
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>My Orders</Text>
+        <View style={styles.placeholder} />
+      </View>
+
+      <View style={styles.loadingContainer}>
+        <Ionicons name="alert-circle" size={64} color="#DC2626" />
+        <Text style={styles.errorText}>{error}</Text>
+        <TouchableOpacity
+          style={styles.retryButton}
+          onPress={() => {
+            setLoading(true);
+            fetchOrders();
+          }}
+        >
+          <Text style={styles.retryButtonText}>Retry</Text>
+        </TouchableOpacity>
+      </View>
+    </SafeAreaView>
+  );
+}
 
   return (
     <SafeAreaView style={styles.container}>
@@ -665,4 +722,23 @@ const styles = StyleSheet.create({
     // fontWeight: "600",
     fontFamily: "Outfit-SemiBold",
   },
+  errorText: {
+  fontSize: 16,
+  color: "#DC2626",
+  marginTop: 16,
+  textAlign: "center",
+  paddingHorizontal: 20,
+},
+retryButton: {
+  backgroundColor: "#2c2a6b",
+  paddingHorizontal: 24,
+  paddingVertical: 12,
+  borderRadius: 20,
+  marginTop: 20,
+},
+retryButtonText: {
+  color: "#ffffff",
+  fontSize: 16,
+  fontFamily: "Outfit-SemiBold",
+},
 });

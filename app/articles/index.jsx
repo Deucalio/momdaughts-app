@@ -97,7 +97,7 @@ const Articles = () => {
   );
 
   const renderLatestPostItem = ({ item }) => (
-    <View style={styles.latestPostCard}>
+    <TouchableOpacity onPress={() => router.push(`/articles/${item.id.split("/").pop()}`)} style={styles.latestPostCard}>
       <Image
         source={{ uri: item.image?.url || "" }}
         style={styles.latestPostImage}
@@ -117,7 +117,7 @@ const Articles = () => {
           <Text style={styles.readMoreText}>READ MORE</Text>
         </TouchableOpacity>
       </View>
-    </View>
+    </TouchableOpacity>
   );
 
   const renderPaginationDots = () => (

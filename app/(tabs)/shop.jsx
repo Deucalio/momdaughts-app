@@ -497,6 +497,7 @@ const styles = StyleSheet.create({
   },
   bannerSection: {
     height: screenHeight * 0.3,
+    marginTop: 7,
     marginBottom: 20,
   },
   bannerContainer: {
