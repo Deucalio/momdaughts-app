@@ -15,7 +15,7 @@ import { createIPLSession, fetchIPLProfile } from "../../utils/actions";
 import { useAuthenticatedFetch, useAuthStore } from "../../utils/authStore";
 
 const { width, height } = Dimensions.get("window");
-const BACKEND_URL = "https://9324165fa41c.ngrok-free.app";
+const BACKEND_URL = "https://app-backend.momdaughts.com";
 
 const TREATMENT_AREAS = [
   { area: "Face", icon: "👤" },

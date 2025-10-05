@@ -30,7 +30,7 @@ import {
 } from "../utils/actions";
 import { useAuthenticatedFetch } from "../utils/authStore";
 const { width, height } = Dimensions.get("window");
-const BACKEND_URL = "https://9324165fa41c.ngrok-free.app";
+const BACKEND_URL = "https://app-backend.momdaughts.com";
 const CONTAINER_WIDTH = width - 32;
 
 // Product Detail Page Skeleton

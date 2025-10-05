@@ -43,7 +43,7 @@ const COLORS = {
   lightGray: "#ddd",
 };
 
-const BACKEND_URL = "https://9324165fa41c.ngrok-free.app";
+const BACKEND_URL = "https://app-backend.momdaughts.com";
 
 const categories = [
   {

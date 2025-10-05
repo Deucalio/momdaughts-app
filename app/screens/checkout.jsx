@@ -23,10 +23,10 @@ import Text from "../../components/Text";
 import { createOrder } from "../utils/actions";
 import { useAuthenticatedFetch, useAuthStore } from "../utils/authStore";
 // Configure these for your app
-const CART_API = "https://9324165fa41c.ngrok-free.app/cart";
-const ADDRESSES_API = "https://9324165fa41c.ngrok-free.app/addresses";
+const CART_API = "https://app-backend.momdaughts.com/cart";
+const ADDRESSES_API = "https://app-backend.momdaughts.com/addresses";
 const DISCOUNT_VERIFY_API =
-  "https://9324165fa41c.ngrok-free.app/verify-discount-code";
+  "https://app-backend.momdaughts.com/verify-discount-code";
 const CURRENCY_SYMBOL = "PKR ";
 // Subtle, elegant color palette
 const COLORS = {

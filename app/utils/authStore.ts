@@ -46,7 +46,7 @@ interface UserState {
   setTokenDirectly: (token: string, user: any) => void;
 }
 
-const BACKEND_URL = "https://9324165fa41c.ngrok-free.app";
+const BACKEND_URL = "https://app-backend.momdaughts.com";
 
 export const useAuthStore = create(
   persist<UserState>(
@@ -96,7 +96,7 @@ export const useAuthStore = create(
           console.log("Decoded user:", user);
 
           try {
-            const r_ = await fetch("https://9324165fa41c.ngrok-free.app/logs", {
+            const r_ = await fetch("https://app-backend.momdaughts.com/logs", {
               method: "POST",
               headers: {
                 "Content-Type": "application/json",

@@ -233,7 +233,7 @@ export default function AddressesPage() {
   const fetchAddresses = async () => {
     setLoading(true);
     try {
-      const response = await authenticatedFetch("https://9324165fa41c.ngrok-free.app/addresses");
+      const response = await authenticatedFetch("https://app-backend.momdaughts.com/addresses");
       if (!response.ok) {
         throw new Error('Failed to fetch addresses');
       }

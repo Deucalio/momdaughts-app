@@ -191,7 +191,7 @@ export default function App() {
     setFetchingAddress(true);
     try {
       // Replace with your actual API endpoint
-      const response = await authenticatedFetch(`https://9324165fa41c.ngrok-free.app/address/${id}`);
+      const response = await authenticatedFetch(`https://app-backend.momdaughts.com/address/${id}`);
       if (!response.ok) {
         throw new Error('Failed to fetch address');
       }
