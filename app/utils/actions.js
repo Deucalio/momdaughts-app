@@ -1,4 +1,4 @@
-const BACKEND_URL = "https://16c663724b7c.ngrok-free.app";
+const BACKEND_URL = "https://9324165fa41c.ngrok-free.app";
 export const fetchCartItemsCount = async (authenticatedFetch) => {
   try {
     const res = await authenticatedFetch(`${BACKEND_URL}/cart-items-count`);

@@ -26,6 +26,7 @@ import {
   updateUserPhone,
   isEmailAlreadyTaken,
 } from "../utils/actions";
+import { BASE_URL } from "../../constants";
 const COLORS = {
   primary: "#007AFF",
   gray: "#8E8E93",
@@ -37,6 +38,12 @@ const COLORS = {
 
 const ProfilePage = () => {
   const { user, syncUserData, token } = useAuthStore();
+
+  const [deleteAccountModalVisible, setDeleteAccountModalVisible] =
+    useState(false);
+  const [deleteConfirmText, setDeleteConfirmText] = useState("");
+  const [isDeletingAccount, setIsDeletingAccount] = useState(false);
+
   const { authenticatedFetch } = useAuthenticatedFetch();
   console.log("u:", user, authenticatedFetch, "t", token);
   const [userProfile, setUserProfile] = useState({
@@ -47,6 +54,43 @@ const ProfilePage = () => {
     avatar: null,
   });
   const router = useRouter();
+
+  const handleDeleteAccount = async () => {
+    if (deleteConfirmText.trim() !== "DELETE") {
+      Alert.alert("Error", "Please type DELETE to confirm");
+      return;
+    }
+
+    setIsDeletingAccount(true);
+
+    try {
+      // router.dismissAll();
+      console.log("User ID to delete:", user.id);
+      // Sleep for 1 second to allow navigation to complete
+      router.back();
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+      authenticatedFetch(`${BASE_URL}/user/${user.id}`, {
+        method: "DELETE",
+        body: JSON.stringify({ userId: user.id }),
+      });
+      const res = await logOut();
+      if (res) {
+        router.replace("/auth/login");
+      }
+
+      // Close modal first
+      setDeleteAccountModalVisible(false);
+      setDeleteConfirmText("");
+    } catch (error) {
+      console.error("Delete account error:", error);
+      Alert.alert(
+        "Error",
+        error.message || "Failed to delete account. Please try again."
+      );
+    } finally {
+      setIsDeletingAccount(false);
+    }
+  };
 
   const [modalVisible, setModalVisible] = useState(false);
   const [otpModalVisible, setOtpModalVisible] = useState(false);
@@ -396,6 +440,21 @@ const ProfilePage = () => {
             </TouchableOpacity>
           ))}
         </View>
+        {/* Delete Account Section */}
+        <View style={styles.dangerZone}>
+          <Text style={styles.dangerZoneTitle}>Danger Zone</Text>
+          <TouchableOpacity
+            style={styles.deleteAccountButton}
+            onPress={() => setDeleteAccountModalVisible(true)}
+          >
+            <Ionicons name="warning-outline" size={20} color="#DC2626" />
+            <Text style={styles.deleteAccountButtonText}>Delete Account</Text>
+          </TouchableOpacity>
+          <Text style={styles.deleteAccountWarning}>
+            This action cannot be undone. All your data will be permanently
+            deleted.
+          </Text>
+        </View>
       </ScrollView>
 
       {/* Edit Modal */}
@@ -582,6 +641,82 @@ const ProfilePage = () => {
           </View>
         </View>
       </Modal>
+      {/* Delete Account Modal */}
+      {/* Delete Account Modal */}
+      <Modal
+        animationType="fade"
+        transparent={true}
+        visible={deleteAccountModalVisible}
+        onRequestClose={() => setDeleteAccountModalVisible(false)}
+      >
+        <View style={styles.deleteModalOverlay}>
+          <View style={styles.deleteModalContainer}>
+            {/* Icon */}
+            <View style={styles.deleteModalIcon}>
+              <Ionicons name="alert-circle-outline" size={40} color="#DC2626" />
+            </View>
+
+            {/* Title */}
+            <Text style={styles.deleteModalTitle}>Delete Account</Text>
+
+            {/* Description */}
+            <Text style={styles.deleteModalDescription}>
+              This will permanently delete your account and all associated data.
+              This action cannot be undone.
+            </Text>
+
+            {/* Confirmation Input */}
+            <View style={styles.deleteConfirmInputGroup}>
+              <Text style={styles.deleteConfirmLabel}>
+                Type <Text style={styles.deleteConfirmHighlight}>DELETE</Text>{" "}
+                to confirm
+              </Text>
+              <TextInput
+                style={styles.deleteConfirmInput}
+                value={deleteConfirmText}
+                onChangeText={setDeleteConfirmText}
+                placeholder="Type DELETE"
+                placeholderTextColor="#9ca3af"
+                autoCapitalize="characters"
+                editable={!isDeletingAccount}
+              />
+            </View>
+
+            {/* Action Buttons */}
+            <View style={styles.deleteModalActions}>
+              <TouchableOpacity
+                style={styles.deleteModalCancelButton}
+                onPress={() => {
+                  setDeleteAccountModalVisible(false);
+                  setDeleteConfirmText("");
+                }}
+                disabled={isDeletingAccount}
+              >
+                <Text style={styles.deleteModalCancelText}>Cancel</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[
+                  styles.deleteModalConfirmButton,
+                  (deleteConfirmText.trim() !== "DELETE" ||
+                    isDeletingAccount) &&
+                    styles.deleteModalConfirmButtonDisabled,
+                ]}
+                onPress={handleDeleteAccount}
+                disabled={
+                  deleteConfirmText.trim() !== "DELETE" || isDeletingAccount
+                }
+              >
+                {isDeletingAccount ? (
+                  <ActivityIndicator size="small" color="#FFFFFF" />
+                ) : (
+                  <Text style={styles.deleteModalConfirmText}>Delete</Text>
+                )}
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 };
@@ -754,6 +889,132 @@ const styles = StyleSheet.create({
   },
   resendButtonTextDisabled: {
     color: COLORS.gray,
+  },
+  dangerZone: {
+    marginHorizontal: 20,
+    marginTop: 40,
+    marginBottom: 30,
+    paddingTop: 20,
+    borderTopWidth: 1,
+    borderTopColor: COLORS.border,
+  },
+  dangerZoneTitle: {
+    fontSize: 14,
+    fontFamily: "Outfit-SemiBold",
+    color: COLORS.darkGray,
+    marginBottom: 12,
+  },
+  deleteAccountButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: COLORS.white,
+    borderWidth: 1,
+    borderColor: "#DC2626",
+    borderRadius: 8,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    gap: 8,
+  },
+  deleteAccountButtonText: {
+    fontSize: 15,
+    fontFamily: "Outfit-Medium",
+    color: "#DC2626",
+  },
+  deleteAccountWarning: {
+    fontSize: 12,
+    color: COLORS.gray,
+    textAlign: "center",
+    marginTop: 8,
+    lineHeight: 16,
+  },
+  deleteModalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 20,
+  },
+  deleteModalContainer: {
+    backgroundColor: COLORS.white,
+    borderRadius: 16,
+    padding: 24,
+    width: "100%",
+    maxWidth: 340,
+    maxHeight: 350,
+  },
+  deleteModalIcon: {
+    alignItems: "center",
+    marginBottom: 16,
+  },
+  deleteModalTitle: {
+    fontSize: 20,
+    fontFamily: "Outfit-SemiBold",
+    color: COLORS.darkGray,
+    textAlign: "center",
+    marginBottom: 12,
+  },
+  deleteModalDescription: {
+    fontSize: 14,
+    color: COLORS.gray,
+    textAlign: "center",
+    lineHeight: 20,
+    marginBottom: 20,
+  },
+  deleteConfirmInputGroup: {
+    marginBottom: 20,
+  },
+  deleteConfirmLabel: {
+    fontSize: 13,
+    color: COLORS.gray,
+    marginBottom: 8,
+    textAlign: "center",
+  },
+  deleteConfirmHighlight: {
+    fontFamily: "Outfit-SemiBold",
+    color: COLORS.darkGray,
+  },
+  deleteConfirmInput: {
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    borderRadius: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    fontSize: 15,
+    backgroundColor: COLORS.lightGray,
+    textAlign: "center",
+    fontFamily: "Outfit-Medium",
+  },
+  deleteModalActions: {
+    flexDirection: "row",
+    gap: 12,
+  },
+  deleteModalCancelButton: {
+    flex: 1,
+    backgroundColor: COLORS.lightGray,
+    borderRadius: 8,
+    paddingVertical: 12,
+    alignItems: "center",
+  },
+  deleteModalCancelText: {
+    fontSize: 15,
+    fontFamily: "Outfit-Medium",
+    color: COLORS.darkGray,
+  },
+  deleteModalConfirmButton: {
+    flex: 1,
+    backgroundColor: "#DC2626",
+    borderRadius: 8,
+    paddingVertical: 12,
+    alignItems: "center",
+  },
+  deleteModalConfirmButtonDisabled: {
+    opacity: 0.5,
+  },
+  deleteModalConfirmText: {
+    fontSize: 15,
+    fontFamily: "Outfit-Medium",
+    color: COLORS.white,
   },
 });
 

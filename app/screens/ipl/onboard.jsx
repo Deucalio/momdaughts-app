@@ -1,22 +1,21 @@
 "use client";
 
 import { Image } from "expo-image";
-import { useRouter, useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import {
-  Dimensions,
-  ScrollView,
-  StyleSheet,
-  TouchableOpacity,
-  View,
+    Dimensions,
+    ScrollView,
+    StyleSheet,
+    TouchableOpacity,
+    View,
 } from "react-native";
 import Text from "../../../components/Text";
 import { createIPLProfile, fetchDevices } from "../../utils/actions";
 import { useAuthenticatedFetch, useAuthStore } from "../../utils/authStore";
-import NavigationSpaceContainer from "../../../components/NavigationSpaceContainer";
 
 const { width, height } = Dimensions.get("window");
-const BACKEND_URL = "https://16c663724b7c.ngrok-free.app";
+const BACKEND_URL = "https://9324165fa41c.ngrok-free.app";
 
 // Scaling functions
 const scale = (size) => (width / 375) * size; // Base width: iPhone 11

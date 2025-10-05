@@ -8,15 +8,32 @@ import {
   Text,
   TouchableOpacity,
   View,
+  Animated,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { logOut, useAuthenticatedFetch } from "../app/utils/authStore";
 
-const Header = ({ cartItemCount }) => {
+const Header = ({ cartItemCount, scrollY }) => {
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const router = useRouter();
   const { authenticatedFetch } = useAuthenticatedFetch();
   const insets = useSafeAreaInsets();
+
+    // Animated border style based on scroll position
+  const borderBottomWidth = scrollY
+    ? scrollY.interpolate({
+        inputRange: [0, 50],
+        outputRange: [0, 1],
+        extrapolate: "clamp",
+      })
+    : 0;
+    const elevation = scrollY
+    ? scrollY.interpolate({
+        inputRange: [0, 50],
+        outputRange: [0, 4],
+        extrapolate: "clamp",
+      })
+    : 0;
 
   // const getCartItems = async () => {
   //     try {
@@ -62,7 +79,17 @@ const Header = ({ cartItemCount }) => {
 
   return (
     <>
-      <View style={[styles.header, { paddingTop: insets.top }]}>
+      <Animated.View
+        style={[
+          styles.header,
+          { paddingTop: insets.top },
+          scrollY && {
+            borderBottomWidth,
+            borderBottomColor: "#fce7f3",
+            elevation,
+          },
+        ]}
+      >
         <View style={styles.headerContent}>
           <View style={styles.logoContainer}>
             <Image
@@ -84,7 +111,6 @@ const Header = ({ cartItemCount }) => {
             </Text>
           </View>
           <View style={styles.headerActions}>
-            {/* Cart Icon */}
             <TouchableOpacity
               style={styles.headerButton}
               onPress={handleCartPress}
@@ -96,12 +122,10 @@ const Header = ({ cartItemCount }) => {
                 </View>
               )}
             </TouchableOpacity>
-            {/* Profile Icon with Dropdown */}
           </View>
         </View>
-      </View>
+      </Animated.View>
 
-      {/* Overlay to close dropdown when clicking outside */}
       {showProfileMenu && (
         <Pressable
           style={styles.overlay}
@@ -110,6 +134,7 @@ const Header = ({ cartItemCount }) => {
       )}
     </>
   );
+
 };
 
 const styles = StyleSheet.create({
@@ -119,8 +144,8 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     backgroundColor: "rgba(255, 255, 255, 0.98)",
-    borderBottomWidth: 1,
-    borderBottomColor: "#fce7f3",
+    // borderBottomWidth: 1,
+    // borderBottomColor: "#fce7f3",
     paddingHorizontal: 16,
     paddingBottom: 8,
     zIndex: 1000,
@@ -131,7 +156,7 @@ const styles = StyleSheet.create({
     },
     shadowOpacity: 0.1,
     shadowRadius: 4,
-    elevation: 5,
+    elevation: 0,
   },
   headerContent: {
     flexDirection: "row",
