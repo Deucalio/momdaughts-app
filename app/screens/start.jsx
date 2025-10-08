@@ -148,13 +148,18 @@ export default function ExerciseScreen() {
   };
 
   const displayTimer = (minutesTime) => {
-    // If its not a minute, convert to seconds 
-    if (minutesTime < 1) {
-      return minutesTime * 60;
+    const totalSeconds = Math.round(minutesTime * 60);
+
+    if (totalSeconds < 60) {
+      // Less than a minute, show only seconds
+      return totalSeconds;
     }
 
-  }
-
+    // 1 minute or more, return object with minutes and seconds
+    const mins = Math.floor(totalSeconds / 60);
+    const secs = totalSeconds % 60;
+    return { minutes: mins, seconds: secs };
+  };
   const handleNextPose = () => {
     if (currentPoseIndex < exercise.poses.length - 1) {
       setCurrentPoseIndex(currentPoseIndex + 1);
@@ -285,14 +290,25 @@ export default function ExerciseScreen() {
             {/* Stats - only 2 items */}
             <View style={styles.statsContainer}>
               <View style={styles.statItem}>
-                <Text style={styles.statNumber}>
-                  {displayTimer((minutesSpent))}
-                </Text>
-                <Text style={styles.statLabel}>{displayTimer(minutesSpent) > 1 ? "minutes" : "seconds"}</Text>
-              </View>
-              <View style={styles.statItem}>
-                <Text style={styles.statNumber}>{exercise.poses.length}</Text>
-                <Text style={styles.statLabel}>poses</Text>
+                {(() => {
+                  const time = displayTimer(minutesSpent);
+                  if (typeof time === "object") {
+                    return (
+                      <>
+                        <Text style={styles.statNumber}>
+                          {time.minutes}m {time.seconds}s
+                        </Text>
+                        <Text style={styles.statLabel}>time spent</Text>
+                      </>
+                    );
+                  }
+                  return (
+                    <>
+                      <Text style={styles.statNumber}>{time}</Text>
+                      <Text style={styles.statLabel}>seconds</Text>
+                    </>
+                  );
+                })()}
               </View>
             </View>
 
@@ -315,7 +331,7 @@ export default function ExerciseScreen() {
                     <Ionicons
                       name={star <= userRating ? "star" : "star-outline"}
                       size={24}
-                      color={star <= userRating ? "#fbbf24" : "#d1d5db"}
+                      color={star <= userRating ? "#2c2a6b" : "#2c2a6b"}
                     />
                   </TouchableOpacity>
                 ))}
@@ -357,7 +373,7 @@ const styles = StyleSheet.create({
     paddingBottom: 16,
   },
   progressText: {
-    color: "#7c3aed",
+    color: "#000",
     fontFamily: "Outfit-SemiBold",
     fontSize: 18,
   },
@@ -406,7 +422,7 @@ const styles = StyleSheet.create({
   playButton: {
     width: 64,
     height: 64,
-    backgroundColor: "#f472b6",
+    backgroundColor: "#2c2a6b",
     borderRadius: 32,
     alignItems: "center",
     justifyContent: "center",
@@ -437,7 +453,7 @@ const styles = StyleSheet.create({
   successIcon: {
     width: 64,
     height: 64,
-    backgroundColor: "#22c55e",
+    backgroundColor: "#eb9fc1",
     borderRadius: 32,
     alignItems: "center",
     justifyContent: "center",
@@ -513,7 +529,7 @@ const styles = StyleSheet.create({
     padding: 4,
   },
   submitButton: {
-    backgroundColor: "#7c3aed",
+    backgroundColor: "#2c2a6b",
     paddingVertical: 16,
     paddingHorizontal: 48,
     borderRadius: 24,

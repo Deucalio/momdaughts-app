@@ -115,7 +115,7 @@ const Header = ({ cartItemCount, scrollY }) => {
               style={styles.headerButton}
               onPress={handleCartPress}
             >
-              <Ionicons name="bag-outline" size={24} color="#ec4899" />
+              <Ionicons name="cart-outline" size={24} color="#2c2a6b" />
               {cartItemCount > 0 && (
                 <View style={styles.cartBadge}>
                   <Text style={styles.badgeText}>{cartItemCount}</Text>
@@ -194,7 +194,7 @@ const styles = StyleSheet.create({
     position: "absolute",
     top: 0,
     right: 0,
-    backgroundColor: "#ec4899",
+    backgroundColor: "#2c2a6b",
     borderRadius: 8,
     minWidth: 16,
     height: 16,

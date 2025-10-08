@@ -99,7 +99,7 @@ const filterOptions = [
   { key: "all", label: "All Orders", count: orders?.length || 0 },
   {
     key: "fulfilled",
-    label: "Fulfilled",
+    label: "Completed",
     count: orders?.filter((o) => o?.status === "Fulfilled").length || 0,
   },
   {
