@@ -40,9 +40,9 @@ const menstrualReliefExercises = [
     duration: "3 min",
     poses: ["Supported child's pose", "Camel Pose", "Supported cat pose"],
     images: [
-      "https://i.ibb.co/4RPLw0gF/image-fotor-bg-remover-2025082819617.png",
-      "https://i.ibb.co/C5z5wgG4/image-fotor-bg-remover-2025082819217.png",
-      "https://i.ibb.co/k2XWmY1b/image-fotor-bg-remover-20250828194042.png",
+      "https://cdn.shopify.com/s/files/1/0669/0773/4308/files/period-pain-relief-supported-childs-pose-min.png?v=1759933617",
+      "https://cdn.shopify.com/s/files/1/0669/0773/4308/files/period-pain-relief-camel-pose-min.png?v=1759933617",
+      "https://cdn.shopify.com/s/files/1/0669/0773/4308/files/period-pain-relief-supported-cat-pose-min.png?v=1759933616",
     ],
   },
   {
@@ -54,8 +54,8 @@ const menstrualReliefExercises = [
     duration: "3 min",
     poses: ["Left foot massage", "Right foot massage"],
     images: [
-      "https://i.ibb.co/gFSP7k2R/image.png",
-      "https://i.ibb.co/1G24x6vQ/download.png"
+      "https://cdn.shopify.com/s/files/1/0669/0773/4308/files/foot-massage-relief-left-min.png?v=1759933617",
+      "https://cdn.shopify.com/s/files/1/0669/0773/4308/files/foot-massage-relief-right-min.png?v=1759933617",
     ],
   },
 ];

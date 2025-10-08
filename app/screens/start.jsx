@@ -39,9 +39,9 @@ const menstrualReliefExercises = [
     duration: "3 min",
     poses: ["Supported child's pose", "Camel Pose", "Supported cat pose"],
     images: [
-      "https://i.ibb.co/4RPLw0gF/image-fotor-bg-remover-2025082819617.png",
-      "https://i.ibb.co/C5z5wgG4/image-fotor-bg-remover-2025082819217.png",
-      "https://i.ibb.co/k2XWmY1b/image-fotor-bg-remover-20250828194042.png",
+      "https://cdn.shopify.com/s/files/1/0669/0773/4308/files/period-pain-relief-supported-childs-pose-min.png?v=1759933617",
+      "https://cdn.shopify.com/s/files/1/0669/0773/4308/files/period-pain-relief-camel-pose-min.png?v=1759933617",
+      "https://cdn.shopify.com/s/files/1/0669/0773/4308/files/period-pain-relief-supported-cat-pose-min.png?v=1759933616",
     ],
   },
   {
@@ -52,8 +52,8 @@ const menstrualReliefExercises = [
     duration: "3 min",
     poses: ["Left foot massage", "Right foot massage"],
     images: [
-      "https://i.ibb.co/svBYMZkP/image-removebg-preview-1.png",
-      "https://i.ibb.co/LhQnDKwM/image-removebg-preview-2.png",
+      "https://cdn.shopify.com/s/files/1/0669/0773/4308/files/foot-massage-relief-left-min.png?v=1759933617",
+      "https://cdn.shopify.com/s/files/1/0669/0773/4308/files/foot-massage-relief-right-min.png?v=1759933617",
     ],
   },
 ];
@@ -64,11 +64,29 @@ export default function ExerciseScreen() {
   const [currentPoseIndex, setCurrentPoseIndex] = useState(0);
   const [showCompletionModal, setShowCompletionModal] = useState(false);
   const [completedPoses, setCompletedPoses] = useState(0);
-const [userRating, setUserRating] = useState(1);
+  const [minutesSpent, setMinutesSpent] = useState(0);
+  const [userRating, setUserRating] = useState(1);
 
-const handleRating = (rating) => {
-  setUserRating(rating);
-};
+  const handleRating = (rating) => {
+    setUserRating(rating);
+  };
+
+  useEffect(() => {
+    let interval = null;
+    if (isPlaying && timeLeft > 0) {
+      interval = setInterval(() => {
+        setTimeLeft(timeLeft - 1);
+        // Track time spent (increment every second)
+        setMinutesSpent((prev) => prev + 1 / 60); // Add 1/60th of a minute per second
+      }, 1000);
+    } else if (timeLeft === 0) {
+      handleNextPose();
+    }
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [isPlaying, timeLeft, currentPoseIndex]);
+
   const router = useRouter();
   const params = useLocalSearchParams();
   const exercise_id = parseInt(params.exercise_id) || 1;
@@ -129,6 +147,14 @@ const handleRating = (rating) => {
     }
   };
 
+  const displayTimer = (minutesTime) => {
+    // If its not a minute, convert to seconds 
+    if (minutesTime < 1) {
+      return minutesTime * 60;
+    }
+
+  }
+
   const handleNextPose = () => {
     if (currentPoseIndex < exercise.poses.length - 1) {
       setCurrentPoseIndex(currentPoseIndex + 1);
@@ -147,8 +173,8 @@ const handleRating = (rating) => {
     setTimeLeft(60);
     setCurrentPoseIndex(0);
     setCompletedPoses(0);
+    setMinutesSpent(0); // Add this line
   };
-
   const handleBack = () => {
     if (onBack) {
       onBack();
@@ -159,11 +185,10 @@ const handleRating = (rating) => {
 
   const closeModal = () => {
     setShowCompletionModal(false);
-    // Reset to beginning
     setCurrentPoseIndex(0);
     setTimeLeft(60);
     setCompletedPoses(0);
-    // Navigate back to the wellness
+    setMinutesSpent(0); // Add this line
     router.push("/wellness");
   };
 
@@ -182,9 +207,9 @@ const handleRating = (rating) => {
           <Text style={styles.progressText}>
             {currentPoseIndex + 1}/{exercise.poses.length}
           </Text>
-          <TouchableOpacity>
+          {/* <TouchableOpacity>
             <Ionicons name="musical-notes" size={24} color="#7c3aed" />
-          </TouchableOpacity>
+          </TouchableOpacity> */}
         </View>
 
         {/* Exercise illustration */}
@@ -240,69 +265,69 @@ const handleRating = (rating) => {
         </View>
       </View>
 
-     <Modal
-  visible={showCompletionModal}
-  transparent={true}
-  animationType="fade"
-  onRequestClose={closeModal}
->
-  <View style={styles.modalOverlay}>
-    <View style={styles.modalContent}>
-      <View style={styles.successIcon}>
-        <Ionicons name="checkmark" size={32} color="white" />
-      </View>
-      <Text style={styles.modalTitle}>Exercise Completed!</Text>
-      <Text style={styles.modalSubtitle}>
-        Great job! You've just completed your exercise. Here's a quick
-        summary of your workout.
-      </Text>
-      
-      {/* Stats - only 2 items */}
-      <View style={styles.statsContainer}>
-        <View style={styles.statItem}>
-          <Text style={styles.statNumber}>
-            {exercise.duration.replace(" min", "")}
-          </Text>
-          <Text style={styles.statLabel}>minutes</Text>
-        </View>
-        <View style={styles.statItem}>
-          <Text style={styles.statNumber}>{exercise.poses.length}</Text>
-          <Text style={styles.statLabel}>poses</Text>
-        </View>
-      </View>
+      <Modal
+        visible={showCompletionModal}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={closeModal}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.successIcon}>
+              <Ionicons name="checkmark" size={32} color="white" />
+            </View>
+            <Text style={styles.modalTitle}>Exercise Completed!</Text>
+            <Text style={styles.modalSubtitle}>
+              Great job! You've just completed your exercise. Here's a quick
+              summary of your workout.
+            </Text>
 
-      {/* Exercise Info */}
-      <View style={styles.exerciseInfo}>
-        <Text style={styles.dayText}>Day 1</Text>
-        <Text style={styles.exerciseTitle}>{exercise.title}</Text>
-      </View>
+            {/* Stats - only 2 items */}
+            <View style={styles.statsContainer}>
+              <View style={styles.statItem}>
+                <Text style={styles.statNumber}>
+                  {displayTimer((minutesSpent))}
+                </Text>
+                <Text style={styles.statLabel}>{displayTimer(minutesSpent) > 1 ? "minutes" : "seconds"}</Text>
+              </View>
+              <View style={styles.statItem}>
+                <Text style={styles.statNumber}>{exercise.poses.length}</Text>
+                <Text style={styles.statLabel}>poses</Text>
+              </View>
+            </View>
 
-      {/* Rating Section */}
-      <View style={styles.ratingSection}>
-        <Text style={styles.ratingText}>How was your experience?</Text>
-        <View style={styles.starsContainer}>
-          {[1, 2, 3, 4, 5].map((star) => (
-            <TouchableOpacity
-              key={star}
-              onPress={() => handleRating(star)}
-              style={styles.starButton}
-            >
-              <Ionicons
-                name={star <= userRating ? "star" : "star-outline"}
-                size={24}
-                color={star <= userRating ? "#fbbf24" : "#d1d5db"}
-              />
+            {/* Exercise Info */}
+            <View style={styles.exerciseInfo}>
+              <Text style={styles.dayText}>Day 1</Text>
+              <Text style={styles.exerciseTitle}>{exercise.title}</Text>
+            </View>
+
+            {/* Rating Section */}
+            <View style={styles.ratingSection}>
+              <Text style={styles.ratingText}>How was your experience?</Text>
+              <View style={styles.starsContainer}>
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <TouchableOpacity
+                    key={star}
+                    onPress={() => handleRating(star)}
+                    style={styles.starButton}
+                  >
+                    <Ionicons
+                      name={star <= userRating ? "star" : "star-outline"}
+                      size={24}
+                      color={star <= userRating ? "#fbbf24" : "#d1d5db"}
+                    />
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
+
+            <TouchableOpacity style={styles.submitButton} onPress={closeModal}>
+              <Text style={styles.submitButtonText}>Submit</Text>
             </TouchableOpacity>
-          ))}
+          </View>
         </View>
-      </View>
-
-      <TouchableOpacity style={styles.submitButton} onPress={closeModal}>
-        <Text style={styles.submitButtonText}>Submit</Text>
-      </TouchableOpacity>
-    </View>
-  </View>
-</Modal>
+      </Modal>
     </View>
   );
 }
@@ -342,9 +367,11 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   illustrationImage: {
-    width: 280,
-    height: 280,
-    borderRadius: 140,
+    // width: 280,
+    // height: 280,
+    height: "100%",
+    width: "100%",
+    // borderRadius: 140,
   },
   poseName: {
     fontSize: 24,
@@ -468,23 +495,23 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   ratingSection: {
-  alignItems: "center",
-  marginBottom: 32,
-  width: "100%",
-},
-ratingText: {
-  fontSize: 16,
-  fontFamily: "Outfit-SemiBold",
-  color: "#1f2937",
-  marginBottom: 16,
-},
-starsContainer: {
-  flexDirection: "row",
-  gap: 8,
-},
-starButton: {
-  padding: 4,
-},
+    alignItems: "center",
+    marginBottom: 32,
+    width: "100%",
+  },
+  ratingText: {
+    fontSize: 16,
+    fontFamily: "Outfit-SemiBold",
+    color: "#1f2937",
+    marginBottom: 16,
+  },
+  starsContainer: {
+    flexDirection: "row",
+    gap: 8,
+  },
+  starButton: {
+    padding: 4,
+  },
   submitButton: {
     backgroundColor: "#7c3aed",
     paddingVertical: 16,

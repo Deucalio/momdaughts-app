@@ -224,7 +224,7 @@ export default function App() {
           </View>
           <Image
             source={{
-              uri: "https://i.ibb.co/ymfw2YVx/image.png",
+              uri: "https://cdn.shopify.com/s/files/1/0669/0773/4308/files/ai-generated-menstrual-cup-size-guide-image.png?v=1759932572",
             }}
             style={styles.backgroundImage}
             resizeMode="cover"

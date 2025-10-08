@@ -18,7 +18,7 @@ export const createOrder = async (authenticatedFetch, orderData) => {
       itemCount: orderData.items?.length,
       total: orderData.total,
     });
-
+    
     const res = await authenticatedFetch(`${BACKEND_URL}/create-order`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },

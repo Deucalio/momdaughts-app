@@ -112,8 +112,8 @@ export default function HelpSupportPage() {
     {
       type: "WhatsApp",
       icon: "logo-whatsapp",
-      value: "+92 XXX XXXXXXX",
-      action: () => Linking.openURL("https://wa.me/92XXXXXXXXX")
+      value: "+92 332 0003362",
+      action: () => Linking.openURL("https://wa.me/+923320003362")
     },
     {
       type: "Email",
@@ -124,8 +124,8 @@ export default function HelpSupportPage() {
     {
       type: "Phone",
       icon: "call",
-      value: "+92 XXX XXXXXXX",
-      action: () => Linking.openURL("tel:+92XXXXXXXXX")
+      value: "+92 332 0003362",
+      action: () => Linking.openURL("tel:+923320003362")
     }
   ];
 
